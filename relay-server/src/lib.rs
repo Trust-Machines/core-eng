@@ -9,7 +9,7 @@ mod http;
 mod to_io_result;
 mod url;
 
-fn main() {
+pub fn run() {
     let mut state = State::default();
     let listner = TcpListener::bind("127.0.0.1:9776").unwrap();
     for stream_or_error in listner.incoming() {
