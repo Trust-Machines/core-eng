@@ -18,5 +18,5 @@ The default address is `http://127.0.0.1:9776`.
 ## Integration Test
 
 1. Start the server `cargo run relay-server`
-2. Run `./test.sh` in another terminal.
+2. Run [./test.sh](./test.sh) in another terminal.
 3. Close the server using `Ctrl+C`.
