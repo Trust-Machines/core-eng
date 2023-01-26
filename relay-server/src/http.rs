@@ -3,7 +3,7 @@ use std::{
     io::{Error, Read},
 };
 
-use crate::to_io_result::{ToIoResult, io_error};
+use crate::to_io_result::{io_error, ToIoResult};
 
 #[derive(Debug)]
 pub struct Request {
@@ -32,7 +32,7 @@ pub trait RequestEx: Read {
                 result.push(b as char);
             }
             if read_byte()? != 10 {
-                return Err(io_error("invalid HTTP line"))
+                return Err(io_error("invalid HTTP line"));
             }
             Ok(result)
         };
