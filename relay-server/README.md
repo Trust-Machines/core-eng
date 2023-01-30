@@ -7,11 +7,27 @@ The `relay-server` is an HTTP service that has two functions:
 - Returning the messages in the same order as received for each client. 
   For example, `curl 'http://127.0.0.1:9776/?id=alice'`. 
 
+## Installation (optional)
+
+```sh
+cargo install --git https://github.com/Trust-Machines/core-eng
+```
+
 ## Start the `relay-server` server
+
+Run
 
 ```sh
 cargo run relay-server 
 ```
+
+from the root of the repository, or
+
+```
+relay-server
+```
+
+if the `relay-server` is installed.
 
 The default address is `http://127.0.0.1:9776`.
 
