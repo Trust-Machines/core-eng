@@ -14,7 +14,7 @@ impl State {
             .get(&node_id)
             .map_or(0, |last_read| *last_read + 1);
         let result = self.queue.get(first_unread);
-        if result != None {
+        if result.is_some() {
             self.highwaters.insert(node_id, first_unread);
         };
         result

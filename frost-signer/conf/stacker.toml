@@ -1,0 +1,10 @@
+[common]
+stacks_node_url = "http://localhost:9776"
+total_signers = 3
+total_parties = 6
+minimum_parties = 4
+
+[signer]
+frost_id = 1
+frost_state_file = "frost.state.bin"
+
