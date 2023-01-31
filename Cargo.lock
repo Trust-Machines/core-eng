@@ -3,5 +3,12 @@
 version = 3
 
 [[package]]
+name = "frost-test"
+version = "0.1.0"
+dependencies = [
+ "relay-server",
+]
+
+[[package]]
 name = "relay-server"
 version = "0.1.0"
