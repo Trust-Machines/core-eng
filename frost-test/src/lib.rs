@@ -13,10 +13,11 @@ mod tests {
         let N: usize = 10;
         let T = (N * 2) / 3;
 
-
         let mut rng = rand_core::OsRng::default();
 
         //
-        let party = Party::new(1, N, T, &mut rng);
+        let party = (0..N)
+            .map(|i| Party::new(i, N, T, &mut rng))
+            .collect::<Vec<_>>();
     }
 }

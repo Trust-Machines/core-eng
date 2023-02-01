@@ -1,6 +1,9 @@
 use std::io::Error;
 
-use crate::{state::State, server::{Stream, ServerEx}};
+use crate::{
+    server::{ServerEx, Stream},
+    state::State,
+};
 
 pub fn run_server<T: Stream>(i: &mut impl Iterator<Item = Result<T, Error>>) {
     let mut state = State::default();
@@ -9,5 +12,5 @@ pub fn run_server<T: Stream>(i: &mut impl Iterator<Item = Result<T, Error>>) {
         if let Err(e) = f() {
             eprintln!("IO error: {e}");
         }
-    }    
+    }
 }
