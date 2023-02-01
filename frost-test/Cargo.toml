@@ -8,3 +8,6 @@ license = "GPLv3"
 
 [dependencies]
 relay-server = { path = "../relay-server" }
+rand_core = "0.5"
+hashbrown = "0.13"
+frost = { git = "https://github.com/trust-machines/frost", branch = "sbtc" }

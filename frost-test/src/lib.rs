@@ -1,14 +1,22 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::time;
+
+    use frost::v2::Party;
+    use hashbrown::HashMap;
+    use rand_core::OsRng;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn pure_frost() {
+        // let num_sigs = 7;
+        // let num_nonces = 5;
+        let N: usize = 10;
+        let T = (N * 2) / 3;
+
+        
+        let mut rng = rand_core::OsRng::default();
+
+        //
+        Party::new(1, &[], N, 0, T, &mut rng);
     }
 }
