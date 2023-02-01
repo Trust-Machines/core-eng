@@ -10,7 +10,7 @@ The `relay-server` is an HTTP service that has two functions:
 ## Installation (optional)
 
 ```sh
-cargo install --git https://github.com/Trust-Machines/core-eng
+cargo install relat-server --git https://github.com/Trust-Machines/core-eng
 ```
 
 ## Start the `relay-server` server
