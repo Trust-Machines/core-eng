@@ -2,7 +2,7 @@
 mod tests {
     use std::time;
 
-    use frost::v2::Party;
+    use frost::v1::Party;
     use hashbrown::HashMap;
     use rand_core::OsRng;
 
@@ -13,10 +13,10 @@ mod tests {
         let N: usize = 10;
         let T = (N * 2) / 3;
 
-        
+
         let mut rng = rand_core::OsRng::default();
 
         //
-        Party::new(1, &[], N, 0, T, &mut rng);
+        let party = Party::new(1, N, T, &mut rng);
     }
 }
