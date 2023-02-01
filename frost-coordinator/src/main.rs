@@ -1,6 +1,8 @@
+use std::time::Duration;
+
 use clap::Parser;
 use hashbrown::HashSet;
-use tracing::info;
+use tracing::{debug, info};
 
 use frost_signer::config::Config;
 use frost_signer::logging;
@@ -123,11 +125,11 @@ where
                         dkg_end_msg.dkg_id, dkg_end_msg.signer_id, ids_to_await
                     );
                 }
-                (_, _) => {
-                    info!("wait for dkg catchall");
-                }
+                (_, _) => {}
             }
-            info!("wait for dkg bottom loop")
+            if ids_to_await.len() == 0 {
+                return Ok(());
+            }
         }
     }
 
@@ -141,15 +143,13 @@ where
         };
 
         let notify = |_err, dur| {
-            info!("No message. Next poll in {:?}", dur);
+            debug!("No message. Next poll in {:?}", dur);
         };
 
-        backoff::retry_notify(
-            backoff::ExponentialBackoff::default(),
-            get_next_message,
-            notify,
-        )
-        .map_err(|_| Error::Timeout)
+        let backoff_timer = backoff::ExponentialBackoffBuilder::new()
+            .with_max_interval(Duration::from_secs(3))
+            .build();
+        backoff::retry_notify(backoff_timer, get_next_message, notify).map_err(|_| Error::Timeout)
     }
 }
 

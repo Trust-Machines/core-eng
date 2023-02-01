@@ -34,17 +34,18 @@ impl StateMachine for SigningRound {
     }
 
     fn can_move_to(&self, state: &States) -> Result<(), String> {
+        let previous_state = &self.state;
         let accepted = match state {
-            States::Init => false,
+            States::Idle => true,
             States::DkgDistribute => {
-                self.state == States::Init || self.state == States::DkgDistribute
+                self.state == States::Idle || self.state == States::DkgDistribute
             }
             States::DkgGather => self.state == States::DkgDistribute,
-            States::SignGather => self.state == States::DkgGather,
+            States::SignGather => self.state == States::Idle,
             States::Signed => self.state == States::SignGather,
         };
         if accepted {
-            info!("");
+            info!("state change from {:?} to {:?}", previous_state, state);
             Ok(())
         } else {
             Err(format!("bad state change: {:?} to {:?}", self.state, state))
@@ -146,7 +147,7 @@ impl SigningRound {
             threshold,
             total,
             signer,
-            state: States::Init,
+            state: States::Idle,
             commitments: HashMap::new(),
             shares: HashMap::new(),
         }
@@ -172,7 +173,7 @@ impl SigningRound {
                         signer_id: self.signer.signer_id as usize,
                     });
                     out.push(dkg_end);
-                    self.move_to(States::SignGather).unwrap();
+                    self.move_to(States::Idle).unwrap();
                 }
                 Ok(out)
             }

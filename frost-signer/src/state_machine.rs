@@ -1,6 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub enum States {
-    Init,
+    Idle,
     DkgDistribute,
     DkgGather,
     SignGather,
