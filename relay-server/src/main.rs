@@ -1,7 +1,5 @@
 use std::net::TcpListener;
 
-use state::State;
-
 mod state;
 mod server;
 mod http;
