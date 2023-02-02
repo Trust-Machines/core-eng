@@ -1,7 +1,7 @@
+mod v1;
+
 #[cfg(test)]
 mod tests {
-    use std::time;
-
     use frost::{
         common::{PolyCommitment, PublicNonce},
         errors::DkgError,
