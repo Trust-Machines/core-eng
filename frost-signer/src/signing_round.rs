@@ -115,6 +115,7 @@ pub struct SignatureShareRequest {
     pub dkg_id: u64,
     pub correlation_id: u64,
     pub signer_id: usize,
+    pub selected_signer_ids: Vec<usize>,
     pub nonce: PublicNonce,
     pub message: Vec<u8>,
 }

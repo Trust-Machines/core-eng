@@ -120,6 +120,10 @@ where
 
         let _aggregator = v1::SignatureAggregator::new(self.total_signers, self.threshold, polys);
 
+        // request signature shares
+
+        // call aggregator.sign()
+
         return Ok(());
     }
 
