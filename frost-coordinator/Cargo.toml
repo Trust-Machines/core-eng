@@ -17,6 +17,7 @@ tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
 frost-signer = { version = "0.0.1", path = "../frost-signer" }
 p256k1 = { git = "https://github.com/Trust-Machines/p256k1", branch = "sbtc" }
+serde = { version = "1.0", features = ["serde_derive"] }
 
 [lib]
 path = "src/lib.rs"    # The source file of the target

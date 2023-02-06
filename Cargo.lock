@@ -358,6 +358,7 @@ dependencies = [
  "frost-signer",
  "hashbrown",
  "p256k1",
+ "serde",
  "thiserror",
  "tracing",
  "tracing-subscriber",

@@ -4,9 +4,11 @@ use hashbrown::{HashMap, HashSet};
 use tracing::{debug, info};
 
 use frost_signer::net::{HttpNetError, Message, NetListen};
-use frost_signer::signing_round::{DkgBegin, DkgPublicShare, MessageTypes, NonceRequest};
+use frost_signer::signing_round::{DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse};
 
 use p256k1::point::Point;
+
+use serde::{Deserialize, Serialize};
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Command {
@@ -20,19 +22,23 @@ pub struct Coordinator<Network: NetListen> {
     id: u64, // Used for relay coordination
     current_dkg_id: u64,
     total_signers: usize, // Assuming the signers cover all id:s in {1, 2, ..., total_signers}
+    threshold: usize,
     network: Network,
     dkg_public_shares: HashMap<u32, DkgPublicShare>,
+    public_nonces: HashMap<u32, NonceResponse>,
     aggregate_public_key: Point,
 }
 
 impl<Network: NetListen> Coordinator<Network> {
-    pub fn new(id: usize, dkg_id: u64, total_signers: usize, network: Network) -> Self {
+    pub fn new(id: usize, dkg_id: u64, total_signers: usize, threshold: usize, network: Network) -> Self {
         Self {
             id: id as u64,
             current_dkg_id: dkg_id,
             total_signers,
+            threshold,
             network,
             dkg_public_shares: Default::default(),
+            public_nonces: Default::default(),
             aggregate_public_key: Point::default(),
         }
     }
@@ -79,7 +85,22 @@ where
 
         self.network.send_message(nonce_request_message)?;
 
-        todo!();
+        loop {
+            match self.wait_for_next_message()?.msg {
+                MessageTypes::NonceResponse(nonce_response) => {
+                    self.public_nonces.insert(nonce_response.signer_id as u32, nonce_response);
+                },
+                _ => todo!(),
+            }
+
+            if self.public_nonces.len() == self.threshold {
+                break;
+            }
+
+            println!("Got {} nonce responses", self.public_nonces.len());
+        }
+
+        return Ok(());
     }
 
     pub fn calculate_aggregate_public_key(&mut self) -> Result<Point, Error> {
