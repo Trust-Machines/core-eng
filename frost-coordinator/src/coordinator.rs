@@ -14,7 +14,7 @@ use tracing::{debug, info};
 
 use p256k1::point::Point;
 
-//use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Command {
@@ -23,7 +23,7 @@ pub enum Command {
     GetAggregatePublicKey,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Coordinator<Network: NetListen> {
     id: u64, // Used for relay coordination
     current_dkg_id: u64,
@@ -187,6 +187,8 @@ where
             Ok(sig) => sig,
             Err(e) => return Err(Error::Aggregator(e)),
         };
+
+        println!("Signature ({}, {})", sig.R, sig.z);
 
         return Ok(());
     }
