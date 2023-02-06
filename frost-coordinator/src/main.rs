@@ -5,11 +5,18 @@ use frost_signer::logging;
 use frost_signer::net::{HttpNet, HttpNetListen};
 
 use frost_coordinator::coordinator::{
-    Coordinator, Cli,
+    Coordinator, Command,
 };
 
 const DEVNET_COORDINATOR_ID: usize = 0;
 const DEVNET_COORDINATOR_DKG_ID: u64 = 0; //TODO: Remove, this is a correlation id
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Command,
+}
 
 fn main() {
     logging::initiate_tracing_subscriber(tracing::Level::INFO).unwrap();

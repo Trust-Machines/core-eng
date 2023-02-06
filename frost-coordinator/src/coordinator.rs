@@ -1,18 +1,10 @@
 use std::time::Duration;
 
-use clap::Parser;
 use hashbrown::HashSet;
 use tracing::{debug, info};
 
 use frost_signer::net::{HttpNetError, Message, NetListen};
 use frost_signer::signing_round::{DkgBegin, MessageTypes, NonceRequest};
-
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-pub struct Cli {
-    #[command(subcommand)]
-    pub command: Command,
-}
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Command {
