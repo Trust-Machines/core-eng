@@ -355,6 +355,7 @@ version = "0.0.1"
 dependencies = [
  "backoff",
  "clap 4.1.4",
+ "frost",
  "frost-signer",
  "hashbrown",
  "p256k1",

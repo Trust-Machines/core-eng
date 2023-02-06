@@ -1,14 +1,16 @@
 use std::time::Duration;
 
+use frost::{common::PolyCommitment, v1};
+use frost_signer::net::{HttpNetError, Message, NetListen};
+use frost_signer::signing_round::{
+    DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse,
+};
 use hashbrown::{HashMap, HashSet};
 use tracing::{debug, info};
 
-use frost_signer::net::{HttpNetError, Message, NetListen};
-use frost_signer::signing_round::{DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse};
-
 use p256k1::point::Point;
 
-use serde::{Deserialize, Serialize};
+//use serde::{Deserialize, Serialize};
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Command {
@@ -30,7 +32,13 @@ pub struct Coordinator<Network: NetListen> {
 }
 
 impl<Network: NetListen> Coordinator<Network> {
-    pub fn new(id: usize, dkg_id: u64, total_signers: usize, threshold: usize, network: Network) -> Self {
+    pub fn new(
+        id: usize,
+        dkg_id: u64,
+        total_signers: usize,
+        threshold: usize,
+        network: Network,
+    ) -> Self {
         Self {
             id: id as u64,
             current_dkg_id: dkg_id,
@@ -92,8 +100,9 @@ where
         loop {
             match self.wait_for_next_message()?.msg {
                 MessageTypes::NonceResponse(nonce_response) => {
-                    self.public_nonces.insert(nonce_response.signer_id as u32, nonce_response);
-                },
+                    self.public_nonces
+                        .insert(nonce_response.signer_id as u32, nonce_response);
+                }
                 _ => todo!(),
             }
 
@@ -103,6 +112,13 @@ where
 
             println!("Got {} nonce responses", self.public_nonces.len());
         }
+
+        // make an array of dkg public share polys for SignatureAggregator
+        let polys: Vec<PolyCommitment> = (1..self.total_signers as u32)
+            .map(|i| self.dkg_public_shares[&i].public_share.clone())
+            .collect();
+
+        let _aggregator = v1::SignatureAggregator::new(self.total_signers, self.threshold, polys);
 
         return Ok(());
     }
