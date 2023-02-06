@@ -1,9 +1,12 @@
 use std::time::Duration;
 
-use frost::{common::PolyCommitment, v1};
+use frost::{
+    common::{PolyCommitment, PublicNonce},
+    v1,
+};
 use frost_signer::net::{HttpNetError, Message, NetListen};
 use frost_signer::signing_round::{
-    DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse,
+    DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse, SignatureShareRequest,
 };
 use hashbrown::{HashMap, HashSet};
 use tracing::{debug, info};
@@ -85,7 +88,7 @@ where
         result
     }
 
-    pub fn sign_message(&mut self, _msg: &[u8]) -> Result<(), Error> {
+    pub fn sign_message(&mut self, msg: &[u8]) -> Result<(), Error> {
         if self.aggregate_public_key == Point::default() {
             return Err(Error::NoAggregatePublicKey);
         }
@@ -113,6 +116,14 @@ where
             println!("Got {} nonce responses", self.public_nonces.len());
         }
 
+        // get the signers who responded with a nonce
+        let selected_signer_ids: Vec<u32> = self.public_nonces.iter().map(|(i, _)| *i).collect();
+        let nonces: Vec<PublicNonce> = self
+            .public_nonces
+            .iter()
+            .map(|(_, nonce)| nonce.nonce.clone())
+            .collect();
+
         // make an array of dkg public share polys for SignatureAggregator
         let polys: Vec<PolyCommitment> = (1..self.total_signers as u32)
             .map(|i| self.dkg_public_shares[&i].public_share.clone())
@@ -121,6 +132,17 @@ where
         let _aggregator = v1::SignatureAggregator::new(self.total_signers, self.threshold, polys);
 
         // request signature shares
+        let signature_share_request_message = Message {
+            msg: MessageTypes::SignShareRequest(SignatureShareRequest {
+                dkg_id: 0,
+                correlation_id: 0,
+                signer_id: 0,
+                selected_signer_ids,
+                nonces,
+                message: msg.to_vec(),
+            }),
+            sig: [0; 32],
+        };
 
         // call aggregator.sign()
 
