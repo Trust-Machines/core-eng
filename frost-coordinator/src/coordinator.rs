@@ -144,6 +144,8 @@ where
             sig: [0; 32],
         };
 
+        self.network.send_message(signature_share_request_message)?;
+
         // call aggregator.sign()
 
         return Ok(());
