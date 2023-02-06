@@ -114,7 +114,7 @@ pub struct NonceResponse {
 pub struct SignatureShareRequest {
     pub dkg_id: u64,
     pub correlation_id: u64,
-    pub signer_id: usize,
+    pub signer_id: u32,
     pub selected_signer_ids: Vec<u32>,
     pub nonces: Vec<PublicNonce>,
     pub message: Vec<u8>,
@@ -124,7 +124,7 @@ pub struct SignatureShareRequest {
 pub struct SignatureShareResponse {
     pub dkg_id: u64,
     pub correlation_id: u64,
-    pub signer_id: usize,
+    pub signer_id: u32,
     pub signature_share: frost::v1::SignatureShare,
 }
 

@@ -31,6 +31,7 @@ pub struct Coordinator<Network: NetListen> {
     network: Network,
     dkg_public_shares: HashMap<u32, DkgPublicShare>,
     public_nonces: HashMap<u32, NonceResponse>,
+    signature_shares: HashMap<u32, v1::SignatureShare>,
     aggregate_public_key: Point,
 }
 
@@ -51,6 +52,7 @@ impl<Network: NetListen> Coordinator<Network> {
             dkg_public_shares: Default::default(),
             public_nonces: Default::default(),
             aggregate_public_key: Point::default(),
+            signature_shares: Default::default(),
         }
     }
 }
@@ -106,7 +108,9 @@ where
                     self.public_nonces
                         .insert(nonce_response.signer_id as u32, nonce_response);
                 }
-                _ => todo!(),
+                msg => {
+                    println!("Got unexpected message {:?})", msg);
+                }
             }
 
             if self.public_nonces.len() == self.threshold {
@@ -123,6 +127,8 @@ where
             .iter()
             .map(|(_, nonce)| nonce.nonce.clone())
             .collect();
+        let waiting_for_signature_shares: HashSet<u32> =
+            selected_signer_ids.iter().map(|i| *i).collect();
 
         // make an array of dkg public share polys for SignatureAggregator
         let polys: Vec<PolyCommitment> = (1..self.total_signers as u32)
@@ -145,6 +151,25 @@ where
         };
 
         self.network.send_message(signature_share_request_message)?;
+
+        loop {
+            match self.wait_for_next_message()?.msg {
+                MessageTypes::SignShareResponse(response) => {
+                    if waiting_for_signature_shares.contains(&response.signer_id) {
+                        self.signature_shares
+                            .insert(response.signer_id, response.signature_share);
+                    }
+                }
+                msg => {
+                    println!("Got unexpected msg {:?}", msg);
+                }
+            }
+
+            if waiting_for_signature_shares.len() == 0 {
+                println!("Got all signature shares");
+                break;
+            }
+        }
 
         // call aggregator.sign()
 
