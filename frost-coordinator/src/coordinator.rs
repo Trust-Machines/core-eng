@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 pub enum Command {
     Dkg,
     Sign { msg: Vec<u8> },
+    DkgSign { msg: Vec<u8> },
     GetAggregatePublicKey,
 }
 
@@ -66,6 +67,11 @@ where
         match command {
             Command::Dkg => self.run_distributed_key_generation(),
             Command::Sign { msg } => self.sign_message(msg),
+            Command::DkgSign { msg } => {
+                self.run_distributed_key_generation()?;
+                self.sign_message(msg)?;
+                Ok(())
+            }
             Command::GetAggregatePublicKey => {
                 let key = self.get_aggregate_public_key()?;
                 println!("aggregate public key {}", key);
@@ -97,7 +103,9 @@ where
         }
 
         let nonce_request_message = Message {
-            msg: MessageTypes::NonceRequest(NonceRequest { dkg_id: 0 }),
+            msg: MessageTypes::NonceRequest(NonceRequest {
+                dkg_id: self.current_dkg_id,
+            }),
             sig: [0; 32],
         };
 
@@ -105,6 +113,7 @@ where
 
         loop {
             match self.wait_for_next_message()?.msg {
+                MessageTypes::NonceRequest(_) => {}
                 MessageTypes::NonceResponse(nonce_response) => {
                     self.public_nonces
                         .insert(nonce_response.signer_id as u32, nonce_response);
@@ -145,7 +154,7 @@ where
         // request signature shares
         let signature_share_request_message = Message {
             msg: MessageTypes::SignShareRequest(SignatureShareRequest {
-                dkg_id: 0,
+                dkg_id: self.current_dkg_id,
                 correlation_id: 0,
                 signer_id: 0,
                 selected_signer_ids,
