@@ -78,6 +78,10 @@ where
     }
 
     pub fn sign_message(&mut self, _msg: &[u8]) -> Result<(), Error> {
+        if self.aggregate_public_key == Point::default() {
+            return Err(Error::NoAggregatePublicKey);
+        }
+
         let nonce_request_message = Message {
             msg: MessageTypes::NonceRequest(NonceRequest { dkg_id: 0 }),
             sig: [0; 32],
