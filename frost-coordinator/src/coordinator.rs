@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use frost::{
     common::{PolyCommitment, PublicNonce},
+    errors::AggregatorError,
     v1,
 };
 use frost_signer::net::{HttpNetError, Message, NetListen};
@@ -135,7 +136,11 @@ where
             .map(|i| self.dkg_public_shares[&i].public_share.clone())
             .collect();
 
-        let _aggregator = v1::SignatureAggregator::new(self.total_signers, self.threshold, polys);
+        let mut aggregator =
+            match v1::SignatureAggregator::new(self.total_signers, self.threshold, polys) {
+                Ok(aggregator) => aggregator,
+                Err(e) => return Err(Error::Aggregator(e)),
+            };
 
         // request signature shares
         let signature_share_request_message = Message {
@@ -144,7 +149,7 @@ where
                 correlation_id: 0,
                 signer_id: 0,
                 selected_signer_ids,
-                nonces,
+                nonces: nonces.clone(),
                 message: msg.to_vec(),
             }),
             sig: [0; 32],
@@ -172,6 +177,16 @@ where
         }
 
         // call aggregator.sign()
+        let signature_shares: Vec<v1::SignatureShare> = self
+            .public_nonces
+            .iter()
+            .map(|(i, _)| self.signature_shares[i].clone())
+            .collect();
+
+        let sig = match aggregator.sign(msg, &nonces, &signature_shares) {
+            Ok(sig) => sig,
+            Err(e) => return Err(Error::Aggregator(e)),
+        };
 
         return Ok(());
     }
@@ -253,6 +268,8 @@ pub enum Error {
     NetworkError(#[from] HttpNetError),
     #[error("No aggregate public key")]
     NoAggregatePublicKey,
+    #[error("Aggregate failed to sign")]
+    Aggregator(AggregatorError),
     #[error("Operation timed out")]
     Timeout,
 }
