@@ -357,6 +357,7 @@ dependencies = [
  "clap 4.1.4",
  "frost-signer",
  "hashbrown",
+ "p256k1",
  "thiserror",
  "tracing",
  "tracing-subscriber",

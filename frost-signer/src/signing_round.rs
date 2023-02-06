@@ -67,7 +67,7 @@ pub enum MessageTypes {
     SignShareResponse(SignatureShareResponse),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct DkgPublicShare {
     pub dkg_id: u64,
     pub party_id: u32,

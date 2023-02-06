@@ -1,18 +1,19 @@
 use std::time::Duration;
 
-use hashbrown::HashSet;
+use hashbrown::{HashMap, HashSet};
 use tracing::{debug, info};
 
 use frost_signer::net::{HttpNetError, Message, NetListen};
-use frost_signer::signing_round::{DkgBegin, MessageTypes, NonceRequest};
+use frost_signer::signing_round::{DkgBegin, DkgPublicShare, MessageTypes, NonceRequest};
+
+use p256k1::point::Point;
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Command {
     Dkg,
-    Sign { msg: String },
+    Sign { msg: Vec<u8> },
     GetAggregatePublicKey,
 }
-
 
 #[derive(Debug)]
 pub struct Coordinator<Network: NetListen> {
@@ -20,6 +21,8 @@ pub struct Coordinator<Network: NetListen> {
     current_dkg_id: u64,
     total_signers: usize, // Assuming the signers cover all id:s in {1, 2, ..., total_signers}
     network: Network,
+    dkg_public_shares: HashMap<u32, DkgPublicShare>,
+    aggregate_public_key: Point,
 }
 
 impl<Network: NetListen> Coordinator<Network> {
@@ -29,6 +32,8 @@ impl<Network: NetListen> Coordinator<Network> {
             current_dkg_id: dkg_id,
             total_signers,
             network,
+            dkg_public_shares: Default::default(),
+            aggregate_public_key: Point::default(),
         }
     }
 }
@@ -41,7 +46,11 @@ where
         match command {
             Command::Dkg => self.run_distributed_key_generation(),
             Command::Sign { msg } => self.sign_message(msg),
-            Command::GetAggregatePublicKey => self.get_aggregate_public_key(),
+            Command::GetAggregatePublicKey => {
+                let key = self.get_aggregate_public_key()?;
+                println!("aggregate public key {}", key);
+                Ok(())
+            }
         }
     }
 
@@ -62,7 +71,7 @@ where
         result
     }
 
-    pub fn sign_message(&mut self, _msg: &str) -> Result<(), Error> {
+    pub fn sign_message(&mut self, _msg: &[u8]) -> Result<(), Error> {
         let nonce_request_message = Message {
             msg: MessageTypes::NonceRequest(NonceRequest { dkg_id: 0 }),
             sig: [0; 32],
@@ -73,8 +82,20 @@ where
         todo!();
     }
 
-    pub fn get_aggregate_public_key(&mut self) -> Result<(), Error> {
-        todo!();
+    pub fn calculate_aggregate_public_key(&mut self) -> Result<Point, Error> {
+        self.aggregate_public_key = self
+            .dkg_public_shares
+            .iter()
+            .fold(Point::default(), |s, (_, dps)| s + dps.public_share.A[0]);
+        Ok(self.aggregate_public_key)
+    }
+
+    pub fn get_aggregate_public_key(&mut self) -> Result<Point, Error> {
+        if self.aggregate_public_key == Point::default() {
+            Err(Error::NoAggregatePublicKey)
+        } else {
+            Ok(self.aggregate_public_key)
+        }
     }
 
     fn wait_for_dkg_end(&mut self) -> Result<(), Error> {
@@ -93,9 +114,20 @@ where
                         dkg_end_msg.dkg_id, dkg_end_msg.signer_id, ids_to_await
                     );
                 }
+                (_, MessageTypes::DkgPublicShare(dkg_public_share)) => {
+                    self.dkg_public_shares
+                        .insert(dkg_public_share.party_id, dkg_public_share.clone());
+
+                    info!(
+                        "DKG round #{} DkgPublicSharefrom signer #{}",
+                        dkg_public_share.dkg_id, dkg_public_share.party_id
+                    );
+                }
                 (_, _) => {}
             }
             if ids_to_await.len() == 0 {
+                let key = self.calculate_aggregate_public_key()?;
+                println!("Aggregate public key {}", key);
                 return Ok(());
             }
         }
@@ -125,7 +157,8 @@ where
 pub enum Error {
     #[error("Http network error: {0}")]
     NetworkError(#[from] HttpNetError),
-
+    #[error("No aggregate public key")]
+    NoAggregatePublicKey,
     #[error("Operation timed out")]
     Timeout,
 }
