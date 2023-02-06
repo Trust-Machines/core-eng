@@ -32,10 +32,11 @@ fn signature_share() {
         dkg_id: 0,
         correlation_id: 0,
         signer_id: 0,
-        nonce: PublicNonce {
+        selected_signer_ids: [0].to_vec(),
+        nonces: [PublicNonce {
             D: Default::default(),
             E: Default::default(),
-        },
+        }].to_vec(),
         message: vec![],
     };
 
