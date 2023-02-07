@@ -1,5 +1,5 @@
-mod v1;
 mod sync_test;
+mod v1;
 
 #[cfg(test)]
 mod tests {

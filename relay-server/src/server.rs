@@ -6,9 +6,9 @@ use crate::{
 
 /// The server keeps a state (messages) and can accept and respond to messages using the
 /// `update` function.
-/// 
+///
 /// ## Example
-/// 
+///
 /// ```
 /// use relay_server::{MemIoStreamEx,IoStream,Server};
 /// let mut server = Server::default();

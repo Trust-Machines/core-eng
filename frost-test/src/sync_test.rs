@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     // use frost_signer::signing_round::Signer;
-    use relay_server::{Server, MemIoStreamEx};
+    use relay_server::{MemIoStreamEx, Server};
 
     #[test]
     fn template_test() {
