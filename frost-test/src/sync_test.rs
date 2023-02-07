@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod tests {
+    use std::str::from_utf8;
+
     // use frost_signer::signing_round::Signer;
     use relay_server::Server;
 
@@ -16,6 +18,10 @@ mod tests {
                 \r\n\
                 Hello!";
             let response = server.call(REQUEST.as_bytes()).unwrap();
+            const RESPONSE: &str = "\
+                HTTP/1.1 200 OK\r\n\
+                \r\n";
+            assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
         }
     }
 }

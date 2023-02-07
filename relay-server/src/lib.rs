@@ -7,5 +7,4 @@ mod to_io_result;
 mod url;
 
 pub use io_stream::IoStream;
-pub use mem_io_stream::{MemIoStream, MemIoStreamEx};
 pub use server::Server;

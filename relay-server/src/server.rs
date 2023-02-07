@@ -1,8 +1,8 @@
-use std::io::{Cursor, Error, ErrorKind, Read, Write};
+use std::io::{Error, ErrorKind, Write};
 
 use crate::{
-    http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx,
-    MemIoStreamEx,
+    http::RequestEx, io_stream::IoStream, mem_io_stream::MemIoStreamEx, state::State,
+    to_io_result::ToIoResult, url::QueryEx,
 };
 
 /// The server keeps a state (messages) and can accept and respond to messages using the
@@ -11,8 +11,7 @@ use crate::{
 /// ## Example
 ///
 /// ```
-/// use relay_server::{MemIoStreamEx,IoStream,Server};
-/// let mut server = Server::default();
+/// let mut server = relay_server::Server::default();
 /// // send a message using a bidirectional stream.
 /// {
 ///  const REQUEST: &str = "\

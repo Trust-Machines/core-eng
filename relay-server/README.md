@@ -41,7 +41,7 @@ The default address is `http://127.0.0.1:9776`.
 
 ```rust
 // create a server
-let mut server = Server::default();
+let mut server = relay_server::Server::default();
 // send a message using a bidirectional stream.
 {
   const REQUEST: &str = "\
