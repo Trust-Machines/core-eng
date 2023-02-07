@@ -108,8 +108,8 @@ pub struct NonceRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NonceResponse {
     pub dkg_id: u64,
-    pub signer_id: usize,
-    pub nonce: PublicNonce,
+    pub signer_id: u32,
+    pub nonce: Vec<PublicNonce>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -169,6 +169,9 @@ impl SigningRound {
             MessageTypes::SignShareRequest(sign_share_request) => {
                 self.sign_share_request(sign_share_request)
             }
+            MessageTypes::NonceRequest(nonce_request) => {
+                self.nonce_request(nonce_request)
+            }
             _ => Ok(vec![]), // TODO
         };
 
@@ -202,6 +205,21 @@ impl SigningRound {
 
     pub fn key_share_for_party(&self, party_id: usize) -> KeyShares {
         self.signer.frost_signer.parties[party_id].get_shares()
+    }
+
+    pub fn nonce_request(
+        &mut self,
+        nonce_request: NonceRequest,
+    ) -> Result<Vec<MessageTypes>, String> {
+        let mut rng = OsRng::default();
+        let mut msgs = vec![];
+        let response = MessageTypes::NonceResponse(NonceResponse{
+            dkg_id: nonce_request.dkg_id,
+            signer_id: self.signer.signer_id,
+            nonce: self.signer.frost_signer.gen_nonces(&mut rng),
+        });
+        msgs.push(response);
+        Ok(msgs)
     }
 
     pub fn sign_share_request(

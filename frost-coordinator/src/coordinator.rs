@@ -135,7 +135,7 @@ where
         let nonces: Vec<PublicNonce> = self
             .public_nonces
             .iter()
-            .map(|(_, nonce)| nonce.nonce.clone())
+            .flat_map(|(_, nonce)| nonce.nonce.clone())
             .collect();
         let waiting_for_signature_shares: HashSet<u32> =
             selected_signer_ids.iter().map(|i| *i).collect();
