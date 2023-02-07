@@ -4,11 +4,13 @@ use crate::{
     http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx,
 };
 
+/// The server keeps a state (messages) and can accept and respond to messages using the 
+/// `update` function.
 #[derive(Default)]
 pub struct Server(State);
 
 impl Server {
-    pub fn update_state(&mut self, io: &mut impl IoStream) -> Result<(), Error> {
+    pub fn update(&mut self, io: &mut impl IoStream) -> Result<(), Error> {
         let rm = io.istream().read_http_request()?;
         let ostream = io.ostream();
         let mut write = |text: &str| ostream.write(text.as_bytes());
@@ -87,7 +89,7 @@ mod test {
                 \r\n\
                 Hello!";
             let mut stream = REQUEST.mock_stream();
-            server.update_state(&mut stream).unwrap();
+            server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
@@ -99,7 +101,7 @@ mod test {
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
             let mut stream = REQUEST.mock_stream();
-            server.update_state(&mut stream).unwrap();
+            server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
@@ -113,7 +115,7 @@ mod test {
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
             let mut stream = REQUEST.mock_stream();
-            server.update_state(&mut stream).unwrap();
+            server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\

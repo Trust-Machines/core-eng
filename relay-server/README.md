@@ -36,3 +36,12 @@ The default address is `http://127.0.0.1:9776`.
 1. Start the server `cargo run relay-server`
 2. Run [./test.sh](./test.sh) in another terminal.
 3. Close the server using `Ctrl+C`.
+
+## Using the server as a library
+
+```rust
+// create a server
+let mut server = Server::default();
+// send a message using a bidirectional stream.
+server.update(&mut stream);
+```
