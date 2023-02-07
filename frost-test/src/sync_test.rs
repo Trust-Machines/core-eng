@@ -1,10 +1,13 @@
 #[cfg(test)]
 mod tests {
+    // use frost_signer::signing_round::Signer;
     use relay_server::{Server, MemIoStreamEx};
 
     #[test]
-    fn simple_test() {
+    fn template_test() {
         let mut server = Server::default();
+        // let mut signer0 = Signer::default();
+        // let mut signer1 = Signer::default();
         // send a message using a bidirectional stream.
         {
             const REQUEST: &str = "\
