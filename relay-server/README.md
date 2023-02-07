@@ -49,7 +49,10 @@ let mut server = Server::default();
     Content-Length: 6\r\n\
     \r\n\
     Hello!";
-  let response = server.call(REQUEST.as_bytes());
-  assert!(response.is_ok());
+  let response = server.call(REQUEST.as_bytes()).unwrap();
+  const RESPONSE: &str = "\
+    HTTP/1.1 200 OK\r\n\
+    \r\n";
+  assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
 }
 ```

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     // use frost_signer::signing_round::Signer;
-    use relay_server::{MemIoStreamEx, Server};
+    use relay_server::Server;
 
     #[test]
     fn template_test() {
@@ -15,9 +15,7 @@ mod tests {
                 Content-Length: 6\r\n\
                 \r\n\
                 Hello!";
-            let mut stream = REQUEST.mem_io_stream();
-            server.update(&mut stream);
-            // stream.o
+            let response = server.call(REQUEST.as_bytes()).unwrap();
         }
     }
 }

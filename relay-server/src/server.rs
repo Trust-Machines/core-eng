@@ -20,8 +20,11 @@ use crate::{
 ///    Content-Length: 6\r\n\
 ///    \r\n\
 ///    Hello!";
-///  let response = server.call(REQUEST.as_bytes());
-///  assert!(response.is_ok());
+///  let response = server.call(REQUEST.as_bytes()).unwrap();
+///  const RESPONSE: &str = "\
+///    HTTP/1.1 200 OK\r\n\
+///    \r\n";
+///  assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
 ///}
 /// ```
 #[derive(Default)]
@@ -60,21 +63,20 @@ impl Server {
         };
         Ok(())
     }
-    pub fn call(&mut self, msg: &[u8]) -> Result<Cursor<Vec<u8>>, Error> {
-        let mut stream = msg.mem_io_stream();
+    pub fn call(&mut self, msg: &[u8]) -> Result<Vec<u8>, Error> {
+        let mut result = Vec::default();
+        let mut stream = msg.mem_io_stream(&mut result);
         self.update(&mut stream)?;
         if stream.i.position() != msg.len() as u64 {
             return Err(Error::new(ErrorKind::InvalidData, "invalid request"));
         }
-        Ok(stream.o)
+        Ok(result)
     }
 }
 
 #[cfg(test)]
 mod test {
     use std::str::from_utf8;
-
-    use crate::MemIoStreamEx;
 
     use super::Server;
 
@@ -91,7 +93,7 @@ mod test {
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
                 \r\n";
-            assert_eq!(from_utf8(response.get_ref()).unwrap(), RESPONSE);
+            assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
         }
         {
             const REQUEST: &str = "\
@@ -103,7 +105,7 @@ mod test {
                 content-length:6\r\n\
                 \r\n\
                 Hello!";
-            assert_eq!(from_utf8(response.get_ref()).unwrap(), RESPONSE);
+            assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
         }
         {
             const REQUEST: &str = "\
@@ -114,7 +116,7 @@ mod test {
                 HTTP/1.1 200 OK\r\n\
                 content-length:0\r\n\
                 \r\n";
-            assert_eq!(from_utf8(response.get_ref()).unwrap(), RESPONSE);
+            assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
         }
         // invalid request
         {
