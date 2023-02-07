@@ -336,7 +336,7 @@ dependencies = [
 [[package]]
 name = "frost"
 version = "0.1.0"
-source = "git+https://github.com/trust-machines/frost?branch=sbtc#67474dc6642f68d206256abc648159c289dffe46"
+source = "git+https://github.com/trust-machines/frost?branch=sbtc#5a31312a3df8924eb7e0509fbbef6c471339c201"
 dependencies = [
  "hashbrown",
  "hex",
