@@ -4,9 +4,7 @@ use frost_signer::config::Config;
 use frost_signer::logging;
 use frost_signer::net::{HttpNet, HttpNetListen};
 
-use frost_coordinator::coordinator::{
-    Coordinator, Command,
-};
+use frost_coordinator::coordinator::{Command, Coordinator};
 
 const DEVNET_COORDINATOR_ID: usize = 0;
 const DEVNET_COORDINATOR_DKG_ID: u64 = 0; //TODO: Remove, this is a correlation id

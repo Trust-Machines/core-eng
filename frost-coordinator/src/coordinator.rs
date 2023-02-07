@@ -13,7 +13,6 @@ pub enum Command {
     GetAggregatePublicKey,
 }
 
-
 #[derive(Debug)]
 pub struct Coordinator<Network: NetListen> {
     id: u64, // Used for relay coordination

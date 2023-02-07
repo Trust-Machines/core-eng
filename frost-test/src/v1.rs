@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use frost::v1;
     use frost::traits::Signer;
+    use frost::v1;
     use rand_core::OsRng;
 
     #[test]

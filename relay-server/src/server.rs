@@ -1,29 +1,10 @@
-use std::{
-    io::{Error, ErrorKind, Read, Write},
-    net::TcpStream,
+use std::io::{Error, ErrorKind, Write};
+
+use crate::{
+    http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx,
 };
 
-use crate::{http::RequestEx, state::State, to_io_result::ToIoResult, url::QueryEx};
-
-pub trait Stream {
-    type Read: Read;
-    type Write: Write;
-    fn istream(&mut self) -> &mut Self::Read;
-    fn ostream(&mut self) -> &mut Self::Write;
-}
-
-impl Stream for TcpStream {
-    type Read = TcpStream;
-    type Write = TcpStream;
-    fn istream(&mut self) -> &mut Self::Read {
-        self
-    }
-    fn ostream(&mut self) -> &mut Self::Write {
-        self
-    }
-}
-
-pub trait ServerEx: Stream {
+pub trait ServerEx: IoStream {
     fn update_state(&mut self, state: &mut State) -> Result<(), Error> {
         let rm = self.istream().read_http_request()?;
         let ostream = self.ostream();
@@ -57,14 +38,14 @@ pub trait ServerEx: Stream {
     }
 }
 
-impl<T: Stream> ServerEx for T {}
+impl<T: IoStream> ServerEx for T {}
 
 #[cfg(test)]
 mod test {
     use crate::{server::ServerEx, state::State};
     use std::{io::Cursor, str::from_utf8};
 
-    use super::Stream;
+    use super::IoStream;
 
     struct MockStream {
         i: Cursor<&'static str>,
@@ -84,7 +65,7 @@ mod test {
         }
     }
 
-    impl Stream for MockStream {
+    impl IoStream for MockStream {
         type Read = Cursor<&'static str>;
         type Write = Cursor<Vec<u8>>;
         fn istream(&mut self) -> &mut Self::Read {

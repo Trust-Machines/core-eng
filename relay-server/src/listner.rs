@@ -1,11 +1,8 @@
 use std::io::Error;
 
-use crate::{
-    server::{ServerEx, Stream},
-    state::State,
-};
+use crate::{io_stream::IoStream, server::ServerEx, state::State};
 
-pub fn run_server<T: Stream>(i: &mut impl Iterator<Item = Result<T, Error>>) {
+pub fn run_server<T: IoStream>(i: &mut impl Iterator<Item = Result<T, Error>>) {
     let mut state = State::default();
     for stream_or_error in i {
         let f = || stream_or_error?.update_state(&mut state);
