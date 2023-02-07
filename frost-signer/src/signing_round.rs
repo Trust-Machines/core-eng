@@ -6,7 +6,6 @@ use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 
 use tracing::{debug, info};
-use crate::signing_round::MessageTypes::SignShareResponse;
 
 use crate::state_machine::{StateMachine, States};
 
@@ -202,23 +201,27 @@ impl SigningRound {
         self.signer.frost_signer.parties[party_id].get_shares()
     }
 
-    pub fn sign_share_request(&mut self, sign_request: SignatureShareRequest) -> Result<Vec<MessageTypes>, String> {
+    pub fn sign_share_request(
+        &mut self,
+        sign_request: SignatureShareRequest,
+    ) -> Result<Vec<MessageTypes>, String> {
         let mut msgs = vec![];
         if sign_request.signer_id == self.signer.signer_id {
-
-        let response = MessageTypes::SignShareResponse(SignatureShareResponse {
-            dkg_id: sign_request.dkg_id,
-            correlation_id: sign_request.correlation_id,
-            signer_id: 0,
-            signature_share: frost::common::SignatureShare {
-                id: 0,
-                z_i: Default::default(),
-                public_key: Default::default(),
-            },
-        });
-        msgs.push(response);
+            let _party_ids: Vec<usize> = vec![]; // todo
+            let _party_nonces: Vec<PublicNonce> = vec![]; // todo
+            let response = MessageTypes::SignShareResponse(SignatureShareResponse {
+                dkg_id: sign_request.dkg_id,
+                correlation_id: sign_request.correlation_id,
+                signer_id: sign_request.signer_id,
+                signature_share: frost::common::SignatureShare {
+                    id: 0,
+                    z_i: Default::default(),
+                    public_key: Default::default(),
+                },
+            });
+            msgs.push(response);
         }
-        return Ok(msgs)
+        return Ok(msgs);
     }
 
     pub fn dkg_begin(&mut self, dkg_begin: DkgBegin) -> Result<Vec<MessageTypes>, String> {

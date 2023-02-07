@@ -36,7 +36,8 @@ fn signature_share() {
         nonces: [PublicNonce {
             D: Default::default(),
             E: Default::default(),
-        }].to_vec(),
+        }]
+        .to_vec(),
         message: vec![],
     };
 

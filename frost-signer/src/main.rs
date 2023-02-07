@@ -37,7 +37,7 @@ fn main() {
     main_loop(&config, &net, rx);
 }
 
-fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u64) {
+fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u32) {
     loop {
         net.poll(id);
         match net.next_message() {
