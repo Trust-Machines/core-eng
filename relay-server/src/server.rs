@@ -44,7 +44,6 @@ impl Server {
 
 #[cfg(test)]
 mod test {
-    use crate::state::State;
     use std::{io::Cursor, str::from_utf8};
 
     use super::{IoStream, Server};

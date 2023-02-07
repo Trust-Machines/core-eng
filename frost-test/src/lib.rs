@@ -22,8 +22,6 @@ mod tests {
             broadcast_shares.push(parties[i].get_shares());
         }
 
-        let mut total_compute_secret_time = 0;
-
         // each party collects its shares from the broadcasts
         // maybe this should collect into a hashmap first?
         for i in 0..parties.len() {
