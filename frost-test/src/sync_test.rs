@@ -2,15 +2,18 @@
 mod tests {
     use std::str::from_utf8;
 
-    // use frost_signer::signing_round::Signer;
+    use frost_signer::signing_round::SigningRound;
     use relay_server::Server;
 
     #[test]
     fn template_test() {
         let mut server = Server::default();
-        // let mut signer0 = Signer::default();
-        // let mut signer1 = Signer::default();
-        // send a message using a bidirectional stream.
+        let mut signers = [
+            SigningRound::new(7, 10, 0, [0, 1].to_vec()),
+            SigningRound::new(7, 10, 0, [2, 3].to_vec()),
+            SigningRound::new(7, 10, 0, [4, 5, 6, 7, 8].to_vec()),
+            SigningRound::new(7, 10, 0, [10].to_vec()),
+        ];
         {
             const REQUEST: &str = "\
                 POST / HTTP/1.1\r\n\
