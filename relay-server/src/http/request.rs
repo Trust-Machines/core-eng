@@ -88,7 +88,7 @@ impl<T: Read> RequestEx for T {}
 mod tests {
     use std::{io::Cursor, str::from_utf8};
 
-    use crate::http::RequestEx;
+    use super::RequestEx;
 
     #[test]
     fn test() {
@@ -114,7 +114,7 @@ mod tests {
             POST / HTTP/1.1\r\n\
             Content-Leng";
         let mut read = Cursor::new(REQUEST);
-        let _ = read.read_http_request().unwrap_err();
+        assert!(read.read_http_request().is_err());
     }
 
     #[test]

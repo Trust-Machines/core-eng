@@ -1,8 +1,9 @@
 mod http;
 mod io_stream;
 mod mem_io_stream;
+mod remote_state;
 mod server;
-mod state;
+mod mem_state;
 mod to_io_result;
 mod url;
 

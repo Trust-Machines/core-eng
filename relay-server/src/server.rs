@@ -1,8 +1,12 @@
 use std::io::{Error, ErrorKind, Write};
 
 use crate::{
-    http::RequestEx, io_stream::IoStream, mem_io_stream::MemIoStreamEx, state::State,
-    to_io_result::ToIoResult, url::QueryEx,
+    http::RequestEx,
+    io_stream::IoStream,
+    mem_io_stream::MemIoStreamEx,
+    mem_state::{MemState, State},
+    to_io_result::ToIoResult,
+    url::QueryEx,
 };
 
 /// The server keeps a state (messages) and can accept and respond to messages using the
@@ -27,7 +31,7 @@ use crate::{
 ///}
 /// ```
 #[derive(Default)]
-pub struct Server(State);
+pub struct Server(MemState);
 
 impl Server {
     pub fn update(&mut self, io: &mut impl IoStream) -> Result<(), Error> {

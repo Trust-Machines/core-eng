@@ -1,14 +1,19 @@
 use std::collections::HashMap;
 
+pub trait State {
+    fn get(&mut self, node_id: String) -> Option<&Vec<u8>>;
+    fn post(&mut self, msg: Vec<u8>);
+}
+
 #[derive(Default)]
-pub struct State {
+pub struct MemState {
     /// The value for this map is an index for the last read message for this node.
     highwaters: HashMap<String, usize>,
     queue: Vec<Vec<u8>>,
 }
 
-impl State {
-    pub fn get(&mut self, node_id: String) -> Option<&Vec<u8>> {
+impl State for MemState {
+    fn get(&mut self, node_id: String) -> Option<&Vec<u8>> {
         let first_unread = self
             .highwaters
             .get(&node_id)
@@ -19,17 +24,17 @@ impl State {
         };
         result
     }
-    pub fn post(&mut self, msg: Vec<u8>) {
+    fn post(&mut self, msg: Vec<u8>) {
         self.queue.push(msg);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::State;
+    use super::{MemState, State};
     #[test]
     fn state_test() {
-        let mut state = State::default();
+        let mut state = MemState::default();
         assert_eq!(None, state.get(1.to_string()));
         assert_eq!(None, state.get(3.to_string()));
         assert_eq!(0, state.highwaters.len());
