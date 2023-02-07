@@ -1,7 +1,8 @@
-use std::io::{Error, ErrorKind, Write, Read, Cursor};
+use std::io::{Cursor, Error, ErrorKind, Read, Write};
 
 use crate::{
-    http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx, MemIoStreamEx,
+    http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx,
+    MemIoStreamEx,
 };
 
 /// The server keeps a state (messages) and can accept and respond to messages using the
@@ -63,7 +64,7 @@ impl Server {
         let mut stream = msg.mem_io_stream();
         self.update(&mut stream)?;
         if stream.i.position() != msg.len() as u64 {
-            return Err(Error::new(ErrorKind::InvalidData, "invalid request"))
+            return Err(Error::new(ErrorKind::InvalidData, "invalid request"));
         }
         Ok(stream.o)
     }
