@@ -1,4 +1,4 @@
-use std::{net::TcpListener, io::Error};
+use std::{io::Error, net::TcpListener};
 
 use relay_server::{IoStream, Server};
 

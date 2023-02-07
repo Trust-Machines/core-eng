@@ -4,7 +4,7 @@ use crate::{
     http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx,
 };
 
-/// The server keeps a state (messages) and can accept and respond to messages using the 
+/// The server keeps a state (messages) and can accept and respond to messages using the
 /// `update` function.
 #[derive(Default)]
 pub struct Server(State);
@@ -46,38 +46,11 @@ impl Server {
 
 #[cfg(test)]
 mod test {
-    use std::{io::Cursor, str::from_utf8};
+    use std::str::from_utf8;
 
-    use super::{IoStream, Server};
+    use crate::MemIoStreamEx;
 
-    struct MockStream {
-        i: Cursor<&'static str>,
-        o: Cursor<Vec<u8>>,
-    }
-
-    trait MockStreamEx {
-        fn mock_stream(self) -> MockStream;
-    }
-
-    impl MockStreamEx for &'static str {
-        fn mock_stream(self) -> MockStream {
-            MockStream {
-                i: Cursor::new(self),
-                o: Default::default(),
-            }
-        }
-    }
-
-    impl IoStream for MockStream {
-        type Read = Cursor<&'static str>;
-        type Write = Cursor<Vec<u8>>;
-        fn istream(&mut self) -> &mut Self::Read {
-            &mut self.i
-        }
-        fn ostream(&mut self) -> &mut Self::Write {
-            &mut self.o
-        }
-    }
+    use super::Server;
 
     #[test]
     fn test() {
@@ -88,7 +61,7 @@ mod test {
                 Content-Length: 6\r\n\
                 \r\n\
                 Hello!";
-            let mut stream = REQUEST.mock_stream();
+            let mut stream = REQUEST.mem_stream();
             server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
@@ -100,7 +73,7 @@ mod test {
             const REQUEST: &str = "\
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
-            let mut stream = REQUEST.mock_stream();
+            let mut stream = REQUEST.mem_stream();
             server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
@@ -114,7 +87,7 @@ mod test {
             const REQUEST: &str = "\
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
-            let mut stream = REQUEST.mock_stream();
+            let mut stream = REQUEST.mem_stream();
             server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\

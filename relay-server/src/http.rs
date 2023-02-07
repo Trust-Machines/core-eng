@@ -29,7 +29,7 @@ pub trait RequestEx: Read {
                 if b == 13 {
                     break;
                 };
-                // BUG: in theory, ch can be non-UNICODE character and the function 
+                // BUG: in theory, ch can be non-UNICODE character and the function
                 // can panic.
                 // TODO: use a vector instead of `String`.
                 result.push(b as char);

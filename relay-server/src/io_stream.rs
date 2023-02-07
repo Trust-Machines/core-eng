@@ -4,7 +4,7 @@ use std::{
 };
 
 /// A trait for bidirectional stream.
-/// 
+///
 /// For example, `TcpStream` is a bidirectional stream.
 pub trait IoStream {
     type Read: Read;
