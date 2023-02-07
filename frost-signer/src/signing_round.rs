@@ -1,5 +1,6 @@
 pub use frost;
 use frost::common::{PolyCommitment, PublicNonce};
+use frost::traits::Signer as FrostSigner;
 use hashbrown::HashMap;
 use p256k1::scalar::Scalar;
 use rand_core::OsRng;
@@ -19,6 +20,7 @@ pub struct SigningRound {
     pub state: States,
     pub commitments: HashMap<u32, PolyCommitment>,
     pub shares: HashMap<u32, HashMap<usize, Scalar>>,
+    pub public_nonces: Vec<PublicNonce>,
 }
 
 pub struct Signer {
@@ -125,7 +127,7 @@ pub struct SignatureShareResponse {
     pub dkg_id: u64,
     pub correlation_id: u64,
     pub signer_id: u32,
-    pub signature_share: frost::v1::SignatureShare,
+    pub signature_share: Vec<frost::v1::SignatureShare>,
 }
 
 impl SigningRound {
@@ -151,6 +153,7 @@ impl SigningRound {
             state: States::Idle,
             commitments: HashMap::new(),
             shares: HashMap::new(),
+            public_nonces: vec![],
         }
     }
 
@@ -207,17 +210,14 @@ impl SigningRound {
     ) -> Result<Vec<MessageTypes>, String> {
         let mut msgs = vec![];
         if sign_request.signer_id == self.signer.signer_id {
-            let _party_ids: Vec<usize> = vec![]; // todo
-            let _party_nonces: Vec<PublicNonce> = vec![]; // todo
+            let party_ids = self.signer.frost_signer.get_ids();
+            let party_nonces = &self.public_nonces;
+            let shares = self.signer.frost_signer.sign(&*sign_request.message, &*party_ids, party_nonces);
             let response = MessageTypes::SignShareResponse(SignatureShareResponse {
                 dkg_id: sign_request.dkg_id,
                 correlation_id: sign_request.correlation_id,
                 signer_id: sign_request.signer_id,
-                signature_share: frost::common::SignatureShare {
-                    id: 0,
-                    z_i: Default::default(),
-                    public_key: Default::default(),
-                },
+                signature_share: shares,
             });
             msgs.push(response);
         }
