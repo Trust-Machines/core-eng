@@ -6,6 +6,23 @@ use crate::{
 
 /// The server keeps a state (messages) and can accept and respond to messages using the
 /// `update` function.
+/// 
+/// ## Example
+/// 
+/// ```
+/// use relay_server::{MemIoStreamEx,IoStream,Server};
+/// let mut server = Server::default();
+/// // send a message using a bidirectional stream.
+/// {
+///  const REQUEST: &str = "\
+///    POST / HTTP/1.1\r\n\
+///    Content-Length: 6\r\n\
+///    \r\n\
+///    Hello!";
+///  let mut stream = REQUEST.mem_io_stream();
+///  server.update(&mut stream);
+///}
+/// ```
 #[derive(Default)]
 pub struct Server(State);
 
@@ -61,7 +78,7 @@ mod test {
                 Content-Length: 6\r\n\
                 \r\n\
                 Hello!";
-            let mut stream = REQUEST.mem_stream();
+            let mut stream = REQUEST.mem_io_stream();
             server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
@@ -73,7 +90,7 @@ mod test {
             const REQUEST: &str = "\
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
-            let mut stream = REQUEST.mem_stream();
+            let mut stream = REQUEST.mem_io_stream();
             server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
@@ -87,7 +104,7 @@ mod test {
             const REQUEST: &str = "\
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
-            let mut stream = REQUEST.mem_stream();
+            let mut stream = REQUEST.mem_io_stream();
             server.update(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\

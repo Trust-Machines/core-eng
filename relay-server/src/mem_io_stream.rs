@@ -8,11 +8,11 @@ pub struct MemIoStream<'a> {
 }
 
 pub trait MemIoStreamEx<'a> {
-    fn mem_stream(self) -> MemIoStream<'a>;
+    fn mem_io_stream(self) -> MemIoStream<'a>;
 }
 
 impl<'a> MemIoStreamEx<'a> for &'a str {
-    fn mem_stream(self) -> MemIoStream<'a> {
+    fn mem_io_stream(self) -> MemIoStream<'a> {
         MemIoStream {
             i: Cursor::new(self.as_bytes()),
             o: Default::default(),
