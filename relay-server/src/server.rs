@@ -4,10 +4,13 @@ use crate::{
     http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx,
 };
 
-pub trait ServerEx: IoStream {
-    fn update_state(&mut self, state: &mut State) -> Result<(), Error> {
-        let rm = self.istream().read_http_request()?;
-        let ostream = self.ostream();
+#[derive(Default)]
+pub struct Server(State);
+
+impl Server {
+    pub fn update_state(&mut self, io: &mut impl IoStream) -> Result<(), Error> {
+        let rm = io.istream().read_http_request()?;
+        let ostream = io.ostream();
         let mut write = |text: &str| ostream.write(text.as_bytes());
         let mut write_line = |line: &str| {
             write(line)?;
@@ -18,7 +21,8 @@ pub trait ServerEx: IoStream {
         match rm.method.as_str() {
             "GET" => {
                 let query = *rm.url.url_query().get("id").to_io_result("no id")?;
-                let msg = state
+                let msg = self
+                    .0
                     .get(query.to_string())
                     .map_or([].as_slice(), |v| v.as_slice());
                 let len = msg.len();
@@ -28,7 +32,7 @@ pub trait ServerEx: IoStream {
                 ostream.write(msg)?;
             }
             "POST" => {
-                state.post(rm.content);
+                self.0.post(rm.content);
                 write_response_line()?;
                 write_line("")?;
             }
@@ -38,14 +42,12 @@ pub trait ServerEx: IoStream {
     }
 }
 
-impl<T: IoStream> ServerEx for T {}
-
 #[cfg(test)]
 mod test {
-    use crate::{server::ServerEx, state::State};
+    use crate::state::State;
     use std::{io::Cursor, str::from_utf8};
 
-    use super::IoStream;
+    use super::{IoStream, Server};
 
     struct MockStream {
         i: Cursor<&'static str>,
@@ -78,7 +80,7 @@ mod test {
 
     #[test]
     fn test() {
-        let mut state = State::default();
+        let mut server = Server::default();
         {
             const REQUEST: &str = "\
                 POST / HTTP/1.1\r\n\
@@ -86,7 +88,7 @@ mod test {
                 \r\n\
                 Hello!";
             let mut stream = REQUEST.mock_stream();
-            stream.update_state(&mut state).unwrap();
+            server.update_state(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
@@ -98,7 +100,7 @@ mod test {
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
             let mut stream = REQUEST.mock_stream();
-            stream.update_state(&mut state).unwrap();
+            server.update_state(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
@@ -112,7 +114,7 @@ mod test {
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
             let mut stream = REQUEST.mock_stream();
-            stream.update_state(&mut state).unwrap();
+            server.update_state(&mut stream).unwrap();
             assert_eq!(stream.i.position(), REQUEST.len() as u64);
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\

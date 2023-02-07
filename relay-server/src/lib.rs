@@ -7,4 +7,4 @@ mod to_io_result;
 mod url;
 
 pub use listner::run_server;
-pub use server::ServerEx;
+pub use server::Server;
