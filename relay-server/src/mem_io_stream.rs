@@ -11,12 +11,18 @@ pub trait MemIoStreamEx<'a> {
     fn mem_io_stream(self) -> MemIoStream<'a>;
 }
 
-impl<'a> MemIoStreamEx<'a> for &'a str {
+impl<'a> MemIoStreamEx<'a> for &'a [u8] {
     fn mem_io_stream(self) -> MemIoStream<'a> {
         MemIoStream {
-            i: Cursor::new(self.as_bytes()),
+            i: Cursor::new(self),
             o: Default::default(),
         }
+    }
+}
+
+impl<'a> MemIoStreamEx<'a> for &'a str {
+    fn mem_io_stream(self) -> MemIoStream<'a> {
+        self.as_bytes().mem_io_stream()
     }
 }
 

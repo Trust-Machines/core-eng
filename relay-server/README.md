@@ -49,7 +49,7 @@ let mut server = Server::default();
     Content-Length: 6\r\n\
     \r\n\
     Hello!";
-  let mut stream = REQUEST.mem_io_stream();
-  server.update(&mut stream);
+  let response = server.call(REQUEST.as_bytes());
+  assert!(response.is_ok());
 }
 ```

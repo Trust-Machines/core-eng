@@ -1,7 +1,7 @@
-use std::io::{Error, ErrorKind, Write};
+use std::io::{Error, ErrorKind, Write, Read, Cursor};
 
 use crate::{
-    http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx,
+    http::RequestEx, io_stream::IoStream, state::State, to_io_result::ToIoResult, url::QueryEx, MemIoStreamEx,
 };
 
 /// The server keeps a state (messages) and can accept and respond to messages using the
@@ -19,8 +19,8 @@ use crate::{
 ///    Content-Length: 6\r\n\
 ///    \r\n\
 ///    Hello!";
-///  let mut stream = REQUEST.mem_io_stream();
-///  server.update(&mut stream);
+///  let response = server.call(REQUEST.as_bytes());
+///  assert!(response.is_ok());
 ///}
 /// ```
 #[derive(Default)]
@@ -59,6 +59,14 @@ impl Server {
         };
         Ok(())
     }
+    pub fn call(&mut self, msg: &[u8]) -> Result<Cursor<Vec<u8>>, Error> {
+        let mut stream = msg.mem_io_stream();
+        self.update(&mut stream)?;
+        if stream.i.position() != msg.len() as u64 {
+            return Err(Error::new(ErrorKind::InvalidData, "invalid request"))
+        }
+        Ok(stream.o)
+    }
 }
 
 #[cfg(test)]
@@ -78,40 +86,44 @@ mod test {
                 Content-Length: 6\r\n\
                 \r\n\
                 Hello!";
-            let mut stream = REQUEST.mem_io_stream();
-            server.update(&mut stream).unwrap();
-            assert_eq!(stream.i.position(), REQUEST.len() as u64);
+            let response = server.call(REQUEST.as_bytes()).unwrap();
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
                 \r\n";
-            assert_eq!(from_utf8(stream.o.get_ref()).unwrap(), RESPONSE);
+            assert_eq!(from_utf8(response.get_ref()).unwrap(), RESPONSE);
         }
         {
             const REQUEST: &str = "\
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
-            let mut stream = REQUEST.mem_io_stream();
-            server.update(&mut stream).unwrap();
-            assert_eq!(stream.i.position(), REQUEST.len() as u64);
+            let response = server.call(REQUEST.as_bytes()).unwrap();
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
                 content-length:6\r\n\
                 \r\n\
                 Hello!";
-            assert_eq!(from_utf8(stream.o.get_ref()).unwrap(), RESPONSE);
+            assert_eq!(from_utf8(response.get_ref()).unwrap(), RESPONSE);
         }
         {
             const REQUEST: &str = "\
                 GET /?id=x HTTP/1.1\r\n\
                 \r\n";
-            let mut stream = REQUEST.mem_io_stream();
-            server.update(&mut stream).unwrap();
-            assert_eq!(stream.i.position(), REQUEST.len() as u64);
+            let response = server.call(REQUEST.as_bytes()).unwrap();
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
                 content-length:0\r\n\
                 \r\n";
-            assert_eq!(from_utf8(stream.o.get_ref()).unwrap(), RESPONSE);
+            assert_eq!(from_utf8(response.get_ref()).unwrap(), RESPONSE);
+        }
+        // invalid request
+        {
+            const REQUEST: &str = "\
+                POST / HTTP/1.1\r\n\
+                Content-Length: 6\r\n\
+                \r\n\
+                Hello!j";
+            let response = server.call(REQUEST.as_bytes());
+            assert!(response.is_err());
         }
     }
 }
