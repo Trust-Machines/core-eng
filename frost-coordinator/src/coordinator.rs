@@ -26,14 +26,14 @@ pub enum Command {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Coordinator<Network: NetListen> {
-    id: u64, // Used for relay coordination
+    id: u32, // Used for relay coordination
     current_dkg_id: u64,
     total_signers: usize, // Assuming the signers cover all id:s in {1, 2, ..., total_signers}
     threshold: usize,
     network: Network,
     dkg_public_shares: HashMap<u32, DkgPublicShare>,
     public_nonces: HashMap<u32, NonceResponse>,
-    signature_shares: HashMap<u32, v1::SignatureShare>,
+    signature_shares: HashMap<u32, Vec<v1::SignatureShare>>,
     aggregate_public_key: Point,
 }
 
@@ -46,7 +46,7 @@ impl<Network: NetListen> Coordinator<Network> {
         network: Network,
     ) -> Self {
         Self {
-            id: id as u64,
+            id: id as u32,
             current_dkg_id: dkg_id,
             total_signers,
             threshold,
@@ -189,7 +189,7 @@ where
         let signature_shares: Vec<v1::SignatureShare> = self
             .public_nonces
             .iter()
-            .map(|(i, _)| self.signature_shares[i].clone())
+            .flat_map(|(i, _)| self.signature_shares[i].clone())
             .collect();
 
         let sig = match aggregator.sign(msg, &nonces, &signature_shares) {
