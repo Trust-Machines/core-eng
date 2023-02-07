@@ -3,6 +3,7 @@ use std::{
     io::{Error, Read},
 };
 
+use super::common::Common;
 use crate::to_io_result::{io_error, ToIoResult};
 
 #[derive(Debug)]
@@ -10,8 +11,7 @@ pub struct Request {
     pub method: String,
     pub url: String,
     pub protocol: String,
-    pub headers: HashMap<String, String>,
-    pub content: Vec<u8>,
+    pub common: Common,
 }
 
 pub trait RequestEx: Read {
@@ -76,8 +76,7 @@ pub trait RequestEx: Read {
             method,
             url,
             protocol,
-            headers,
-            content,
+            common: Common { headers, content },
         })
     }
 }
@@ -102,9 +101,9 @@ mod tests {
         assert_eq!(rm.method, "POST");
         assert_eq!(rm.url, "/");
         assert_eq!(rm.protocol, "HTTP/1.1");
-        assert_eq!(rm.headers.len(), 1);
-        assert_eq!(rm.headers["content-length"], "6");
-        assert_eq!(from_utf8(&rm.content), Ok("Hello!"));
+        assert_eq!(rm.common.headers.len(), 1);
+        assert_eq!(rm.common.headers["content-length"], "6");
+        assert_eq!(from_utf8(&rm.common.content), Ok("Hello!"));
         assert_eq!(read.position(), REQUEST.len() as u64);
     }
 
@@ -148,8 +147,8 @@ mod tests {
         assert_eq!(rm.method, "GET");
         assert_eq!(rm.url, "/images/logo.png");
         assert_eq!(rm.protocol, "HTTP/1.1");
-        assert!(rm.headers.is_empty());
-        assert!(rm.content.is_empty());
+        assert!(rm.common.headers.is_empty());
+        assert!(rm.common.content.is_empty());
         assert_eq!(read.position(), REQUEST.len() as u64);
     }
 }

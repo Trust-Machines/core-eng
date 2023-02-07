@@ -58,7 +58,7 @@ impl Server {
                 ostream.write(msg)?;
             }
             "POST" => {
-                self.0.post(rm.content);
+                self.0.post(rm.common.content);
                 write_response_line()?;
                 write_line("")?;
             }

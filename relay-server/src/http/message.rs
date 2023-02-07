@@ -1,17 +1,21 @@
 use std::io::{Write, Error};
 
+use super::common::Common;
+
 trait Message {
-    fn lines(&self) -> Vec<String>;
-    fn content(&self) -> &[u8];
+    fn common(&self) -> &Common;
     fn write(&self, o: &mut impl Write) -> Result<(), Error> {
         const EOL: &str = "\r\n"; 
+        let common = self.common();
         let mut write = |text: &str| o.write(text.as_bytes());
-        for line in self.lines() {
-            write(line.as_str())?;
+        for (k, v) in common.headers.iter() {
+            write(k.as_str())?;
+            write(":")?;
+            write(v.as_str())?;
             write(EOL)?;
         }
         write(EOL)?;
-        o.write(&self.content())?;
+        o.write(&common.content)?;
         Ok(())
     }
 }
