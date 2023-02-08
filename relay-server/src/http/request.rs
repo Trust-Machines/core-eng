@@ -1,109 +1,70 @@
-use std::{
-    collections::HashMap,
-    io::{Error, Read, Write},
-};
+use std::{collections::HashMap, io::Error};
 
-use super::common::{Common, PROTOCOL};
-use super::to_io_result::{io_error, ToIoResult};
+use super::{message::PROTOCOL, Message, ToIoResult};
 
 #[derive(Debug)]
 pub struct Request {
     pub method: String,
     pub url: String,
-    pub common: Common,
+    pub protocol: String,
+    pub headers: HashMap<String, String>,
+    pub content: Vec<u8>,
 }
 
 impl Request {
-    fn new(method: String, url: String, headers: HashMap<String, String>, content: Vec<u8>) -> Self {
+    pub fn new(
+        method: String,
+        url: String,
+        headers: HashMap<String, String>,
+        content: Vec<u8>,
+    ) -> Self {
         Self {
             method,
             url,
-            common: Common {
-                protocol: PROTOCOL.to_string(),
-                headers,
-                content
-            }
+            protocol: PROTOCOL.to_owned(),
+            headers,
+            content,
         }
     }
 }
 
-pub trait RequestEx: Read {
-    fn read_http_request(&mut self) -> Result<Request, Error> {
-        let mut read_byte = || -> Result<u8, Error> {
-            let mut buf = [0; 1];
-            self.read_exact(&mut buf)?;
-            Ok(buf[0])
-        };
-
-        let mut read_line = || -> Result<String, Error> {
-            let mut result = String::default();
-            loop {
-                let b = read_byte()?;
-                if b == 13 {
-                    break;
-                };
-                // BUG: in theory, `b` can be non-UNICODE character and the function
-                // can panic.
-                // TODO: use a vector instead of `String`.
-                result.push(b as char);
-            }
-            if read_byte()? != 10 {
-                return Err(io_error("invalid HTTP line"));
-            }
-            Ok(result)
-        };
-
-        // read and parse the request line
-        let request_line = read_line()?;
-        let mut split = request_line.split(' ');
-        let mut next = || {
-            split
-                .next()
-                .to_io_result("invalid HTTP request line")
-                .map(|x| x.to_string())
-        };
-        let method = next()?;
-        let url = next()?;
-        let protocol = next()?;
-
-        // read and parse headers
-        let mut content_length = 0;
-        let mut headers = HashMap::default();
-        loop {
-            let line = read_line()?;
-            if line.is_empty() {
-                break;
-            }
-            let (name, value) = {
-                let (name, value) = line.split_once(':').to_io_result("")?;
-                (name.to_lowercase(), value.trim())
-            };
-            if name == "content-length" {
-                content_length = value.parse::<usize>().to_io_result("invalid content-length")?;
-            } else {
-                headers.insert(name, value.to_string());
-            }
-        }
-
-        let mut content = vec![0; content_length];
-        self.read_exact(content.as_mut_slice())?;
-
-        // return the message
+impl Message for Request {
+    fn new(
+        first_line: Vec<String>,
+        headers: HashMap<String, String>,
+        content: Vec<u8>,
+    ) -> Result<Self, Error> {
+        let mut i = first_line.into_iter();
+        let method = i.next().to_io_result("no method")?;
+        let url = i.next().to_io_result("no URL")?;
+        let protocol = i.next().to_io_result("no protocol")?;
         Ok(Request {
             method,
             url,
-            common: Common { protocol, headers, content },
+            protocol,
+            headers,
+            content,
         })
     }
-}
 
-impl<T: Read> RequestEx for T {}
+    fn first_line(&self) -> Vec<String> {
+        [self.method.to_owned(), self.url.to_owned(), self.protocol.to_owned()].to_vec()
+    }
+
+    fn headers(&self) -> &HashMap<String, String> {
+        &self.headers
+    }
+
+    fn content(&self) -> &Vec<u8> {
+        &self.content
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use std::{io::Cursor, str::from_utf8};
 
-    use super::RequestEx;
+    use super::{Message, Request};
 
     #[test]
     fn test() {
@@ -113,13 +74,21 @@ mod tests {
             \r\n\
             Hello!";
         let mut read = Cursor::new(REQUEST);
-        let rm = read.read_http_request().unwrap();
+        let rm = Request::read(&mut read).unwrap();
         assert_eq!(rm.method, "POST");
         assert_eq!(rm.url, "/");
-        assert_eq!(rm.common.protocol, "HTTP/1.1");
-        assert_eq!(rm.common.headers.len(), 0);
-        assert_eq!(from_utf8(&rm.common.content), Ok("Hello!"));
+        assert_eq!(rm.protocol, "HTTP/1.1");
+        assert_eq!(rm.headers.len(), 0);
+        assert_eq!(from_utf8(&rm.content), Ok("Hello!"));
         assert_eq!(read.position(), REQUEST.len() as u64);
+        let mut v = Vec::default();
+        rm.write(&mut Cursor::new(&mut v)).unwrap();
+        const EXPECTED: &str = "\
+            POST / HTTP/1.1\r\n\
+            content-length:6\r\n\
+            \r\n\
+            Hello!";
+        assert_eq!(from_utf8(&v), Ok(EXPECTED));
     }
 
     #[test]
@@ -131,14 +100,23 @@ mod tests {
             \r\n\
             Hello!";
         let mut read = Cursor::new(REQUEST);
-        let rm = read.read_http_request().unwrap();
+        let rm = Request::read(&mut read).unwrap();
         assert_eq!(rm.method, "POST");
         assert_eq!(rm.url, "/");
-        assert_eq!(rm.common.protocol, "HTTP/1.1");
-        assert_eq!(rm.common.headers.len(), 1);
-        assert_eq!(rm.common.headers["hello"], "someThing");
-        assert_eq!(from_utf8(&rm.common.content), Ok("Hello!"));
+        assert_eq!(rm.protocol, "HTTP/1.1");
+        assert_eq!(rm.headers.len(), 1);
+        assert_eq!(rm.headers["hello"], "someThing");
+        assert_eq!(from_utf8(&rm.content), Ok("Hello!"));
         assert_eq!(read.position(), REQUEST.len() as u64);
+        let mut v = Vec::default();
+        rm.write(&mut Cursor::new(&mut v)).unwrap();
+        const EXPECTED: &str = "\
+            POST / HTTP/1.1\r\n\
+            hello:someThing\r\n\
+            content-length:6\r\n\
+            \r\n\
+            Hello!";
+        assert_eq!(from_utf8(&v), Ok(EXPECTED));        
     }
 
     #[test]
@@ -147,7 +125,7 @@ mod tests {
             POST / HTTP/1.1\r\n\
             Content-Leng";
         let mut read = Cursor::new(REQUEST);
-        assert!(read.read_http_request().is_err());
+        assert!(Request::read(&mut read).is_err());
     }
 
     #[test]
@@ -157,7 +135,7 @@ mod tests {
             Content-Length: 6\r\n\
             \r\n";
         let mut read = Cursor::new(REQUEST);
-        let _ = read.read_http_request().unwrap_err();
+        assert!(Request::read(&mut read).is_err());
     }
 
     #[test]
@@ -168,7 +146,7 @@ mod tests {
             \r\n\
             Hello!";
         let mut read = Cursor::new(REQUEST);
-        let _ = read.read_http_request().unwrap_err();
+        assert!(Request::read(&mut read).is_err());
     }
 
     #[test]
@@ -177,12 +155,18 @@ mod tests {
             GET /images/logo.png HTTP/1.1\r\n\
             \r\n";
         let mut read = Cursor::new(REQUEST);
-        let rm = read.read_http_request().unwrap();
+        let rm = Request::read(&mut read).unwrap();
         assert_eq!(rm.method, "GET");
         assert_eq!(rm.url, "/images/logo.png");
-        assert_eq!(rm.common.protocol, "HTTP/1.1");
-        assert!(rm.common.headers.is_empty());
-        assert!(rm.common.content.is_empty());
+        assert_eq!(rm.protocol, "HTTP/1.1");
+        assert!(rm.headers.is_empty());
+        assert!(rm.content.is_empty());
         assert_eq!(read.position(), REQUEST.len() as u64);
+        let mut v = Vec::default();
+        rm.write(&mut Cursor::new(&mut v)).unwrap();
+        const EXPECTED: &str = "\
+            GET /images/logo.png HTTP/1.1\r\n\
+            \r\n";
+        assert_eq!(from_utf8(&v), Ok(EXPECTED));        
     }
 }

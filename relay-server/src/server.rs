@@ -1,7 +1,7 @@
-use std::io::{Error, ErrorKind, Write};
+use std::io::{Error, ErrorKind};
 
 use crate::{
-    http::{RequestEx, ToIoResult, Response, Message},
+    http::{Message, Request, Response, ToIoResult},
     io_stream::IoStream,
     mem_io_stream::MemIoStreamEx,
     mem_state::{MemState, State},
@@ -17,37 +17,33 @@ use crate::{
 /// let mut server = relay_server::Server::default();
 /// // send a message using a bidirectional stream.
 /// {
-///  const REQUEST: &str = "\
-///    POST / HTTP/1.1\r\n\
-///    Content-Length: 6\r\n\
-///    \r\n\
-///    Hello!";
-///  let response = server.call(REQUEST.as_bytes()).unwrap();
-///  const RESPONSE: &str = "\
-///    HTTP/1.1 200 OK\r\n\
-///    \r\n";
-///  assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
-///}
+///   const REQUEST: &str = "\
+///     POST / HTTP/1.1\r\n\
+///     Content-Length: 6\r\n\
+///     \r\n\
+///     Hello!";
+///   let response = server.call(REQUEST.as_bytes()).unwrap();
+///   const RESPONSE: &str = "\
+///     HTTP/1.1 200 OK\r\n\
+///     \r\n";
+///   assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
+/// }
 /// ```
 #[derive(Default)]
 pub struct Server(MemState);
 
 impl Server {
     pub fn update(&mut self, io: &mut impl IoStream) -> Result<(), Error> {
-        let rm = io.istream().read_http_request()?;
+        let rm = Request::read(io.istream())?;
         let ostream = io.ostream();
 
         let content = match rm.method.as_str() {
             "GET" => {
                 let query = *rm.url.url_query().get("id").to_io_result("no id")?;
-                self
-                    .0
-                    .get(query.to_string())
-                    .map_or([].as_slice(), |v| v.as_slice())
-                    .to_vec()
+                self.0.get(query.to_string())
             }
             "POST" => {
-                self.0.post(rm.common.content);
+                self.0.post(rm.content);
                 Vec::default()
             }
             _ => return Err(Error::new(ErrorKind::InvalidData, "unknown HTTP method")),
