@@ -1,4 +1,4 @@
-use std::net::TcpStream;
+use std::{net::TcpStream, thread::yield_now};
 
 use relay_server::{IoStream, RemoteState, Request, Response, State};
 
@@ -10,7 +10,7 @@ fn call(request: Request) -> Response {
 
 fn main() {
     // waiting for a server
-    while TcpStream::connect(ADDR).is_err() {}
+    while TcpStream::connect(ADDR).is_err() { yield_now() }
     //
     let mut state = RemoteState(call);
     //

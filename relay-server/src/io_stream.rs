@@ -15,8 +15,11 @@ pub trait IoStream: Sized {
     fn ostream(&mut self) -> &mut Self::Write;
     fn call(mut self, request: Request) -> Response {
         let o = self.ostream();
+        // send data to a callee.
         request.write(o).unwrap();
+        // make sure we deliver all data to to the callee.
         o.flush().unwrap();
+        // read data from the callee.
         Response::read(self.istream()).unwrap()
     }
 }
