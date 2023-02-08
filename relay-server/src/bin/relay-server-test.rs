@@ -10,7 +10,9 @@ fn call(request: Request) -> Response {
 
 fn main() {
     // waiting for a server
-    while TcpStream::connect(ADDR).is_err() { yield_now() }
+    while TcpStream::connect(ADDR).is_err() {
+        yield_now()
+    }
     //
     let mut state = RemoteState(call);
     //

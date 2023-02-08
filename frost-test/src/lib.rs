@@ -1,6 +1,8 @@
 mod sync_test;
 mod v1;
 
+// https://github.com/Trust-Machines/frost/blob/sbtc/src/v1.rs#L444
+
 #[cfg(test)]
 mod tests {
     use frost::{

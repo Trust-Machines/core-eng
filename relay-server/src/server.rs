@@ -54,7 +54,7 @@ impl Server {
         ostream.flush()?;
         Ok(())
     }
-    // TODO: move this function to a `test` mod. 
+    // TODO: move this function to a `test` mod.
     pub fn call(&mut self, msg: &[u8]) -> Result<Vec<u8>, Error> {
         let mut result = Vec::default();
         let mut stream = msg.mem_io_stream(&mut result);

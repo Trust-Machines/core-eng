@@ -39,6 +39,8 @@ The default address is `http://127.0.0.1:9776`.
 
 ## Using the server as a library
 
+The `relay-server` library is designed not to use IO directly, and all IO bindings are moved to executables. See [/src/bin/relay-server.rs](/src/bin/relay-server.rs) as an example.
+
 ```rust
 // create a server
 let mut server = relay_server::Server::default();
