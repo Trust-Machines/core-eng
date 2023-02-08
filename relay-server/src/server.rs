@@ -35,16 +35,16 @@ pub struct Server(MemState);
 
 impl Server {
     pub fn update(&mut self, io: &mut impl IoStream) -> Result<(), Error> {
-        let rm = Request::read(io.istream())?;
+        let request = Request::read(io.istream())?;
         let ostream = io.ostream();
 
-        let content = match rm.method.as_str() {
+        let content = match request.method.as_str() {
             "GET" => {
-                let query = *rm.url.url_query().get("id").to_io_result("no id")?;
+                let query = *request.url.url_query().get("id").to_io_result("no id")?;
                 self.0.get(query.to_string())
             }
             "POST" => {
-                self.0.post(rm.content);
+                self.0.post(request.content);
                 Vec::default()
             }
             _ => return Err(Error::new(ErrorKind::InvalidData, "unknown HTTP method")),
