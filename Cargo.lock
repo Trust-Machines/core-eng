@@ -669,7 +669,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 [[package]]
 name = "p256k1"
 version = "0.1.0"
-source = "git+https://github.com/Trust-Machines/p256k1?branch=sbtc#a6cf41a87d4d8d1676c69866039ec49acf10e6a6"
+source = "git+https://github.com/Trust-Machines/p256k1?branch=sbtc#83710753ce48d4636d1f3ab4eb0d92f3d5a7ac45"
 dependencies = [
  "bindgen",
  "bitvec",
@@ -700,9 +700,9 @@ checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
 name = "pest"
-version = "2.5.4"
+version = "2.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ab62d2fa33726dbe6321cc97ef96d8cde531e3eeaf858a058de53a8a6d40d8f"
+checksum = "028accff104c4e513bad663bbcd2ad7cfd5304144404c31ed0a77ac103d00660"
 dependencies = [
  "thiserror",
  "ucd-trie",
