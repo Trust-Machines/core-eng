@@ -174,4 +174,12 @@ mod tests {
             \r\n";
         assert_eq!(from_utf8(&v), Ok(EXPECTED));
     }
+
+    #[test]
+    fn invalid_utf8_should_not_panic() {
+        const REQUEST: &[u8] = &[0xFF];
+        let mut read = Cursor::new(REQUEST);
+        let rm = Request::read(&mut read);
+        assert!(rm.is_err());
+    }
 }
