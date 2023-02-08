@@ -5,7 +5,8 @@ use crate::{
     io_stream::IoStream,
     mem_io_stream::MemIoStreamEx,
     mem_state::MemState,
-    url::QueryEx, state::State,
+    state::State,
+    url::QueryEx,
 };
 
 /// The server keeps a state (messages) and can accept and respond to messages using the

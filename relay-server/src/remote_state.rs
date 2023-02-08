@@ -25,12 +25,7 @@ impl<T: IoStream> State for RemoteState<T> {
     }
 
     fn post(&mut self, msg: Vec<u8>) {
-        let request = Request::new(
-            "POST".to_string(),
-            "/".to_string(),
-            Default::default(),
-            msg,
-        );
+        let request = Request::new("POST".to_string(), "/".to_string(), Default::default(), msg);
         self.remote_call(request);
     }
 }

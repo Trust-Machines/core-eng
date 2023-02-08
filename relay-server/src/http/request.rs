@@ -48,7 +48,12 @@ impl Message for Request {
     }
 
     fn first_line(&self) -> Vec<String> {
-        [self.method.to_owned(), self.url.to_owned(), self.protocol.to_owned()].to_vec()
+        [
+            self.method.to_owned(),
+            self.url.to_owned(),
+            self.protocol.to_owned(),
+        ]
+        .to_vec()
     }
 
     fn headers(&self) -> &HashMap<String, String> {
@@ -116,7 +121,7 @@ mod tests {
             content-length:6\r\n\
             \r\n\
             Hello!";
-        assert_eq!(from_utf8(&v), Ok(EXPECTED));        
+        assert_eq!(from_utf8(&v), Ok(EXPECTED));
     }
 
     #[test]
@@ -167,6 +172,6 @@ mod tests {
         const EXPECTED: &str = "\
             GET /images/logo.png HTTP/1.1\r\n\
             \r\n";
-        assert_eq!(from_utf8(&v), Ok(EXPECTED));        
+        assert_eq!(from_utf8(&v), Ok(EXPECTED));
     }
 }
