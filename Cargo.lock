@@ -350,6 +350,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "frost"
+version = "0.1.0"
+source = "git+https://github.com/trust-machines/frost?branch=sergey/tmp_fix#6367ed5c2d682a741b7d385c310c2f15fb12eddd"
+dependencies = [
+ "hashbrown",
+ "hex",
+ "num-traits",
+ "p256k1",
+ "polynomial",
+ "rand_core 0.5.1",
+ "serde",
+ "sha3",
+ "thiserror",
+]
+
+[[package]]
 name = "frost-coordinator"
 version = "0.0.1"
 dependencies = [
@@ -368,7 +384,7 @@ version = "0.0.1"
 dependencies = [
  "bincode",
  "clap 4.1.4",
- "frost",
+ "frost 0.1.0 (git+https://github.com/trust-machines/frost?branch=sergey/tmp_fix)",
  "hashbrown",
  "itertools",
  "p256k1",
@@ -386,7 +402,7 @@ dependencies = [
 name = "frost-test"
 version = "0.1.0"
 dependencies = [
- "frost",
+ "frost 0.1.0 (git+https://github.com/trust-machines/frost?branch=sbtc)",
  "frost-coordinator",
  "frost-signer",
  "hashbrown",
