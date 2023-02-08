@@ -70,7 +70,7 @@ impl Server {
 mod test {
     use std::str::from_utf8;
 
-    use super::Server;
+    use super::*;
 
     #[test]
     fn test() {
