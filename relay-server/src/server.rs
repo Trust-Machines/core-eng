@@ -1,4 +1,4 @@
-use std::io::{Error, ErrorKind};
+use std::io::{Error, ErrorKind, Write};
 
 use crate::{
     http::{Message, Request, Response, ToIoResult},
@@ -19,13 +19,13 @@ use crate::{
 /// // send a message using a bidirectional stream.
 /// {
 ///   const REQUEST: &str = "\
-///     POST / HTTP/1.1\r\n\
+///     POST / HTTP/1.0\r\n\
 ///     Content-Length: 6\r\n\
 ///     \r\n\
 ///     Hello!";
 ///   let response = server.call(REQUEST.as_bytes()).unwrap();
 ///   const RESPONSE: &str = "\
-///     HTTP/1.1 200 OK\r\n\
+///     HTTP/1.0 200 OK\r\n\
 ///     \r\n";
 ///   assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
 /// }
@@ -38,6 +38,7 @@ impl Server {
         let rm = Request::read(io.istream())?;
         let ostream = io.ostream();
 
+        println!("{rm:?}");
         let content = match rm.method.as_str() {
             "GET" => {
                 let query = *rm.url.url_query().get("id").to_io_result("no id")?;
@@ -49,7 +50,10 @@ impl Server {
             }
             _ => return Err(Error::new(ErrorKind::InvalidData, "unknown HTTP method")),
         };
-        Response::new(200, "OK".to_string(), Default::default(), content).write(ostream)?;
+        let response = Response::new(200, "OK".to_string(), Default::default(), content);
+        println!("{response:?}");
+        response.write(ostream)?;
+        ostream.flush()?;
         Ok(())
     }
     pub fn call(&mut self, msg: &[u8]) -> Result<Vec<u8>, Error> {
@@ -74,23 +78,23 @@ mod test {
         let mut server = Server::default();
         {
             const REQUEST: &str = "\
-                POST / HTTP/1.1\r\n\
+                POST / HTTP/1.0\r\n\
                 Content-Length: 6\r\n\
                 \r\n\
                 Hello!";
             let response = server.call(REQUEST.as_bytes()).unwrap();
             const RESPONSE: &str = "\
-                HTTP/1.1 200 OK\r\n\
+                HTTP/1.0 200 OK\r\n\
                 \r\n";
             assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
         }
         {
             const REQUEST: &str = "\
-                GET /?id=x HTTP/1.1\r\n\
+                GET /?id=x HTTP/1.0\r\n\
                 \r\n";
             let response = server.call(REQUEST.as_bytes()).unwrap();
             const RESPONSE: &str = "\
-                HTTP/1.1 200 OK\r\n\
+                HTTP/1.0 200 OK\r\n\
                 content-length:6\r\n\
                 \r\n\
                 Hello!";
@@ -98,11 +102,11 @@ mod test {
         }
         {
             const REQUEST: &str = "\
-                GET /?id=x HTTP/1.1\r\n\
+                GET /?id=x HTTP/1.0\r\n\
                 \r\n";
             let response = server.call(REQUEST.as_bytes()).unwrap();
             const RESPONSE: &str = "\
-                HTTP/1.1 200 OK\r\n\
+                HTTP/1.0 200 OK\r\n\
                 \r\n";
             assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
         }

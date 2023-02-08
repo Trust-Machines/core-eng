@@ -5,6 +5,7 @@ use super::{
     ToIoResult,
 };
 
+#[derive(Debug)]
 pub struct Response {
     pub protocol: String,
     pub code: u16,

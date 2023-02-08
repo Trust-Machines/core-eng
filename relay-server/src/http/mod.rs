@@ -1,4 +1,3 @@
-mod common;
 mod message;
 mod request;
 mod response;

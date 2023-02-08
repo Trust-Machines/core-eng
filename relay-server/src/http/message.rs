@@ -5,7 +5,7 @@ use std::{
 
 use super::{to_io_result::io_error, ToIoResult};
 
-pub const PROTOCOL: &str = "HTTP/1.1";
+pub const PROTOCOL: &str = "HTTP/1.0";
 
 pub trait Message: Sized {
     fn new(
