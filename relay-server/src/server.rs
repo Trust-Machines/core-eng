@@ -38,7 +38,6 @@ impl Server {
         let rm = Request::read(io.istream())?;
         let ostream = io.ostream();
 
-        println!("{rm:?}");
         let content = match rm.method.as_str() {
             "GET" => {
                 let query = *rm.url.url_query().get("id").to_io_result("no id")?;
@@ -51,7 +50,6 @@ impl Server {
             _ => return Err(Error::new(ErrorKind::InvalidData, "unknown HTTP method")),
         };
         let response = Response::new(200, "OK".to_string(), Default::default(), content);
-        println!("{response:?}");
         response.write(ostream)?;
         ostream.flush()?;
         Ok(())
