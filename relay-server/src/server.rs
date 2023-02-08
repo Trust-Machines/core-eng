@@ -4,8 +4,8 @@ use crate::{
     http::{Message, Request, Response, ToIoResult},
     io_stream::IoStream,
     mem_io_stream::MemIoStreamEx,
-    mem_state::{MemState, State},
-    url::QueryEx,
+    mem_state::MemState,
+    url::QueryEx, state::State,
 };
 
 /// The server keeps a state (messages) and can accept and respond to messages using the
