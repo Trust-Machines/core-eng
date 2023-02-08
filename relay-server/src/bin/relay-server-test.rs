@@ -1,6 +1,6 @@
-use std::{net::TcpStream};
+use std::net::TcpStream;
 
-use relay_server::{IoStream, Request, Response, RemoteState, State};
+use relay_server::{IoStream, RemoteState, Request, Response, State};
 
 const ADDR: &str = "127.0.0.1:9776";
 

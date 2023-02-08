@@ -3,7 +3,7 @@ use std::{
     net::TcpStream,
 };
 
-use crate::http::{Request, Response, Message};
+use crate::http::{Message, Request, Response};
 
 /// A trait for bidirectional stream.
 ///
@@ -15,10 +15,10 @@ pub trait IoStream: Sized {
     fn ostream(&mut self) -> &mut Self::Write;
     fn call(mut self, request: Request) -> Response {
         let o = self.ostream();
-        request.write(o).unwrap();        
+        request.write(o).unwrap();
         o.flush().unwrap();
         Response::read(self.istream()).unwrap()
-    }    
+    }
 }
 
 impl IoStream for TcpStream {

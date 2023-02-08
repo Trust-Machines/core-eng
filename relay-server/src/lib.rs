@@ -9,6 +9,6 @@ mod url;
 
 pub use http::{Request, Response};
 pub use io_stream::IoStream;
+pub use remote_state::RemoteState;
 pub use server::Server;
 pub use state::State;
-pub use remote_state::RemoteState;
