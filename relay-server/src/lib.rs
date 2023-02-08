@@ -4,7 +4,6 @@ mod mem_io_stream;
 mod remote_state;
 mod server;
 mod mem_state;
-mod to_io_result;
 mod url;
 
 pub use io_stream::IoStream;

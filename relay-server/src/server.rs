@@ -1,11 +1,10 @@
 use std::io::{Error, ErrorKind, Write};
 
 use crate::{
-    http::RequestEx,
+    http::{RequestEx, ToIoResult, Response, Message},
     io_stream::IoStream,
     mem_io_stream::MemIoStreamEx,
     mem_state::{MemState, State},
-    to_io_result::ToIoResult,
     url::QueryEx,
 };
 
@@ -37,33 +36,23 @@ impl Server {
     pub fn update(&mut self, io: &mut impl IoStream) -> Result<(), Error> {
         let rm = io.istream().read_http_request()?;
         let ostream = io.ostream();
-        let mut write = |text: &str| ostream.write(text.as_bytes());
-        let mut write_line = |line: &str| {
-            write(line)?;
-            write("\r\n")?;
-            Ok::<(), Error>(())
-        };
-        let mut write_response_line = || write_line("HTTP/1.1 200 OK");
-        match rm.method.as_str() {
+
+        let content = match rm.method.as_str() {
             "GET" => {
                 let query = *rm.url.url_query().get("id").to_io_result("no id")?;
-                let msg = self
+                self
                     .0
                     .get(query.to_string())
-                    .map_or([].as_slice(), |v| v.as_slice());
-                let len = msg.len();
-                write_response_line()?;
-                write_line(format!("content-length:{len}").as_str())?;
-                write_line("")?;
-                ostream.write(msg)?;
+                    .map_or([].as_slice(), |v| v.as_slice())
+                    .to_vec()
             }
             "POST" => {
                 self.0.post(rm.common.content);
-                write_response_line()?;
-                write_line("")?;
+                Vec::default()
             }
             _ => return Err(Error::new(ErrorKind::InvalidData, "unknown HTTP method")),
         };
+        Response::new(200, "OK".to_string(), Default::default(), content).write(ostream)?;
         Ok(())
     }
     pub fn call(&mut self, msg: &[u8]) -> Result<Vec<u8>, Error> {
@@ -117,7 +106,6 @@ mod test {
             let response = server.call(REQUEST.as_bytes()).unwrap();
             const RESPONSE: &str = "\
                 HTTP/1.1 200 OK\r\n\
-                content-length:0\r\n\
                 \r\n";
             assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
         }
