@@ -1,15 +1,13 @@
+use std::collections::BTreeMap;
 use std::time::Duration;
 
-use frost::{
-    common::{PolyCommitment, PublicNonce},
-    errors::AggregatorError,
-    v1,
-};
+use frost::common::PublicNonce;
+use frost::{common::PolyCommitment, errors::AggregatorError, v1};
 use frost_signer::net::{HttpNetError, Message, NetListen};
 use frost_signer::signing_round::{
     DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse, SignatureShareRequest,
 };
-use hashbrown::{HashMap, HashSet};
+use hashbrown::HashSet;
 use tracing::{debug, info};
 
 use p256k1::point::Point;
@@ -31,9 +29,9 @@ pub struct Coordinator<Network: NetListen> {
     total_signers: usize, // Assuming the signers cover all id:s in {1, 2, ..., total_signers}
     threshold: usize,
     network: Network,
-    dkg_public_shares: HashMap<u32, DkgPublicShare>,
-    public_nonces: HashMap<u32, NonceResponse>,
-    signature_shares: HashMap<u32, Vec<v1::SignatureShare>>,
+    dkg_public_shares: BTreeMap<u32, DkgPublicShare>,
+    public_nonces: BTreeMap<u32, NonceResponse>,
+    signature_shares: BTreeMap<u32, v1::SignatureShare>,
     aggregate_public_key: Point,
 }
 
@@ -118,8 +116,7 @@ where
                 MessageTypes::NonceRequest(_) => {}
                 MessageTypes::NonceResponse(nonce_response) => {
                     let party_id = nonce_response.party_id;
-                    self.public_nonces
-                        .insert(nonce_response.party_id as u32, nonce_response);
+                    self.public_nonces.insert(party_id, nonce_response);
                     println!(
                         "NonceResponse from party #{:?}. Got {} nonce responses of threshold {}",
                         party_id,
@@ -139,14 +136,8 @@ where
         }
 
         // get the signers who responded with a nonce
-        let selected_signer_ids: Vec<u32> = self.public_nonces.iter().map(|(i, _)| *i).collect();
-        let nonces: Vec<PublicNonce> = self
-            .public_nonces
-            .iter()
-            .map(|(_, nonce)| nonce.nonce.clone())
-            .collect();
         let waiting_for_signature_shares: HashSet<u32> =
-            selected_signer_ids.iter().map(|i| *i).collect();
+            HashSet::from_iter(self.public_nonces.keys().cloned());
 
         // make an array of dkg public share polys for SignatureAggregator
         let polys: Vec<PolyCommitment> = (1..self.total_signers as u32)
@@ -160,26 +151,27 @@ where
             };
 
         // request signature shares
-        let signature_share_request_message = Message {
-            msg: MessageTypes::SignShareRequest(SignatureShareRequest {
-                dkg_id: self.current_dkg_id,
-                correlation_id: 0,
-                signer_id: 0,
-                selected_signer_ids,
-                nonces: nonces.clone(),
-                message: msg.to_vec(),
-            }),
-            sig: [0; 32],
-        };
+        for (party_id, nonce_response) in &self.public_nonces {
+            let signature_share_request_message = Message {
+                msg: MessageTypes::SignShareRequest(SignatureShareRequest {
+                    dkg_id: self.current_dkg_id,
+                    correlation_id: 0,
+                    party_id: *party_id,
+                    nonce: nonce_response.nonce.clone(),
+                    message: msg.to_vec(),
+                }),
+                sig: [0; 32],
+            };
 
-        self.network.send_message(signature_share_request_message)?;
+            self.network.send_message(signature_share_request_message)?;
+        }
 
         loop {
             match self.wait_for_next_message()?.msg {
                 MessageTypes::SignShareResponse(response) => {
-                    if waiting_for_signature_shares.contains(&response.signer_id) {
+                    if waiting_for_signature_shares.contains(&response.party_id) {
                         self.signature_shares
-                            .insert(response.signer_id, response.signature_share);
+                            .insert(response.party_id, response.signature_share);
                     }
                 }
                 msg => {
@@ -194,13 +186,13 @@ where
         }
 
         // call aggregator.sign()
-        let signature_shares: Vec<v1::SignatureShare> = self
+        let nonces = self
             .public_nonces
-            .iter()
-            .flat_map(|(i, _)| self.signature_shares[i].clone())
-            .collect();
-
-        let sig = match aggregator.sign(msg, &nonces, &signature_shares) {
+            .values()
+            .map(|nr| nr.nonce.clone())
+            .collect::<Vec<PublicNonce>>();
+        let shares: Vec<v1::SignatureShare> = self.signature_shares.values().map(|ss|{ss.clone()}).collect();
+        let sig = match aggregator.sign(msg, &*nonces, &*shares) {
             Ok(sig) => sig,
             Err(e) => return Err(Error::Aggregator(e)),
         };

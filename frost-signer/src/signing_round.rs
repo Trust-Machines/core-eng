@@ -1,6 +1,5 @@
 pub use frost;
 use frost::common::{PolyCommitment, PublicNonce};
-use frost::traits::Signer as FrostSigner;
 use hashbrown::HashMap;
 use p256k1::scalar::Scalar;
 use rand_core::OsRng;
