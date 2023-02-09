@@ -336,7 +336,23 @@ dependencies = [
 [[package]]
 name = "frost"
 version = "0.1.0"
-source = "git+https://github.com/trust-machines/frost?branch=main#5fcb82008bfa5c92d1da2a9cd21693d671510015"
+source = "git+https://github.com/trust-machines/frost?branch=main#8e188c271213e291e321b8aeda6273c054d25264"
+dependencies = [
+ "hashbrown",
+ "hex",
+ "num-traits",
+ "p256k1",
+ "polynomial",
+ "rand_core 0.5.1",
+ "serde",
+ "sha3",
+ "thiserror",
+]
+
+[[package]]
+name = "frost"
+version = "0.1.0"
+source = "git+https://github.com/trust-machines/frost?rev=8e188c271213e291e321b8aeda6273c054d25264#8e188c271213e291e321b8aeda6273c054d25264"
 dependencies = [
  "hashbrown",
  "hex",
@@ -368,7 +384,7 @@ version = "0.0.1"
 dependencies = [
  "bincode",
  "clap 4.1.4",
- "frost",
+ "frost 0.1.0 (git+https://github.com/trust-machines/frost?rev=8e188c271213e291e321b8aeda6273c054d25264)",
  "hashbrown",
  "itertools",
  "p256k1",
@@ -387,7 +403,7 @@ dependencies = [
 name = "frost-test"
 version = "0.1.0"
 dependencies = [
- "frost",
+ "frost 0.1.0 (git+https://github.com/trust-machines/frost?branch=main)",
  "frost-coordinator",
  "frost-signer",
  "hashbrown",
@@ -669,8 +685,9 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "p256k1"
-version = "0.1.0"
-source = "git+https://github.com/Trust-Machines/p256k1?rev=7baccde71130453e503c21dd1109f3005946c13e#7baccde71130453e503c21dd1109f3005946c13e"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8639660e093fd6dcba30d671524dfa4a47f5bff07e5e998ce57c260949f1c768"
 dependencies = [
  "bindgen",
  "bitvec",
@@ -1100,11 +1117,10 @@ dependencies = [
 
 [[package]]
 name = "thread_local"
-version = "1.1.5"
+version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d805f96b7e61fce8728f142e213a3eb2f6b10538efff2d637c923efa4bfca048"
+checksum = "5516c27b78311c50bf42c071425c560ac799b11c30b31f87e3081965fe5e0180"
 dependencies = [
- "cfg-if 1.0.0",
  "once_cell",
 ]
 
