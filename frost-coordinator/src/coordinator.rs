@@ -117,7 +117,7 @@ where
                 MessageTypes::NonceResponse(nonce_response) => {
                     let party_id = nonce_response.party_id;
                     self.public_nonces.insert(party_id, nonce_response);
-                    println!(
+                    info!(
                         "NonceResponse from party #{:?}. Got {} nonce responses of threshold {}",
                         party_id,
                         self.public_nonces.len(),
@@ -125,7 +125,7 @@ where
                     );
                 }
                 msg => {
-                    println!("Got unexpected message {:?})", msg);
+                    info!("Got unexpected message {:?})", msg);
                 }
             }
 
@@ -135,15 +135,26 @@ where
             }
         }
 
-        // get the signers who responded with a nonce
+        // get the parties who responded with a nonce
         let waiting_for_signature_shares: HashSet<u32> =
             HashSet::from_iter(self.public_nonces.keys().cloned());
 
         // make an array of dkg public share polys for SignatureAggregator
+        info!(
+            "collecting commitments from 1..{} in {:?}",
+            self.total_signers,
+            self.dkg_public_shares.keys().collect::<Vec<&u32>>()
+        );
         let polys: Vec<PolyCommitment> = (1..self.total_signers as u32)
             .map(|i| self.dkg_public_shares[&i].public_share.clone())
             .collect();
 
+        info!(
+            "SignatureAggregate::new total_signers: {} threshold: {} commitments: {} ",
+            self.total_signers,
+            self.threshold,
+            polys.len()
+        );
         let mut aggregator =
             match v1::SignatureAggregator::new(self.total_signers, self.threshold, polys) {
                 Ok(aggregator) => aggregator,
@@ -191,7 +202,11 @@ where
             .values()
             .map(|nr| nr.nonce.clone())
             .collect::<Vec<PublicNonce>>();
-        let shares: Vec<v1::SignatureShare> = self.signature_shares.values().map(|ss|{ss.clone()}).collect();
+        let shares: Vec<v1::SignatureShare> = self
+            .signature_shares
+            .values()
+            .map(|ss| ss.clone())
+            .collect();
         let sig = match aggregator.sign(msg, &*nonces, &*shares) {
             Ok(sig) => sig,
             Err(e) => return Err(Error::Aggregator(e)),

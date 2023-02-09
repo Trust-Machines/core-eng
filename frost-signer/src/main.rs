@@ -46,7 +46,7 @@ fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u32) {
                 tx.send(m).unwrap();
             }
         };
-        thread::sleep(time::Duration::from_millis(1000));
+        thread::sleep(time::Duration::from_millis(500));
     }
 }
 
