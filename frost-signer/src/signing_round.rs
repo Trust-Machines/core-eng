@@ -116,9 +116,8 @@ pub struct NonceResponse {
 pub struct SignatureShareRequest {
     pub dkg_id: u64,
     pub correlation_id: u64,
-    pub signer_id: u32,
-    pub selected_signer_ids: Vec<u32>,
-    pub nonces: Vec<PublicNonce>,
+    pub party_id: u32,
+    pub nonce: PublicNonce,
     pub message: Vec<u8>,
 }
 
@@ -126,8 +125,8 @@ pub struct SignatureShareRequest {
 pub struct SignatureShareResponse {
     pub dkg_id: u64,
     pub correlation_id: u64,
-    pub signer_id: u32,
-    pub signature_share: Vec<frost::v1::SignatureShare>,
+    pub party_id: u32,
+    pub signature_share: frost::v1::SignatureShare,
 }
 
 impl SigningRound {
@@ -231,21 +230,22 @@ impl SigningRound {
         sign_request: SignatureShareRequest,
     ) -> Result<Vec<MessageTypes>, String> {
         let mut msgs = vec![];
-        if sign_request.signer_id == self.signer.signer_id {
-            let party_ids = self.signer.frost_signer.get_ids();
-            let party_nonces = &self.public_nonces;
-            let shares =
-                self.signer
-                    .frost_signer
-                    .sign(&*sign_request.message, &*party_ids, party_nonces);
-            let response = MessageTypes::SignShareResponse(SignatureShareResponse {
-                dkg_id: sign_request.dkg_id,
-                correlation_id: sign_request.correlation_id,
-                signer_id: sign_request.signer_id,
-                signature_share: shares,
-            });
-            msgs.push(response);
-        }
+        let party = self
+            .signer
+            .frost_signer
+            .parties
+            .iter()
+            .find(|p| p.id == sign_request.party_id.try_into().unwrap())
+            .unwrap();
+        let party_nonces = &self.public_nonces;
+        let share = party.sign(&*sign_request.message, &[party.id], party_nonces);
+        let response = MessageTypes::SignShareResponse(SignatureShareResponse {
+            dkg_id: sign_request.dkg_id,
+            correlation_id: sign_request.correlation_id,
+            party_id: sign_request.party_id,
+            signature_share: share,
+        });
+        msgs.push(response);
         return Ok(msgs);
     }
 

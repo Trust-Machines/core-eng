@@ -31,13 +31,11 @@ fn signature_share() {
     let share = SignatureShareRequest {
         dkg_id: 0,
         correlation_id: 0,
-        signer_id: 0,
-        selected_signer_ids: [0].to_vec(),
-        nonces: [PublicNonce {
+        party_id: 0,
+        nonce: PublicNonce {
             D: Default::default(),
             E: Default::default(),
-        }]
-        .to_vec(),
+        },
         message: vec![],
     };
 
