@@ -68,6 +68,7 @@ where
             Command::Dkg => self.run_distributed_key_generation(),
             Command::Sign { msg } => self.sign_message(msg),
             Command::DkgSign { msg } => {
+                info!("sign msg: {:?}", msg);
                 self.run_distributed_key_generation()?;
                 self.sign_message(msg)?;
                 Ok(())
@@ -239,7 +240,7 @@ where
                         .insert(dkg_public_share.party_id, dkg_public_share.clone());
 
                     info!(
-                        "DKG round #{} DkgPublicSharefrom signer #{}",
+                        "DKG round #{} DkgPublicSharefrom party #{}",
                         dkg_public_share.dkg_id, dkg_public_share.party_id
                     );
                 }
