@@ -1,5 +1,8 @@
 pub use frost;
-use frost::{common::{PolyCommitment, PublicNonce}, Scalar};
+use frost::{
+    common::{PolyCommitment, PublicNonce},
+    Scalar,
+};
 use hashbrown::HashMap;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
@@ -310,9 +313,9 @@ impl SigningRound {
 
 #[cfg(test)]
 mod test {
-    use frost::Scalar;
     use frost::common::PolyCommitment;
     use frost::schnorr::ID;
+    use frost::Scalar;
     use hashbrown::HashMap;
     use rand_core::{CryptoRng, OsRng, RngCore};
 
