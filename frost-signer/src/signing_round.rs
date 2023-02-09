@@ -108,8 +108,8 @@ pub struct NonceRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NonceResponse {
     pub dkg_id: u64,
-    pub signer_id: u32,
-    pub nonce: Vec<PublicNonce>,
+    pub party_id: u32,
+    pub nonce: PublicNonce,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -169,9 +169,7 @@ impl SigningRound {
             MessageTypes::SignShareRequest(sign_share_request) => {
                 self.sign_share_request(sign_share_request)
             }
-            MessageTypes::NonceRequest(nonce_request) => {
-                self.nonce_request(nonce_request)
-            }
+            MessageTypes::NonceRequest(nonce_request) => self.nonce_request(nonce_request),
             _ => Ok(vec![]), // TODO
         };
 
@@ -213,13 +211,18 @@ impl SigningRound {
     ) -> Result<Vec<MessageTypes>, String> {
         let mut rng = OsRng::default();
         let mut msgs = vec![];
-        let response = MessageTypes::NonceResponse(NonceResponse{
-            dkg_id: nonce_request.dkg_id,
-            signer_id: self.signer.signer_id,
-            nonce: self.signer.frost_signer.gen_nonces(&mut rng),
-        });
-        info!("nonce request with dkg_id {:?}. response sent from signer {}", nonce_request.dkg_id, self.signer.signer_id);
-        msgs.push(response);
+        for party in &mut self.signer.frost_signer.parties {
+            let response = MessageTypes::NonceResponse(NonceResponse {
+                dkg_id: nonce_request.dkg_id,
+                party_id: party.id as u32,
+                nonce: party.gen_nonce(&mut rng),
+            });
+            info!(
+                "nonce request with dkg_id {:?}. response sent from party_id {}",
+                nonce_request.dkg_id, party.id
+            );
+            msgs.push(response);
+        }
         Ok(msgs)
     }
 
@@ -231,7 +234,10 @@ impl SigningRound {
         if sign_request.signer_id == self.signer.signer_id {
             let party_ids = self.signer.frost_signer.get_ids();
             let party_nonces = &self.public_nonces;
-            let shares = self.signer.frost_signer.sign(&*sign_request.message, &*party_ids, party_nonces);
+            let shares =
+                self.signer
+                    .frost_signer
+                    .sign(&*sign_request.message, &*party_ids, party_nonces);
             let response = MessageTypes::SignShareResponse(SignatureShareResponse {
                 dkg_id: sign_request.dkg_id,
                 correlation_id: sign_request.correlation_id,

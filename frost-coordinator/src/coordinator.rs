@@ -116,14 +116,14 @@ where
             match self.wait_for_next_message()?.msg {
                 MessageTypes::NonceRequest(_) => {}
                 MessageTypes::NonceResponse(nonce_response) => {
-                    let signer_id = nonce_response.signer_id;
+                    let party_id = nonce_response.party_id;
                     self.public_nonces
-                        .insert(nonce_response.signer_id as u32, nonce_response);
+                        .insert(nonce_response.party_id as u32, nonce_response);
                     println!(
-                        "NonceResponse from {:?}. Got {} nonce responses of threshold {}",
+                        "NonceResponse from party #{:?}. Got {} nonce responses of threshold {}",
+                        party_id,
+                        self.public_nonces.len(),
                         self.threshold,
-                        signer_id,
-                        self.public_nonces.len()
                     );
                 }
                 msg => {
@@ -141,7 +141,7 @@ where
         let nonces: Vec<PublicNonce> = self
             .public_nonces
             .iter()
-            .flat_map(|(_, nonce)| nonce.nonce.clone())
+            .map(|(_, nonce)| nonce.nonce.clone())
             .collect();
         let waiting_for_signature_shares: HashSet<u32> =
             selected_signer_ids.iter().map(|i| *i).collect();
