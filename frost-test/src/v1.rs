@@ -1,8 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use frost::traits::Signer;
-    use frost::v1;
     use rand_core::OsRng;
+    use wtfrost::{traits::Signer, v1};
 
     #[test]
     fn test() {

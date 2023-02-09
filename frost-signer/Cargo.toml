@@ -13,7 +13,7 @@ crate-type = ["lib"]   # The crate types to generate.
 [dependencies]
 bincode = { workspace = true }
 clap = { workspace = true }
-frost = { workspace = true }
+wtfrost = { workspace = true }
 hashbrown = { workspace = true }
 itertools = { workspace = true }
 rand_core = { workspace = true }

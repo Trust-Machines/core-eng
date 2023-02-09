@@ -5,13 +5,13 @@ mod v1;
 
 #[cfg(test)]
 mod tests {
-    use frost::{
+    use hashbrown::HashMap;
+    use rand_core::{CryptoRng, OsRng, RngCore};
+    use wtfrost::{
         common::{PolyCommitment, PublicNonce},
         errors::DkgError,
         v1::{Party, SignatureAggregator, SignatureShare},
     };
-    use hashbrown::HashMap;
-    use rand_core::{CryptoRng, OsRng, RngCore};
 
     fn distribute(
         parties: &mut Vec<Party>,

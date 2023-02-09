@@ -1,5 +1,5 @@
-use frost::common::PublicNonce;
 use frost_signer::signing_round::{DkgBegin, MessageTypes, SignatureShareRequest, SigningRound};
+use wtfrost::common::PublicNonce;
 
 #[ignore]
 fn setup_signer(total: usize, threshold: usize) -> SigningRound {

@@ -11,7 +11,7 @@ edition = "2021"
 [dependencies]
 blockstack-core = { workspace = true }
 clap = { workspace = true }
-frost = { workspace = true }
+wtfrost = { workspace = true }
 serde = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

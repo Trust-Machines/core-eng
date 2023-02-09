@@ -12,4 +12,4 @@ frost-coordinator = { path = "../frost-coordinator" }
 frost-signer = { path = "../frost-signer" }
 rand_core = { workspace = true }
 hashbrown = { workspace = true }
-frost = { workspace = true }
+wtfrost = { workspace = true }

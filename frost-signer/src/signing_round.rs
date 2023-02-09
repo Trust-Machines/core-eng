@@ -1,13 +1,13 @@
-pub use frost;
-use frost::{
-    common::{PolyCommitment, PublicNonce},
-    Scalar,
-};
 use hashbrown::HashMap;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use tracing::{debug, info, warn};
+pub use wtfrost;
+use wtfrost::{
+    common::{PolyCommitment, PublicNonce},
+    v1, Scalar,
+};
 
 use crate::state_machine::{StateMachine, States};
 
@@ -24,7 +24,7 @@ pub struct SigningRound {
 }
 
 pub struct Signer {
-    pub frost_signer: frost::v1::Signer,
+    pub frost_signer: v1::Signer,
     pub signer_id: u64,
 }
 
@@ -126,7 +126,7 @@ pub struct SignatureShareResponse {
     pub dkg_id: u64,
     pub correlation_id: u64,
     pub signer_id: usize,
-    pub signature_share: frost::v1::SignatureShare,
+    pub signature_share: v1::SignatureShare,
 }
 
 impl SigningRound {
@@ -138,7 +138,7 @@ impl SigningRound {
     ) -> SigningRound {
         assert!(threshold <= total);
         let mut rng = OsRng::default();
-        let frost_signer = frost::v1::Signer::new(&party_ids, total, threshold, &mut rng);
+        let frost_signer = v1::Signer::new(&party_ids, total, threshold, &mut rng);
         let signer = Signer {
             frost_signer,
             signer_id,
@@ -313,11 +313,9 @@ impl SigningRound {
 
 #[cfg(test)]
 mod test {
-    use frost::common::PolyCommitment;
-    use frost::schnorr::ID;
-    use frost::Scalar;
     use hashbrown::HashMap;
     use rand_core::{CryptoRng, OsRng, RngCore};
+    use wtfrost::{common::PolyCommitment, schnorr::ID, Scalar};
 
     use crate::signing_round::{DkgPublicShare, MessageTypes, SigningRound};
     use crate::state_machine::States;
