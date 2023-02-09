@@ -218,6 +218,7 @@ impl SigningRound {
             signer_id: self.signer.signer_id,
             nonce: self.signer.frost_signer.gen_nonces(&mut rng),
         });
+        info!("nonce request with dkg_id {:?}. response sent from signer {}", nonce_request.dkg_id, self.signer.signer_id);
         msgs.push(response);
         Ok(msgs)
     }

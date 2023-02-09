@@ -116,8 +116,15 @@ where
             match self.wait_for_next_message()?.msg {
                 MessageTypes::NonceRequest(_) => {}
                 MessageTypes::NonceResponse(nonce_response) => {
+                    let signer_id = nonce_response.signer_id;
                     self.public_nonces
                         .insert(nonce_response.signer_id as u32, nonce_response);
+                    println!(
+                        "NonceResponse from {:?}. Got {} nonce responses of threshold {}",
+                        self.threshold,
+                        signer_id,
+                        self.public_nonces.len()
+                    );
                 }
                 msg => {
                     println!("Got unexpected message {:?})", msg);
@@ -127,8 +134,6 @@ where
             if self.public_nonces.len() == self.threshold {
                 break;
             }
-
-            println!("Got {} nonce responses", self.public_nonces.len());
         }
 
         // get the signers who responded with a nonce
