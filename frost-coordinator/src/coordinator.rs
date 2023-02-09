@@ -110,6 +110,7 @@ where
             sig: [0; 32],
         };
 
+        info!("dkg_id #{}. NonceRequest sent.", self.current_dkg_id);
         self.network.send_message(nonce_request_message)?;
 
         loop {
@@ -132,6 +133,7 @@ where
             }
 
             if self.public_nonces.len() == self.threshold {
+                info!("Nonce threshold of {} met.", self.threshold);
                 break;
             }
         }
