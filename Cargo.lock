@@ -638,7 +638,6 @@ dependencies = [
  "clap 4.1.4",
  "hashbrown 0.13.2",
  "itertools",
- "p256k1",
  "rand 0.8.5",
  "rand_core 0.5.1",
  "serde",

@@ -1,7 +1,6 @@
 pub use frost;
-use frost::common::{PolyCommitment, PublicNonce};
+use frost::{common::{PolyCommitment, PublicNonce}, Scalar};
 use hashbrown::HashMap;
-use p256k1::scalar::Scalar;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -311,10 +310,10 @@ impl SigningRound {
 
 #[cfg(test)]
 mod test {
+    use frost::Scalar;
     use frost::common::PolyCommitment;
     use frost::schnorr::ID;
     use hashbrown::HashMap;
-    use p256k1::scalar::Scalar;
     use rand_core::{CryptoRng, OsRng, RngCore};
 
     use crate::signing_round::{DkgPublicShare, MessageTypes, SigningRound};

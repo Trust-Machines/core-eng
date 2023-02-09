@@ -17,7 +17,6 @@ frost = { workspace = true }
 hashbrown = { workspace = true }
 itertools = { workspace = true }
 rand_core = { workspace = true }
-p256k1 = { workspace = true }
 serde = { workspace = true }
 sha3 = { workspace = true }
 thiserror = { workspace = true }
