@@ -618,22 +618,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "frost"
-version = "0.1.0"
-source = "git+https://github.com/trust-machines/frost?rev=8e188c271213e291e321b8aeda6273c054d25264#8e188c271213e291e321b8aeda6273c054d25264"
-dependencies = [
- "hashbrown 0.13.2",
- "hex",
- "num-traits",
- "p256k1",
- "polynomial",
- "rand_core 0.5.1",
- "serde",
- "sha3",
- "thiserror",
-]
-
-[[package]]
 name = "frost-coordinator"
 version = "0.0.1"
 dependencies = [
@@ -652,7 +636,6 @@ version = "0.0.1"
 dependencies = [
  "bincode",
  "clap 4.1.4",
- "frost",
  "hashbrown 0.13.2",
  "itertools",
  "p256k1",
@@ -665,18 +648,19 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "ureq",
+ "wtfrost",
 ]
 
 [[package]]
 name = "frost-test"
 version = "0.1.0"
 dependencies = [
- "frost",
  "frost-coordinator",
  "frost-signer",
  "hashbrown 0.13.2",
  "rand_core 0.5.1",
  "relay-server",
+ "wtfrost",
 ]
 
 [[package]]
@@ -1868,12 +1852,12 @@ version = "0.0.1"
 dependencies = [
  "blockstack-core",
  "clap 4.1.4",
- "frost",
  "serde",
  "thiserror",
  "toml",
  "tracing",
  "tracing-subscriber",
+ "wtfrost",
 ]
 
 [[package]]
@@ -2552,6 +2536,23 @@ checksum = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"
 dependencies = [
  "winapi 0.2.8",
  "winapi-build",
+]
+
+[[package]]
+name = "wtfrost"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a0acc8d879a1f7cdfa81a300476e316efcbefe005425ee1f22fdfbe5c2634bf"
+dependencies = [
+ "hashbrown 0.13.2",
+ "hex",
+ "num-traits",
+ "p256k1",
+ "polynomial",
+ "rand_core 0.5.1",
+ "serde",
+ "sha3",
+ "thiserror",
 ]
 
 [[package]]
