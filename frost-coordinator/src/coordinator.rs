@@ -27,6 +27,7 @@ pub struct Coordinator<Network: NetListen> {
     id: u32, // Used for relay coordination
     current_dkg_id: u64,
     total_signers: usize, // Assuming the signers cover all id:s in {1, 2, ..., total_signers}
+    total_parties: usize,
     threshold: usize,
     network: Network,
     dkg_public_shares: BTreeMap<u32, DkgPublicShare>,
@@ -40,6 +41,7 @@ impl<Network: NetListen> Coordinator<Network> {
         id: usize,
         dkg_id: u64,
         total_signers: usize,
+        total_parties: usize,
         threshold: usize,
         network: Network,
     ) -> Self {
@@ -47,6 +49,7 @@ impl<Network: NetListen> Coordinator<Network> {
             id: id as u32,
             current_dkg_id: dkg_id,
             total_signers,
+            total_parties,
             threshold,
             network,
             dkg_public_shares: Default::default(),
@@ -142,21 +145,23 @@ where
         // make an array of dkg public share polys for SignatureAggregator
         info!(
             "collecting commitments from 1..{} in {:?}",
-            self.total_signers,
+            self.total_parties,
             self.dkg_public_shares.keys().collect::<Vec<&u32>>()
         );
-        let polys: Vec<PolyCommitment> = (1..self.total_signers as u32)
-            .map(|i| self.dkg_public_shares[&i].public_share.clone())
+        let polys: Vec<PolyCommitment> = self
+            .dkg_public_shares
+            .values()
+            .map(|ps| ps.public_share.clone())
             .collect();
 
         info!(
-            "SignatureAggregate::new total_signers: {} threshold: {} commitments: {} ",
-            self.total_signers,
+            "SignatureAggregate::new total_parties: {} threshold: {} commitments: {} ",
+            self.total_parties,
             self.threshold,
             polys.len()
         );
         let mut aggregator =
-            match v1::SignatureAggregator::new(self.total_signers, self.threshold, polys) {
+            match v1::SignatureAggregator::new(self.total_parties, self.threshold, polys) {
                 Ok(aggregator) => aggregator,
                 Err(e) => return Err(Error::Aggregator(e)),
             };
