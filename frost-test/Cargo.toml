@@ -10,6 +10,6 @@ license = "GPLv3"
 relay-server = { path = "../relay-server" }
 frost-coordinator = { path = "../frost-coordinator" }
 frost-signer = { path = "../frost-signer" }
-rand_core = "0.5"
-hashbrown = "0.13"
-frost = { git = "https://github.com/trust-machines/frost", branch = "main" }
+rand_core = { workspace = true }
+hashbrown = { workspace = true }
+frost = { workspace = true }

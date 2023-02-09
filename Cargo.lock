@@ -176,7 +176,7 @@ dependencies = [
 [[package]]
 name = "blockstack-core"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#4dd923d69456cfab1ce577dcfd6d071d92ee62a4"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#041d10ac83e01b0aab43be1d720acb445f3ee861"
 dependencies = [
  "chrono",
  "clarity",
@@ -335,7 +335,7 @@ dependencies = [
 [[package]]
 name = "clarity"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#4dd923d69456cfab1ce577dcfd6d071d92ee62a4"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#041d10ac83e01b0aab43be1d720acb445f3ee861"
 dependencies = [
  "integer-sqrt",
  "lazy_static",
@@ -620,44 +620,12 @@ dependencies = [
 [[package]]
 name = "frost"
 version = "0.1.0"
-source = "git+https://github.com/trust-machines/frost?branch=sbtc#7e3f28dfb293d7c769c5158cf8d3481abfb19e26"
-dependencies = [
- "hashbrown 0.13.2",
- "hex",
- "num-traits",
- "p256k1 0.1.0",
- "polynomial",
- "rand_core 0.5.1",
- "serde",
- "sha3",
- "thiserror",
-]
-
-[[package]]
-name = "frost"
-version = "0.1.0"
 source = "git+https://github.com/trust-machines/frost?rev=8e188c271213e291e321b8aeda6273c054d25264#8e188c271213e291e321b8aeda6273c054d25264"
 dependencies = [
  "hashbrown 0.13.2",
  "hex",
  "num-traits",
- "p256k1 1.0.0",
- "polynomial",
- "rand_core 0.5.1",
- "serde",
- "sha3",
- "thiserror",
-]
-
-[[package]]
-name = "frost"
-version = "1.0.0"
-source = "git+https://github.com/trust-machines/frost?branch=main#1965f1258e3946063ef6d5c2e5c71042948541a8"
-dependencies = [
- "hashbrown 0.13.2",
- "hex",
- "num-traits",
- "p256k1 1.0.0",
+ "p256k1",
  "polynomial",
  "rand_core 0.5.1",
  "serde",
@@ -684,10 +652,10 @@ version = "0.0.1"
 dependencies = [
  "bincode",
  "clap 4.1.4",
- "frost 0.1.0 (git+https://github.com/trust-machines/frost?rev=8e188c271213e291e321b8aeda6273c054d25264)",
+ "frost",
  "hashbrown 0.13.2",
  "itertools",
- "p256k1 1.0.0",
+ "p256k1",
  "rand 0.8.5",
  "rand_core 0.5.1",
  "serde",
@@ -703,7 +671,7 @@ dependencies = [
 name = "frost-test"
 version = "0.1.0"
 dependencies = [
- "frost 1.0.0",
+ "frost",
  "frost-coordinator",
  "frost-signer",
  "hashbrown 0.13.2",
@@ -1192,26 +1160,6 @@ name = "overload"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
-
-[[package]]
-name = "p256k1"
-version = "0.1.0"
-source = "git+https://github.com/Trust-Machines/p256k1?branch=sbtc#5e27b7378614ac241cb48789d89cb411f1a4e355"
-dependencies = [
- "bindgen",
- "bitvec",
- "cc",
- "hex",
- "itertools",
- "num-traits",
- "proc-macro2",
- "quote",
- "rand_core 0.5.1",
- "rustfmt-wrapper",
- "serde",
- "sha3",
- "syn",
-]
 
 [[package]]
 name = "p256k1"
@@ -1891,7 +1839,7 @@ dependencies = [
 [[package]]
 name = "stacks-common"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#4dd923d69456cfab1ce577dcfd6d071d92ee62a4"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#041d10ac83e01b0aab43be1d720acb445f3ee861"
 dependencies = [
  "chrono",
  "curve25519-dalek",
@@ -1920,7 +1868,7 @@ version = "0.0.1"
 dependencies = [
  "blockstack-core",
  "clap 4.1.4",
- "frost 0.1.0 (git+https://github.com/trust-machines/frost?branch=sbtc)",
+ "frost",
  "serde",
  "thiserror",
  "toml",
