@@ -13,6 +13,7 @@ blockstack-core = { git = "https://github.com/stacks-network/stacks-blockchain/"
 clap = { version = "4.1.1", features = ["derive"] }
 wtfrost = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0" 
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
 thiserror = "1.0"
