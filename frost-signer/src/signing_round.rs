@@ -229,22 +229,25 @@ impl SigningRound {
         sign_request: SignatureShareRequest,
     ) -> Result<Vec<MessageTypes>, String> {
         let mut msgs = vec![];
-        let party = self
+        if let Some(party) = self
             .signer
             .frost_signer
             .parties
             .iter()
             .find(|p| p.id == sign_request.party_id.try_into().unwrap())
-            .unwrap();
-        let party_nonces = &self.public_nonces;
-        let share = party.sign(&*sign_request.message, &[party.id], party_nonces);
-        let response = MessageTypes::SignShareResponse(SignatureShareResponse {
-            dkg_id: sign_request.dkg_id,
-            correlation_id: sign_request.correlation_id,
-            party_id: sign_request.party_id,
-            signature_share: share,
-        });
-        msgs.push(response);
+        {
+            let party_nonces = &self.public_nonces;
+            let share = party.sign(&*sign_request.message, &[party.id], party_nonces);
+            let response = MessageTypes::SignShareResponse(SignatureShareResponse {
+                dkg_id: sign_request.dkg_id,
+                correlation_id: sign_request.correlation_id,
+                party_id: sign_request.party_id,
+                signature_share: share,
+            });
+            msgs.push(response);
+        } else {
+            debug!("SignShareRequest for {} dropped.", sign_request.party_id);
+        }
         return Ok(msgs);
     }
 

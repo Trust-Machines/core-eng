@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::collections::BTreeMap;
 use std::time::Duration;
 
@@ -128,7 +129,7 @@ where
                     );
                 }
                 msg => {
-                    info!("Got unexpected message {:?})", msg);
+                    info!("NonceLoop Got unexpected message {:?})", msg.type_id());
                 }
             }
 
@@ -139,7 +140,7 @@ where
         }
 
         // get the parties who responded with a nonce
-        let waiting_for_signature_shares: HashSet<u32> =
+        let mut waiting_for_signature_shares: HashSet<u32> =
             HashSet::from_iter(self.public_nonces.keys().cloned());
 
         // make an array of dkg public share polys for SignatureAggregator
@@ -185,18 +186,22 @@ where
         loop {
             match self.wait_for_next_message()?.msg {
                 MessageTypes::SignShareResponse(response) => {
-                    if waiting_for_signature_shares.contains(&response.party_id) {
+                    if let Some(_party_id) = waiting_for_signature_shares.take(&response.party_id) {
                         self.signature_shares
                             .insert(response.party_id, response.signature_share);
                     }
+                    info!(
+                        "signature share for {} received.  left to receive: {:?}",
+                        response.party_id, waiting_for_signature_shares
+                    );
                 }
+                MessageTypes::SignShareRequest(_) => {}
                 msg => {
-                    println!("Got unexpected msg {:?}", msg);
+                    debug!("SigShare loop got unexpected msg {:?}", msg.type_id());
                 }
             }
 
             if waiting_for_signature_shares.len() == 0 {
-                println!("Got all signature shares");
                 break;
             }
         }
