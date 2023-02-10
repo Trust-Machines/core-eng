@@ -10,7 +10,7 @@ The `relay-server` is an HTTP service that has two functions:
 ## Installation (optional)
 
 ```sh
-cargo install --git https://github.com/Trust-Machines/core-eng
+cargo install relay-server --git https://github.com/Trust-Machines/core-eng
 ```
 
 ## Start the `relay-server` server
@@ -36,3 +36,25 @@ The default address is `http://127.0.0.1:9776`.
 1. Start the server `cargo run relay-server`
 2. Run [./test.sh](./test.sh) in another terminal.
 3. Close the server using `Ctrl+C`.
+
+## Using the server as a library
+
+The `relay-server` library is designed not to use IO directly, and all IO bindings are moved to executables. See [/src/bin/relay-server.rs](/src/bin/relay-server.rs) as an example.
+
+```rust
+// create a server
+let mut server = relay_server::Server::default();
+// send a message using a bidirectional stream.
+{
+  const REQUEST: &str = "\
+    POST / HTTP/1.0\r\n\
+    Content-Length: 6\r\n\
+    \r\n\
+    Hello!";
+  let response = server.call(REQUEST.as_bytes()).unwrap();
+  const RESPONSE: &str = "\
+    HTTP/1.0 200 OK\r\n\
+    \r\n";
+  assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
+}
+```

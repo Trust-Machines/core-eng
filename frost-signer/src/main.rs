@@ -11,6 +11,9 @@ use frost_signer::logging;
 use frost_signer::net::{HttpNet, HttpNetListen, Message, Net, NetListen};
 use frost_signer::signing_round::SigningRound;
 
+// maximum party_id
+const PARTY_MAX: u64 = 3;
+
 fn main() {
     logging::initiate_tracing_subscriber(tracing::Level::INFO).unwrap();
 
@@ -52,7 +55,8 @@ fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u64) {
 
 fn main_loop(config: &Config, net: &HttpNet, rx: Receiver<Message>) {
     let signer_id = config.signer.frost_id;
-    let party_ids = vec![(signer_id * 2 - 1) as usize, (signer_id * 2) as usize]; // take two party/reward slots based on id
+    assert!(signer_id > 0 && signer_id <= PARTY_MAX);
+    let party_ids = vec![(signer_id * 2 - 2) as usize, (signer_id * 2 - 1) as usize]; // make two party_ids based on signer_id
     let mut round = SigningRound::new(
         config.common.minimum_parties,
         config.common.total_parties,
