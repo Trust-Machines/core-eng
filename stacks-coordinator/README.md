@@ -16,7 +16,7 @@ To fulfill the above, the coordinator must:
 
 ```mermaid
 graph TD
-    C[Coordinator]-->|Mint/burn sBTC|D[sBTC contract]
+    C[Stacks coordinator]-->|Mint/burn sBTC|D[sBTC contract]
     C-->|Set peg wallet address|D
     C-->|Get signer configuration|D
     C-->|Get sBTC ops|N[Stacks node RPC]
@@ -25,39 +25,110 @@ graph TD
 ```
 
 ## Design draft
-The coordinator is anticipated to consist of three main components:
+The coordinator is anticipated to consist of three main components for functionality:
 
-1. A job queue which observes the state of the stacks blockchain, and can be polled for peg operations which need to be processed.
+1. A job queue which observes the state of the stacks and bitcoin blockchain. The queue can be polled for peg operations which need to be processed.
 2. A fee wallet capable of creating and funding mint/burn sbtc operations on the stacks chain, and peg-out fulfillments on Bitcoin.
 3. A frost coordinator, which interacts with an http relay to run frost operations such as distributed key generation and signing messages.
 
+In addition to these three components, the coordinator will need a component `StacksNode` and a component `BitcoinNode` to facilitate interaction
+with blockchain nodes.
+
+```mermaid
+classDiagram
+    StacksCoordinator *-- PegQueue
+    StacksCoordinator *-- FeeWallet
+    StacksCoordinator *-- FrostCoordinator
+    StacksCoordinator *-- StacksNode
+    StacksCoordinator *-- BitcoinNode
+
+    StacksNode <.. PegQueue
+    StacksNode <.. FeeWallet
+    BitcoinNode <.. FeeWallet
+    
+    class StacksCoordinator {
+        PegQueue
+        FeeWallet
+        FrostCoordinator
+        StacksNode
+        BitcoinNode
+    }
+
+    class PegQueue {
+      +next_unprocessed_peg_in_op()
+      +next_unprocessed_peg_out_request_op()
+    }
+
+    class FeeWallet {
+      +mint_sbtc()
+      +burn_sbtc()
+      +fulfill_peg_out()
+      +set_wallet_address()
+    }
+
+    class FrostCoordinator {
+      +run_dkg_round()
+      +sign_message()
+      +get_aggregate_public_key()
+    }
+
+    class StacksNode {
+      +get_peg_in_ops()
+      +get_peg_out_request_ops()
+      +next_nonce()
+      +broadcast_transaction()
+    }
+
+    class BitcoinNode {
+      +broadcast_transaction()
+    }
+```
+
 ```rust
 struct StacksCoordinator {
-  job_queue: JobQueue,
+  job_queue: PegQueue,
   fee_wallet: FeeWallet,
   frost_coordinator: FrostCoordinator,
+  stacks_node: StacksNode,
+  bitcoin_node: BitcoinNode,
 }
 
-impl JobQueue {
-  fn next_unminted_peg_in_op() -> PegInOp
-  fn next_unfulfilled_peg_out_request_op() -> PegOutRequest
+// This Queue will need a persisted state to ensure operations are read
+// at most once. For the alpha test the system will guarantee at-most once porcessing
+// of peg-in/peg-out requests. Any missed operations should be possible to manually handle
+impl PegQueue{
+  fn next_unprocessed_peg_in_op(StacksNode) -> PegInOp
+  fn next_unprocessed_peg_out_request_op(StacksNode) -> PegOutRequest
 
   // Additional methods to ensure exactly-once processing of requests may be added
 }
 
-// Needs to work on mainnet/testnet stacks and mainnet/testnet bitcoin
+// Should initially focus on on mainnet stacks and mainnet bitcoin
+// We may want to split this up into a BitcoinWallet and a StacksWallet depending
+// on the implementation.
 impl FeeWallet {
-  fn mint_sbtc() -> MintSbtcTransaction
-  fn burn_sbtc() -> BurnSbtcTransaction
-  fn fulfill_peg_out() -> PegOutFulfillTransaction
+  fn mint_sbtc() -> StacksTransaction
+  fn burn_sbtc() -> StacksTransaction
+  fn fulfill_peg_out() -> BitcoinTransaction
 
-  fn set_wallet_address()
+  fn set_wallet_address() -> StacksTransaction
 }
 
 impl FrostCoordinator {
-  fn run_dkg_generation()
+  fn run_dkg_round()
   fn sign_message(msg: &str) -> Signature
   fn get_aggregate_public_key() -> SignerPublicKey
+}
+
+impl StacksNode {
+  fn get_peg_in_ops(...) -> [PegInOp]
+  fn get_peg_out_request_ops(...) -> [PegOutRequestOp]
+
+  fn broadcast_transaction(tx)
+}
+
+impl BitcoinNode {
+  fn broadcast_transaction(tx)
 }
 ```
 
@@ -136,6 +207,7 @@ These will be added as standalone issues, not explicitly included in the impleme
 
 ### Closed alpha testing
 Maintain a closed list of members of the alpha testing. Only addresses in this list is allowed to peg-in & peg-out sBTC.
+The list should contain Stacks addresses which are the only allowed recipients of peg-ins, and BTC addresses which are the only allowed recipients of peg-outs.
 
 Time estimate: 1 day.
 
