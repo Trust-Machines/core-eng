@@ -7,6 +7,7 @@ members = [
   "stacks-coordinator",
   "stacks-signer",
   ]
+exclude = ["deno-proxy"]
 
 [workspace.dependencies]
 blockstack-core = { git = "https://github.com/stacks-network/stacks-blockchain/", branch = "3493-sbtc-peg-out-wire-format" }
