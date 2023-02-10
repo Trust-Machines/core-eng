@@ -25,7 +25,7 @@ pub struct SigningRound {
 }
 
 pub struct Signer {
-    pub frost_signer: frost::v1::Signer,
+    pub frost_signer: wtfrost::v1::Signer,
     pub signer_id: u32,
 }
 
@@ -127,7 +127,7 @@ pub struct SignatureShareResponse {
     pub dkg_id: u64,
     pub correlation_id: u64,
     pub party_id: u32,
-    pub signature_share: frost::v1::SignatureShare,
+    pub signature_share: wtfrost::v1::SignatureShare,
 }
 
 impl SigningRound {
@@ -155,6 +155,12 @@ impl SigningRound {
             shares: HashMap::new(),
             public_nonces: vec![],
         }
+    }
+
+    pub fn reset(&mut self, dkg_id: u64) {
+        self.dkg_id = Some(dkg_id);
+        self.commitments.clear();
+        self.shares.clear();
     }
 
     pub fn process(&mut self, message: MessageTypes) -> Result<Vec<MessageTypes>, String> {

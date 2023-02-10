@@ -12,7 +12,7 @@ use frost_signer::net::{HttpNet, HttpNetListen, Message, Net, NetListen};
 use frost_signer::signing_round::SigningRound;
 
 // maximum party_id
-const PARTY_MAX: u64 = 3;
+const PARTY_MAX: u32 = 3;
 
 fn main() {
     logging::initiate_tracing_subscriber(tracing::Level::INFO).unwrap();
