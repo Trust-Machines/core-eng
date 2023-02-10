@@ -2,16 +2,14 @@ use std::any::Any;
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use frost::common::PublicNonce;
-use frost::{common::PolyCommitment, errors::AggregatorError, v1};
+use wtfrost::common::PublicNonce;
+use wtfrost::{common::PolyCommitment, errors::AggregatorError, Point, v1};
 use frost_signer::net::{HttpNetError, Message, NetListen};
 use frost_signer::signing_round::{
     DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse, SignatureShareRequest,
 };
 use hashbrown::HashSet;
 use tracing::{debug, info};
-
-use p256k1::point::Point;
 
 use serde::{Deserialize, Serialize};
 
