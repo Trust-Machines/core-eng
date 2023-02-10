@@ -176,7 +176,7 @@ dependencies = [
 [[package]]
 name = "blockstack-core"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#041d10ac83e01b0aab43be1d720acb445f3ee861"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#a061a9e2d752dad40a157e91768f4f7aa32d6248"
 dependencies = [
  "chrono",
  "clarity",
@@ -335,7 +335,7 @@ dependencies = [
 [[package]]
 name = "clarity"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#041d10ac83e01b0aab43be1d720acb445f3ee861"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#a061a9e2d752dad40a157e91768f4f7aa32d6248"
 dependencies = [
  "integer-sqrt",
  "lazy_static",
@@ -623,12 +623,10 @@ version = "0.0.1"
 dependencies = [
  "backoff",
  "clap 4.1.4",
- "frost",
  "frost-signer",
- "hashbrown",
- "p256k1",
- "serde",
  "hashbrown 0.13.2",
+ "p256k1 0.1.0",
+ "serde",
  "thiserror",
  "tracing",
  "tracing-subscriber",
@@ -1150,9 +1148,29 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "p256k1"
-version = "1.0.0"
+version = "0.1.0"
+source = "git+https://github.com/Trust-Machines/p256k1?branch=sbtc#5e27b7378614ac241cb48789d89cb411f1a4e355"
+dependencies = [
+ "bindgen",
+ "bitvec",
+ "cc",
+ "hex",
+ "itertools",
+ "num-traits",
+ "proc-macro2",
+ "quote",
+ "rand_core 0.5.1",
+ "rustfmt-wrapper",
+ "serde",
+ "sha3",
+ "syn",
+]
+
+[[package]]
+name = "p256k1"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8639660e093fd6dcba30d671524dfa4a47f5bff07e5e998ce57c260949f1c768"
+checksum = "c7a33ef89bc181a219684c34f995862979be5f6e5beb4cc1b5fc451d6c137511"
 dependencies = [
  "bindgen",
  "bitvec",
@@ -1826,7 +1844,7 @@ dependencies = [
 [[package]]
 name = "stacks-common"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#041d10ac83e01b0aab43be1d720acb445f3ee861"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#a061a9e2d752dad40a157e91768f4f7aa32d6248"
 dependencies = [
  "chrono",
  "curve25519-dalek",
@@ -2550,7 +2568,7 @@ dependencies = [
  "hashbrown 0.13.2",
  "hex",
  "num-traits",
- "p256k1",
+ "p256k1 1.0.1",
  "polynomial",
  "rand_core 0.5.1",
  "serde",
