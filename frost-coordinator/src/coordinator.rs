@@ -2,14 +2,14 @@ use std::any::Any;
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use wtfrost::common::PublicNonce;
-use wtfrost::{common::PolyCommitment, errors::AggregatorError, Point, v1};
 use frost_signer::net::{HttpNetError, Message, NetListen};
 use frost_signer::signing_round::{
     DkgBegin, DkgPublicShare, MessageTypes, NonceRequest, NonceResponse, SignatureShareRequest,
 };
 use hashbrown::HashSet;
 use tracing::{debug, info};
+use wtfrost::common::PublicNonce;
+use wtfrost::{common::PolyCommitment, errors::AggregatorError, v1, Point};
 
 use serde::{Deserialize, Serialize};
 
@@ -131,7 +131,7 @@ where
                 }
             }
 
-            if self.public_nonces.len() == self.threshold {
+            if self.public_nonces.len() == self.total_parties {
                 info!("Nonce threshold of {} met.", self.threshold);
                 break;
             }
@@ -154,7 +154,7 @@ where
             .collect();
 
         info!(
-            "SignatureAggregate::new total_parties: {} threshold: {} commitments: {} ",
+            "SignatureAggregator::new total_parties: {} threshold: {} commitments: {} ",
             self.total_parties,
             self.threshold,
             polys.len()
@@ -165,14 +165,20 @@ where
                 Err(e) => return Err(Error::Aggregator(e)),
             };
 
+        let nonces: Vec<(u32, PublicNonce)> = self
+            .public_nonces
+            .iter()
+            .map(|(i, n)| (*i, n.nonce.clone()))
+            .collect();
+
         // request signature shares
-        for (party_id, nonce_response) in &self.public_nonces {
+        for (party_id, _nonce_response) in &self.public_nonces {
             let signature_share_request_message = Message {
                 msg: MessageTypes::SignShareRequest(SignatureShareRequest {
                     dkg_id: self.current_dkg_id,
                     correlation_id: 0,
                     party_id: *party_id,
-                    nonce: nonce_response.nonce.clone(),
+                    nonces: nonces.clone(),
                     message: msg.to_vec(),
                 }),
                 sig: [0; 32],

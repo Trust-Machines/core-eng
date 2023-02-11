@@ -118,7 +118,7 @@ pub struct SignatureShareRequest {
     pub dkg_id: u64,
     pub correlation_id: u64,
     pub party_id: u32,
-    pub nonce: PublicNonce,
+    pub nonces: Vec<(u32, PublicNonce)>,
     pub message: Vec<u8>,
 }
 
@@ -287,8 +287,10 @@ impl SigningRound {
             .iter()
             .find(|p| p.id == sign_request.party_id.try_into().unwrap())
         {
-            let party_nonces = &self.public_nonces;
-            let share = party.sign(&*sign_request.message, &[party.id], party_nonces);
+            //let party_nonces = &self.public_nonces;
+            let signer_ids: Vec<usize> = sign_request.nonces.iter().map(|(id,_)| *id as usize).collect();
+            let signer_nonces: Vec<PublicNonce> = sign_request.nonces.iter().map(|(_,n)| n.clone()).collect();
+            let share = party.sign(&*sign_request.message, &signer_ids, &signer_nonces);
             let response = MessageTypes::SignShareResponse(SignatureShareResponse {
                 dkg_id: sign_request.dkg_id,
                 correlation_id: sign_request.correlation_id,
