@@ -1,0 +1,23 @@
+{
+  "name": "core-eng",
+  "version": "1.0.0",
+  "description": "[![rust](https://github.com/Trust-Machines/core-eng/actions/workflows/rust.yml/badge.svg)](https://github.com/Trust-Machines/core-eng/actions/workflows/rust.yml)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Trust-Machines/core-eng.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Trust-Machines/core-eng/issues"
+  },
+  "homepage": "https://github.com/Trust-Machines/core-eng#readme",
+  "devDependencies": {
+    "@types/node": "^18.13.0",
+    "typescript": "^4.9.5"
+  }
+}

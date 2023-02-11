@@ -1,0 +1,400 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'relay-server'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=relay-server"
+                ],
+                "filter": {
+                    "name": "relay-server",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'relay-server'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=relay-server",
+                    "--package=relay-server"
+                ],
+                "filter": {
+                    "name": "relay-server",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'relay-server'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=relay-server",
+                    "--package=relay-server"
+                ],
+                "filter": {
+                    "name": "relay-server",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'relay-server-test'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=relay-server-test",
+                    "--package=relay-server"
+                ],
+                "filter": {
+                    "name": "relay-server-test",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'relay-server-test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=relay-server-test",
+                    "--package=relay-server"
+                ],
+                "filter": {
+                    "name": "relay-server-test",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'frost-test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=frost-test"
+                ],
+                "filter": {
+                    "name": "frost-test",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'frost-coordinator'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=frost-coordinator"
+                ],
+                "filter": {
+                    "name": "frost-coordinator",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'frost-coordinator'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=frost-coordinator",
+                    "--package=frost-coordinator"
+                ],
+                "filter": {
+                    "name": "frost-coordinator",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'frost-coordinator'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=frost-coordinator",
+                    "--package=frost-coordinator"
+                ],
+                "filter": {
+                    "name": "frost-coordinator",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'frost-signer'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=frost-signer"
+                ],
+                "filter": {
+                    "name": "frost-signer",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'frost-signer'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=frost-signer",
+                    "--package=frost-signer"
+                ],
+                "filter": {
+                    "name": "frost-signer",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'frost-signer'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=frost-signer",
+                    "--package=frost-signer"
+                ],
+                "filter": {
+                    "name": "frost-signer",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'net'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=net",
+                    "--package=frost-signer"
+                ],
+                "filter": {
+                    "name": "net",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'messages'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=messages",
+                    "--package=frost-signer"
+                ],
+                "filter": {
+                    "name": "messages",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'stacks-coordinator'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=stacks-coordinator"
+                ],
+                "filter": {
+                    "name": "stacks-coordinator",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'stacks-coordinator'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=stacks-coordinator",
+                    "--package=stacks-coordinator"
+                ],
+                "filter": {
+                    "name": "stacks-coordinator",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'stacks-coordinator'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=stacks-coordinator",
+                    "--package=stacks-coordinator"
+                ],
+                "filter": {
+                    "name": "stacks-coordinator",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'stacks-signer'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=stacks-signer",
+                    "--package=stacks-signer"
+                ],
+                "filter": {
+                    "name": "stacks-signer",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'stacks-signer'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=stacks-signer",
+                    "--package=stacks-signer"
+                ],
+                "filter": {
+                    "name": "stacks-signer",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'deno-proxy'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=deno-proxy",
+                    "--package=deno-proxy"
+                ],
+                "filter": {
+                    "name": "deno-proxy",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'deno-proxy'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=deno-proxy",
+                    "--package=deno-proxy"
+                ],
+                "filter": {
+                    "name": "deno-proxy",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
