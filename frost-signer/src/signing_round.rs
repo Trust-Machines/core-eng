@@ -197,9 +197,8 @@ impl SigningRound {
         }
     }
 
-    pub fn dkg_ended(&self) -> Result<MessageTypes, String> {
-        let parties = self.signer.frost_signer.parties.clone();
-        for mut party in parties {
+    pub fn dkg_ended(&mut self) -> Result<MessageTypes, String> {
+        for party in &mut self.signer.frost_signer.parties {
             let commitments: Vec<PolyCommitment> = self.commitments.clone().into_values().collect();
             let mut shares: HashMap<usize, Scalar> = HashMap::new();
             for (party_id, party_shares) in &self.shares {
@@ -290,7 +289,8 @@ impl SigningRound {
             //let party_nonces = &self.public_nonces;
             let signer_ids: Vec<usize> = sign_request.nonces.iter().map(|(id,_)| *id as usize).collect();
             let signer_nonces: Vec<PublicNonce> = sign_request.nonces.iter().map(|(_,n)| n.clone()).collect();
-            let share = party.sign(&*sign_request.message, &signer_ids, &signer_nonces);
+            let share = party.sign(&sign_request.message, &signer_ids, &signer_nonces);
+
             let response = MessageTypes::SignShareResponse(SignatureShareResponse {
                 dkg_id: sign_request.dkg_id,
                 correlation_id: sign_request.correlation_id,

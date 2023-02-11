@@ -75,7 +75,7 @@ where
             }
             Command::GetAggregatePublicKey => {
                 let key = self.get_aggregate_public_key()?;
-                println!("aggregate public key {}", key);
+                info!("aggregate public key {}", key);
                 Ok(())
             }
         }
@@ -165,7 +165,7 @@ where
                 Err(e) => return Err(Error::Aggregator(e)),
             };
 
-        let nonces: Vec<(u32, PublicNonce)> = self
+        let id_nonces: Vec<(u32, PublicNonce)> = self
             .public_nonces
             .iter()
             .map(|(i, n)| (*i, n.nonce.clone()))
@@ -178,7 +178,7 @@ where
                     dkg_id: self.current_dkg_id,
                     correlation_id: 0,
                     party_id: *party_id,
-                    nonces: nonces.clone(),
+                    nonces: id_nonces.clone(),
                     message: msg.to_vec(),
                 }),
                 sig: [0; 32],
@@ -211,22 +211,27 @@ where
         }
 
         // call aggregator.sign()
-        let nonces = self
-            .public_nonces
-            .values()
-            .map(|nr| nr.nonce.clone())
+        let nonces = id_nonces
+            .iter()
+            .map(|(_i, n)| n.clone())
             .collect::<Vec<PublicNonce>>();
-        let shares: Vec<v1::SignatureShare> = self
-            .signature_shares
-            .values()
-            .map(|ss| ss.clone())
-            .collect();
-        let sig = match aggregator.sign(msg, &*nonces, &*shares) {
+        let shares = id_nonces
+            .iter()
+            .map(|(i, _n)| self.signature_shares[i].clone())
+            .collect::<Vec<v1::SignatureShare>>();
+        info!(
+            "aggregator.sign({:?}, {:?}, {:?})",
+            msg,
+            nonces.len(),
+            shares.len()
+        );
+
+        let sig = match aggregator.sign(msg, &nonces, &shares) {
             Ok(sig) => sig,
             Err(e) => return Err(Error::Aggregator(e)),
         };
 
-        println!("Signature ({}, {})", sig.R, sig.z);
+        info!("Signature ({}, {})", sig.R, sig.z);
 
         return Ok(());
     }
@@ -276,7 +281,7 @@ where
             }
             if ids_to_await.len() == 0 {
                 let key = self.calculate_aggregate_public_key()?;
-                println!("Aggregate public key {}", key);
+                info!("Aggregate public key {}", key);
                 return Ok(());
             }
         }
