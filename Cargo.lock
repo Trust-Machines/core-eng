@@ -625,7 +625,6 @@ dependencies = [
  "clap 4.1.4",
  "frost-signer",
  "hashbrown 0.13.2",
- "p256k1 0.1.0",
  "serde",
  "thiserror",
  "tracing",
@@ -1146,26 +1145,6 @@ name = "overload"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
-
-[[package]]
-name = "p256k1"
-version = "0.1.0"
-source = "git+https://github.com/Trust-Machines/p256k1?branch=sbtc#5e27b7378614ac241cb48789d89cb411f1a4e355"
-dependencies = [
- "bindgen",
- "bitvec",
- "cc",
- "hex",
- "itertools",
- "num-traits",
- "proc-macro2",
- "quote",
- "rand_core 0.5.1",
- "rustfmt-wrapper",
- "serde",
- "sha3",
- "syn",
-]
 
 [[package]]
 name = "p256k1"
@@ -2569,7 +2548,7 @@ dependencies = [
  "hashbrown 0.13.2",
  "hex",
  "num-traits",
- "p256k1 1.0.1",
+ "p256k1",
  "polynomial",
  "rand_core 0.5.1",
  "serde",
