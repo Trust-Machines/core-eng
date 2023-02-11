@@ -9,7 +9,7 @@ use frost_signer::signing_round::{
 use hashbrown::HashSet;
 use tracing::{debug, info};
 use wtfrost::common::PublicNonce;
-use wtfrost::{common::PolyCommitment, errors::AggregatorError, v1, Point};
+use wtfrost::{common::PolyCommitment, common::Signature, errors::AggregatorError, v1, Point};
 
 use serde::{Deserialize, Serialize};
 
@@ -66,7 +66,10 @@ where
     pub fn run(&mut self, command: &Command) -> Result<(), Error> {
         match command {
             Command::Dkg => self.run_distributed_key_generation(),
-            Command::Sign { msg } => self.sign_message(msg),
+            Command::Sign { msg } => {
+                self.sign_message(msg)?;
+                Ok(())
+            }
             Command::DkgSign { msg } => {
                 info!("sign msg: {:?}", msg);
                 self.run_distributed_key_generation()?;
@@ -98,7 +101,7 @@ where
         result
     }
 
-    pub fn sign_message(&mut self, msg: &[u8]) -> Result<(), Error> {
+    pub fn sign_message(&mut self, msg: &[u8]) -> Result<Signature, Error> {
         if self.aggregate_public_key == Point::default() {
             return Err(Error::NoAggregatePublicKey);
         }
@@ -233,7 +236,7 @@ where
 
         info!("Signature ({}, {})", sig.R, sig.z);
 
-        return Ok(());
+        return Ok(sig);
     }
 
     pub fn calculate_aggregate_public_key(&mut self) -> Result<Point, Error> {
