@@ -1,10 +1,10 @@
 use std::{
     io::{Error, ErrorKind, Read, Write},
-    process::{Command, Stdio, ChildStdin, ChildStdout, Child},
+    process::{Child, ChildStdin, ChildStdout, Command, Stdio},
     str::from_utf8,
 };
 
-use serde_json::{Value, from_str};
+use serde_json::{from_str, Value};
 
 trait ToResult {
     type V;
@@ -34,7 +34,7 @@ impl Js {
         stdin.write(format!("{}|{}", r.len(), r).as_bytes())?;
         stdin.flush()?;
 
-        let stdout = self.0.stdout.as_mut().to_result()?;        
+        let stdout = self.0.stdout.as_mut().to_result()?;
         let mut read_one = || -> Result<u8, Error> {
             let mut a = [0];
             stdout.read_exact(&mut a)?;
@@ -43,7 +43,9 @@ impl Js {
         let mut lenStr = String::default();
         loop {
             let c = read_one()? as char;
-            if c == '|' { break }
+            if c == '|' {
+                break;
+            }
             lenStr.push(c)
         }
         let len: usize = lenStr.parse().to_result()?;
@@ -51,10 +53,10 @@ impl Js {
         let mut buf = Vec::default();
         buf.resize(len, 0);
         stdout.read_exact(&mut buf)?;
-        
+
         let s = from_utf8(&buf).to_result()?;
         let result = serde_json::from_str::<Value>(s)?;
-        Ok(result)       
+        Ok(result)
     }
 }
 
