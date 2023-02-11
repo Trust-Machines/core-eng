@@ -20,13 +20,13 @@ cargo run --bin deno-proxy
 
 ## Protocol
 
-The program communicates with `test.mjs` file using STDIO. All messages should be ASCII.
+The program communicates with `test.mjs` using STDIO. All messages should be ASCII symbols.
 
 Each message contains 
 
 - a lenght of a JSON part of the message,
-- symbol `|`,
-- a JSON message.
+- a '|' symbol,
+- a JSON part of the message.
 
 ### Examples
 
