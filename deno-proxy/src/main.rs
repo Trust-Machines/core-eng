@@ -25,16 +25,20 @@ impl<T, E> ToResult for Result<T, E> {
     }
 }
 
-struct Js(Child);
+struct Js {
+    child: Child,
+    stdin: ChildStdin,
+    stdout: ChildStdout,
+}
 
 impl Js {
     fn call(&mut self, v: Value) -> Result<Value, Error> {
-        let stdin = self.0.stdin.as_mut().to_result()?;
+        let stdin = &mut self.stdin;
         let r = v.to_string();
         stdin.write(format!("{}|{}", r.len(), r).as_bytes())?;
         stdin.flush()?;
 
-        let stdout = self.0.stdout.as_mut().to_result()?;
+        let stdout = &mut self.stdout;
         let mut read_one = || -> Result<u8, Error> {
             let mut a = [0];
             stdout.read_exact(&mut a)?;
@@ -67,14 +71,35 @@ fn f() -> Result<(), Error> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
-
-    let mut js = Js(child);
+    let stdin = child.stdin.take().to_result()?;
+    let stdout = child.stdout.take().to_result()?;
+    let mut js = Js {
+        child,
+        stdin,
+        stdout,
+    };
     {
         let result = js.call(from_str("{\"a\":2}")?)?;
         println!("{result}");
     }
     {
         let result = js.call(from_str("[54]")?)?;
+        println!("{result}");
+    }
+    {
+        let result = js.call(from_str("42")?)?;
+        println!("{result}");
+    }
+    {
+        let result = js.call(from_str("\"Hello!\"")?)?;
+        println!("{result}");
+    }
+    {
+        let result = js.call(from_str("true")?)?;
+        println!("{result}");
+    }
+    {
+        let result = js.call(from_str("null")?)?;
         println!("{result}");
     }
     Ok(())

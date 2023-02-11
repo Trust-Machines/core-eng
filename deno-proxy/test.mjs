@@ -1,9 +1,27 @@
 import { stdin, stdout } from 'node:process'
 
-/** @type {(v: string) => void} */
+/**
+ * @typedef {{
+*  [k in string]: Unknown
+* }} Object
+*/
+
+/** @typedef {Unknown[]} Array */
+
+/** @typedef {Object|boolean|string|number|null|Array} Unknown */
+
+/** @type {(v: Unknown) => Unknown} */
 const call = v => {
-    const s = JSON.stringify({v});
-    stdout.write(s.length + '|' + s)
+    switch (typeof v) {
+        case "boolean": return ["boolean", v]
+        case "number": return ["object", v]
+        case "string": return ["string", v]
+        default: {
+            if (v === null) { return ["null"] }
+            if (v instanceof Array) { return ["array", v] }
+            return ["object", v]
+        }
+    }
 }
 
 let len = 0
@@ -23,7 +41,8 @@ const process = () => {
             if (buffer.length < len) {
                 break
             }
-            call(buffer.substring(0, len))
+            const result = JSON.stringify(call(JSON.parse(buffer.substring(0, len))))
+            stdout.write(result.length + '|' + result)
             buffer = buffer.substring(len)
             len = 0
         }
