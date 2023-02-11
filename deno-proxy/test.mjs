@@ -2,24 +2,24 @@ import { stdin, stdout } from 'node:process'
 
 /**
  * @typedef {{
-*  [k in string]: Unknown
-* }} Object
+*  [k in string]: Json
+* }} JsonObject
 */
 
-/** @typedef {Unknown[]} Array */
+/** @typedef {Json[]} JsonArray */
 
-/** @typedef {Object|boolean|string|number|null|Array} Unknown */
+/** @typedef {JsonObject|boolean|string|number|null|JsonArray} Json */
 
-/** @type {(v: Unknown) => Unknown} */
+/** @type {(v: Json) => Json} */
 const call = v => {
     switch (typeof v) {
-        case "boolean": return ["boolean", v]
-        case "number": return ["object", v]
-        case "string": return ["string", v]
+        case 'boolean': return ['boolean', v]
+        case 'number': return ['object', v]
+        case 'string': return ['string', v]
         default: {
-            if (v === null) { return ["null"] }
-            if (v instanceof Array) { return ["array", v] }
-            return ["object", v]
+            if (v === null) { return ['null'] }
+            if (v instanceof Array) { return ['array', v] }
+            return ['object', v]
         }
     }
 }
@@ -31,7 +31,7 @@ let buffer = ""
 const process = () => {
     while (true) {
         if (len === 0) {
-            const p = buffer.indexOf("|");
+            const p = buffer.indexOf('|');
             if (p === -1) {
                 break
             }
@@ -49,15 +49,11 @@ const process = () => {
     }
 }
 
-stdin.setEncoding("utf8")
-
-stdin.on('readable', () => {
+stdin.setEncoding('utf8').on('readable', () => {
     while (true) {
         const x = stdin.read()
         if (x === null) { break }
         buffer += x
+        process()
     }
-    process()
 })
-
-// while(true) {}

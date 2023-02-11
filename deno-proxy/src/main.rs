@@ -1,32 +1,17 @@
+mod read_ex;
+mod to_io_result;
+
 use std::{
-    io::{Error, ErrorKind, Read, Write},
-    process::{Child, ChildStdin, ChildStdout, Command, Stdio},
+    io::{Error, Write},
+    process::{ChildStdin, ChildStdout, Command, Stdio},
     str::from_utf8,
 };
 
+use read_ex::ReadEx;
 use serde_json::{from_str, Value};
-
-trait ToResult {
-    type V;
-    fn to_result(self) -> Result<Self::V, Error>;
-}
-
-impl<T> ToResult for Option<T> {
-    type V = T;
-    fn to_result(self) -> Result<Self::V, Error> {
-        self.map_or(Err(Error::new(ErrorKind::InvalidData, "option")), Ok)
-    }
-}
-
-impl<T, E> ToResult for Result<T, E> {
-    type V = T;
-    fn to_result(self) -> Result<Self::V, Error> {
-        self.map_or(Err(Error::new(ErrorKind::InvalidData, "result")), Ok)
-    }
-}
+use to_io_result::ToIoResult;
 
 struct Js {
-    child: Child,
     stdin: ChildStdin,
     stdout: ChildStdout,
 }
@@ -39,27 +24,10 @@ impl Js {
         stdin.flush()?;
 
         let stdout = &mut self.stdout;
-        let mut read_one = || -> Result<u8, Error> {
-            let mut a = [0];
-            stdout.read_exact(&mut a)?;
-            Ok(a[0])
-        };
-        let mut lenStr = String::default();
-        loop {
-            let c = read_one()? as char;
-            if c == '|' {
-                break;
-            }
-            lenStr.push(c)
-        }
-        let len: usize = lenStr.parse().to_result()?;
-
-        let mut buf = Vec::default();
-        buf.resize(len, 0);
-        stdout.read_exact(&mut buf)?;
-
-        let s = from_utf8(&buf).to_result()?;
-        let result = serde_json::from_str::<Value>(s)?;
+        let len: usize = stdout.read_string_until('|')?.parse().to_io_result()?;
+        let buf = stdout.read_exact_vec(len)?;
+        let s = from_utf8(&buf).to_io_result()?;
+        let result = from_str::<Value>(s)?;
         Ok(result)
     }
 }
@@ -71,19 +39,15 @@ fn f() -> Result<(), Error> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
-    let stdin = child.stdin.take().to_result()?;
-    let stdout = child.stdout.take().to_result()?;
-    let mut js = Js {
-        child,
-        stdin,
-        stdout,
-    };
+    let stdin = child.stdin.take().to_io_result()?;
+    let stdout = child.stdout.take().to_io_result()?;
+    let mut js = Js { stdin, stdout };
     {
-        let result = js.call(from_str("{\"a\":2}")?)?;
+        let result = js.call(from_str("{\"b\":[],\"a\":2}")?)?;
         println!("{result}");
     }
     {
-        let result = js.call(from_str("[54]")?)?;
+        let result = js.call(from_str("[54,null]")?)?;
         println!("{result}");
     }
     {
