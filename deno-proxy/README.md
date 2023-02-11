@@ -17,3 +17,24 @@ deno run ./deno-proxy/test.mjs
 ```sh
 cargo run --bin deno-proxy
 ```
+
+## Protocol
+
+The program communicates with `test.mjs` file using STDIO. All messages should be ASCII.
+
+Each message contains 
+
+- a lenght of a JSON part of the message,
+- symbol `|`,
+- a JSON message.
+
+### Examples
+
+- one message 
+  ```
+  8|{"a":42}
+  ```
+- multiple messages
+  ```
+  8|{"a":42}11|[0,-1,true]
+  ```
