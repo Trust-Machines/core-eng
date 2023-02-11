@@ -27,7 +27,7 @@ impl Js {
         let len: usize = stdout.read_string_until('|')?.parse().to_io_result()?;
         let buf = stdout.read_exact_vec(len)?;
         let s = from_utf8(&buf).to_io_result()?;
-        let result = from_str::<Value>(s)?;
+        let result = from_str(s)?;
         Ok(result)
     }
 }
