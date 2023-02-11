@@ -32,10 +32,14 @@ fn signature_share() {
         dkg_id: 0,
         correlation_id: 0,
         party_id: 0,
-        nonce: PublicNonce {
-            D: Default::default(),
-            E: Default::default(),
-        },
+        nonces: [(
+            0,
+            PublicNonce {
+                D: Default::default(),
+                E: Default::default(),
+            },
+        )]
+        .to_vec(),
         message: vec![],
     };
 

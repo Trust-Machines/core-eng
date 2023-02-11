@@ -287,8 +287,13 @@ impl SigningRound {
             .find(|p| p.id == sign_request.party_id.try_into().unwrap())
         {
             //let party_nonces = &self.public_nonces;
-            let signer_ids: Vec<usize> = sign_request.nonces.iter().map(|(id,_)| *id as usize).collect();
-            let signer_nonces: Vec<PublicNonce> = sign_request.nonces.iter().map(|(_,n)| n.clone()).collect();
+            let signer_ids: Vec<usize> = sign_request
+                .nonces
+                .iter()
+                .map(|(id, _)| *id as usize)
+                .collect();
+            let signer_nonces: Vec<PublicNonce> =
+                sign_request.nonces.iter().map(|(_, n)| n.clone()).collect();
             let share = party.sign(&sign_request.message, &signer_ids, &signer_nonces);
 
             let response = MessageTypes::SignShareResponse(SignatureShareResponse {
