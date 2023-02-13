@@ -1887,7 +1887,9 @@ version = "0.0.1"
 dependencies = [
  "blockstack-core",
  "clap 4.1.6",
+ "rusqlite",
  "serde",
+ "serde_json",
  "thiserror",
  "toml",
  "tracing",
