@@ -1,4 +1,5 @@
 import { stdin, stdout } from 'node:process'
+import stacksConnect from 'npm:@stacks/connect'
 
 /**
  * @typedef {{
@@ -14,7 +15,7 @@ import { stdin, stdout } from 'node:process'
 const call = v => {
     switch (typeof v) {
         case 'boolean': return ['boolean', v]
-        case 'number': return ['object', v]
+        case 'number': return ['number', v]
         case 'string': return ['string', v]
         default: {
             if (v === null) { return ['null'] }

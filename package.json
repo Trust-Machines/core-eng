@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Trust-Machines/core-eng#readme",
   "devDependencies": {
+    "@stacks/connect": "^7.1.1",
     "@types/node": "^18.13.0",
     "typescript": "^4.9.5"
   }

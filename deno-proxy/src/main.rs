@@ -35,6 +35,8 @@ impl Js {
 fn f() -> Result<(), Error> {
     let mut child = Command::new("deno")
         .arg("run")
+        .arg("--allow-env")
+        .arg("--allow-read")
         .arg("./deno-proxy/test.mjs")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

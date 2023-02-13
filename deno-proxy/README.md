@@ -9,7 +9,7 @@ cargo install deno
 ## Run JS Test
 
 ```sh
-deno run ./deno-proxy/test.mjs
+deno run --allow-env --allow-read ./deno-proxy/test.mjs
 ```
 
 ## Run Rust Test
