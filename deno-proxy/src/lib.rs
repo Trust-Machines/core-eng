@@ -32,7 +32,7 @@ impl Js {
     }
 }
 
-fn f() -> Result<(), Error> {
+pub fn run_and_test() -> Result<(), Error> {
     let mut child = Command::new("deno")
         .arg("run")
         .arg("--allow-env")
@@ -72,5 +72,5 @@ fn f() -> Result<(), Error> {
 }
 
 fn main() {
-    f().unwrap();
+    run_and_test().unwrap();
 }

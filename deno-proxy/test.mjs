@@ -43,7 +43,7 @@ const process = () => {
                 break
             }
             const result = JSON.stringify(call(JSON.parse(buffer.substring(0, len))))
-            stdout.write(result.length + '|' + result)
+            stdout.write(`${result.length}|${result}`)
             buffer = buffer.substring(len)
             len = 0
         }
