@@ -9,6 +9,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+wtfrost = { workspace = true }
 backoff = { workspace = true }
 clap = { workspace = true }
 hashbrown = { workspace = true }
@@ -16,6 +17,7 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 frost-signer = { version = "0.0.1", path = "../frost-signer" }
+serde = { version = "1.0", features = ["serde_derive"] }
 
 [lib]
 path = "src/lib.rs"    # The source file of the target

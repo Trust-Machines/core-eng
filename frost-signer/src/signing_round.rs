@@ -21,11 +21,12 @@ pub struct SigningRound {
     pub state: States,
     pub commitments: BTreeMap<u32, PolyCommitment>,
     pub shares: HashMap<u32, HashMap<usize, Scalar>>,
+    pub public_nonces: Vec<PublicNonce>,
 }
 
 pub struct Signer {
-    pub frost_signer: v1::Signer,
-    pub signer_id: u64,
+    pub frost_signer: wtfrost::v1::Signer,
+    pub signer_id: u32,
 }
 
 impl StateMachine for SigningRound {
@@ -69,7 +70,7 @@ pub enum MessageTypes {
     SignShareResponse(SignatureShareResponse),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct DkgPublicShare {
     pub dkg_id: u64,
     pub party_id: u32,
@@ -108,7 +109,7 @@ pub struct NonceRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NonceResponse {
     pub dkg_id: u64,
-    pub signer_id: usize,
+    pub party_id: u32,
     pub nonce: PublicNonce,
 }
 
@@ -116,8 +117,8 @@ pub struct NonceResponse {
 pub struct SignatureShareRequest {
     pub dkg_id: u64,
     pub correlation_id: u64,
-    pub signer_id: usize,
-    pub nonce: PublicNonce,
+    pub party_id: u32,
+    pub nonces: Vec<(u32, PublicNonce)>,
     pub message: Vec<u8>,
 }
 
@@ -125,15 +126,15 @@ pub struct SignatureShareRequest {
 pub struct SignatureShareResponse {
     pub dkg_id: u64,
     pub correlation_id: u64,
-    pub signer_id: usize,
-    pub signature_share: v1::SignatureShare,
+    pub party_id: u32,
+    pub signature_share: wtfrost::v1::SignatureShare,
 }
 
 impl SigningRound {
     pub fn new(
         threshold: usize,
         total: usize,
-        signer_id: u64,
+        signer_id: u32,
         party_ids: Vec<usize>,
     ) -> SigningRound {
         assert!(threshold <= total);
@@ -152,7 +153,14 @@ impl SigningRound {
             state: States::Idle,
             commitments: BTreeMap::new(),
             shares: HashMap::new(),
+            public_nonces: vec![],
         }
+    }
+
+    pub fn reset(&mut self, dkg_id: u64) {
+        self.dkg_id = Some(dkg_id);
+        self.commitments.clear();
+        self.shares.clear();
     }
 
     pub fn process(&mut self, message: MessageTypes) -> Result<Vec<MessageTypes>, String> {
@@ -164,6 +172,10 @@ impl SigningRound {
             MessageTypes::DkgPrivateShares(dkg_private_shares) => {
                 self.dkg_private_shares(dkg_private_shares)
             }
+            MessageTypes::SignShareRequest(sign_share_request) => {
+                self.sign_share_request(sign_share_request)
+            }
+            MessageTypes::NonceRequest(nonce_request) => self.nonce_request(nonce_request),
             _ => Ok(vec![]), // TODO
         };
 
@@ -185,9 +197,8 @@ impl SigningRound {
         }
     }
 
-    pub fn dkg_ended(&self) -> Result<MessageTypes, String> {
-        let parties = self.signer.frost_signer.parties.clone();
-        for mut party in parties {
+    pub fn dkg_ended(&mut self) -> Result<MessageTypes, String> {
+        for party in &mut self.signer.frost_signer.parties {
             let commitments: Vec<PolyCommitment> = self.commitments.clone().into_values().collect();
             let mut shares: HashMap<usize, Scalar> = HashMap::new();
             for (party_id, party_shares) in &self.shares {
@@ -242,10 +253,60 @@ impl SigningRound {
         self.signer.frost_signer.parties[party_id].get_shares()
     }
 
-    pub fn reset(&mut self, dkg_id: u64) {
-        self.dkg_id = Some(dkg_id);
-        self.commitments.clear();
-        self.shares.clear();
+    pub fn nonce_request(
+        &mut self,
+        nonce_request: NonceRequest,
+    ) -> Result<Vec<MessageTypes>, String> {
+        let mut rng = OsRng::default();
+        let mut msgs = vec![];
+        for party in &mut self.signer.frost_signer.parties {
+            let response = MessageTypes::NonceResponse(NonceResponse {
+                dkg_id: nonce_request.dkg_id,
+                party_id: party.id as u32,
+                nonce: party.gen_nonce(&mut rng),
+            });
+            info!(
+                "nonce request with dkg_id {:?}. response sent from party_id {}",
+                nonce_request.dkg_id, party.id
+            );
+            msgs.push(response);
+        }
+        Ok(msgs)
+    }
+
+    pub fn sign_share_request(
+        &mut self,
+        sign_request: SignatureShareRequest,
+    ) -> Result<Vec<MessageTypes>, String> {
+        let mut msgs = vec![];
+        if let Some(party) = self
+            .signer
+            .frost_signer
+            .parties
+            .iter()
+            .find(|p| p.id == sign_request.party_id.try_into().unwrap())
+        {
+            //let party_nonces = &self.public_nonces;
+            let signer_ids: Vec<usize> = sign_request
+                .nonces
+                .iter()
+                .map(|(id, _)| *id as usize)
+                .collect();
+            let signer_nonces: Vec<PublicNonce> =
+                sign_request.nonces.iter().map(|(_, n)| n.clone()).collect();
+            let share = party.sign(&sign_request.message, &signer_ids, &signer_nonces);
+
+            let response = MessageTypes::SignShareResponse(SignatureShareResponse {
+                dkg_id: sign_request.dkg_id,
+                correlation_id: sign_request.correlation_id,
+                party_id: sign_request.party_id,
+                signature_share: share,
+            });
+            msgs.push(response);
+        } else {
+            debug!("SignShareRequest for {} dropped.", sign_request.party_id);
+        }
+        return Ok(msgs);
     }
 
     pub fn dkg_begin(&mut self, dkg_begin: DkgBegin) -> Result<Vec<MessageTypes>, String> {

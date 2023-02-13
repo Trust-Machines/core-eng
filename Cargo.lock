@@ -632,9 +632,11 @@ dependencies = [
  "clap 4.1.4",
  "frost-signer",
  "hashbrown 0.13.2",
+ "serde",
  "thiserror",
  "tracing",
  "tracing-subscriber",
+ "wtfrost",
 ]
 
 [[package]]

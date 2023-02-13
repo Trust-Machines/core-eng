@@ -28,6 +28,8 @@ fn main() {
         DEVNET_COORDINATOR_ID,
         DEVNET_COORDINATOR_DKG_ID,
         config.common.total_signers,
+        config.common.total_parties,
+        config.common.minimum_parties,
         net_listen,
     );
 

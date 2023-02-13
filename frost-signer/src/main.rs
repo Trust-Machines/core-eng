@@ -12,7 +12,7 @@ use frost_signer::net::{HttpNet, HttpNetListen, Message, Net, NetListen};
 use frost_signer::signing_round::SigningRound;
 
 // maximum party_id
-const PARTY_MAX: u64 = 3;
+const PARTY_MAX: u32 = 3;
 
 fn main() {
     logging::initiate_tracing_subscriber(tracing::Level::INFO).unwrap();
@@ -40,7 +40,7 @@ fn main() {
     main_loop(&config, &net, rx);
 }
 
-fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u64) {
+fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u32) {
     loop {
         net.poll(id);
         match net.next_message() {
@@ -49,7 +49,7 @@ fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u64) {
                 tx.send(m).unwrap();
             }
         };
-        thread::sleep(time::Duration::from_millis(1000));
+        thread::sleep(time::Duration::from_millis(500));
     }
 }
 

@@ -2,7 +2,7 @@ use frost_signer::signing_round::{DkgBegin, MessageTypes, SignatureShareRequest,
 use wtfrost::common::PublicNonce;
 
 #[ignore]
-fn setup_signer(total: usize, threshold: usize) -> SigningRound {
+fn setup_signer(_total: usize, _threshold: usize) -> SigningRound {
     todo!()
     // let my_id = 1;
     // let mut signer = SigningRound::new(my_id, threshold, total);
@@ -31,11 +31,15 @@ fn signature_share() {
     let share = SignatureShareRequest {
         dkg_id: 0,
         correlation_id: 0,
-        signer_id: 0,
-        nonce: PublicNonce {
-            D: Default::default(),
-            E: Default::default(),
-        },
+        party_id: 0,
+        nonces: [(
+            0,
+            PublicNonce {
+                D: Default::default(),
+                E: Default::default(),
+            },
+        )]
+        .to_vec(),
         message: vec![],
     };
 
