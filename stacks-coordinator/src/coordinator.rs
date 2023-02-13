@@ -27,10 +27,10 @@ pub trait Coordinator: Sized {
     // Provided methods
     fn run(mut self, commands: mpsc::Receiver<Command>) {
         loop {
-            match self.peg_queue().sbtc_op() {
+            match self.peg_queue().sbtc_op().unwrap() {
                 Some(peg_queue::SbtcOp::PegIn(op)) => self.peg_in(op),
                 Some(peg_queue::SbtcOp::PegOutRequest(op)) => self.peg_out(op),
-                None => self.peg_queue().poll(),
+                None => self.peg_queue().poll().unwrap(),
             }
 
             match commands.try_recv() {

@@ -5,16 +5,42 @@ use blockstack_lib::{burnchains::Txid, types::chainstate::BurnchainHeaderHash, u
 use crate::stacks_node;
 
 pub trait PegQueue {
-    fn sbtc_op(&self) -> Option<SbtcOp>;
-    fn poll(&self);
+    type Error: std::error::Error;
 
-    fn acknowledge(&self, txid: Txid, burn_header_hash: BurnchainHeaderHash);
+    fn sbtc_op(&self) -> Result<Option<SbtcOp>, Self::Error>;
+    fn poll(&self) -> Result<(), Self::Error>;
+
+    fn acknowledge(
+        &self,
+        txid: Txid,
+        burn_header_hash: BurnchainHeaderHash,
+    ) -> Result<(), Self::Error>;
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub enum SbtcOp {
     PegIn(stacks_node::PegInOp),
     PegOutRequest(stacks_node::PegOutRequestOp),
+}
+
+impl PegQueue for SqlitePegQueue {
+    type Error = Error;
+
+    fn sbtc_op(&self) -> Result<Option<SbtcOp>, Self::Error> {
+        todo!();
+    }
+
+    fn poll(&self) -> Result<(), Self::Error> {
+        todo!();
+    }
+
+    fn acknowledge(
+        &self,
+        txid: Txid,
+        burn_header_hash: BurnchainHeaderHash,
+    ) -> Result<(), Self::Error> {
+        todo!();
+    }
 }
 
 pub struct SqlitePegQueue {
