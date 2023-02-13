@@ -11,13 +11,13 @@ use read_ex::ReadEx;
 use serde_json::{from_str, Value};
 use to_io_result::ToIoResult;
 
-struct Js {
+pub struct Js {
     stdin: ChildStdin,
     stdout: ChildStdout,
 }
 
 impl Js {
-    fn call(&mut self, v: Value) -> Result<Value, Error> {
+    pub fn call(&mut self, v: Value) -> Result<Value, Error> {
         let stdin = &mut self.stdin;
         let r = v.to_string();
         stdin.write(format!("{}|{}", r.len(), r).as_bytes())?;
@@ -32,45 +32,16 @@ impl Js {
     }
 }
 
-pub fn run_and_test() -> Result<(), Error> {
+pub fn new(path: &str) -> Result<Js, Error> {
     let mut child = Command::new("deno")
         .arg("run")
         .arg("--allow-env")
         .arg("--allow-read")
-        .arg("./deno-proxy/test.mjs")
+        .arg(path.to_owned() + "/test.mjs")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
     let stdin = child.stdin.take().to_io_result()?;
     let stdout = child.stdout.take().to_io_result()?;
-    let mut js = Js { stdin, stdout };
-    {
-        let result = js.call(from_str("{\"b\":[],\"a\":2}")?)?;
-        println!("{result}");
-    }
-    {
-        let result = js.call(from_str("[54,null]")?)?;
-        println!("{result}");
-    }
-    {
-        let result = js.call(from_str("42")?)?;
-        println!("{result}");
-    }
-    {
-        let result = js.call(from_str("\"Hello!\"")?)?;
-        println!("{result}");
-    }
-    {
-        let result = js.call(from_str("true")?)?;
-        println!("{result}");
-    }
-    {
-        let result = js.call(from_str("null")?)?;
-        println!("{result}");
-    }
-    Ok(())
-}
-
-fn main() {
-    run_and_test().unwrap();
+    Ok(Js { stdin, stdout })
 }

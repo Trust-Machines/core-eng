@@ -1,5 +1,5 @@
-use deno_proxy::run_and_test;
+use deno_proxy::new;
 
 fn main() {
-    run_and_test();
+    let _ = new("./deno-proxy").unwrap();
 }
