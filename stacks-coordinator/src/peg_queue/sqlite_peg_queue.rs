@@ -2,33 +2,18 @@ use std::str::FromStr;
 
 use blockstack_lib::burnchains::Txid;
 use blockstack_lib::types::chainstate::BurnchainHeaderHash;
-use blockstack_lib::util::HexError;
 
+use crate::peg_queue;
 use crate::stacks_node;
 
-pub trait PegQueue {
-    type Error: std::error::Error;
-
-    fn sbtc_op(&self) -> Result<Option<SbtcOp>, Self::Error>;
-    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<(), Self::Error>;
-
-    fn acknowledge(
-        &self,
-        txid: &Txid,
-        burn_header_hash: &BurnchainHeaderHash,
-    ) -> Result<(), Self::Error>;
+pub struct SqlitePegQueue {
+    conn: rusqlite::Connection,
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
-pub enum SbtcOp {
-    PegIn(stacks_node::PegInOp),
-    PegOutRequest(stacks_node::PegOutRequestOp),
-}
+impl peg_queue::PegQueue for SqlitePegQueue {
+    type Error = peg_queue::Error;
 
-impl PegQueue for SqlitePegQueue {
-    type Error = Error;
-
-    fn sbtc_op(&self) -> Result<Option<SbtcOp>, Self::Error> {
+    fn sbtc_op(&self) -> Result<Option<peg_queue::SbtcOp>, Self::Error> {
         let maybe_entry = self.get_singe_entry_with_status(&Status::New)?;
 
         let Some(mut entry) = maybe_entry else {
@@ -51,7 +36,7 @@ impl PegQueue for SqlitePegQueue {
                     status: Status::New,
                     txid: peg_in_op.txid,
                     burn_header_hash: peg_in_op.burn_header_hash,
-                    op: SbtcOp::PegIn(peg_in_op),
+                    op: peg_queue::SbtcOp::PegIn(peg_in_op),
                 };
 
                 self.insert(&entry)?;
@@ -63,7 +48,7 @@ impl PegQueue for SqlitePegQueue {
                     status: Status::New,
                     txid: peg_out_request_op.txid,
                     burn_header_hash: peg_out_request_op.burn_header_hash,
-                    op: SbtcOp::PegOutRequest(peg_out_request_op),
+                    op: peg_queue::SbtcOp::PegOutRequest(peg_out_request_op),
                 };
 
                 self.insert(&entry)?;
@@ -87,25 +72,21 @@ impl PegQueue for SqlitePegQueue {
     }
 }
 
-pub struct SqlitePegQueue {
-    conn: rusqlite::Connection,
-}
-
 impl SqlitePegQueue {
-    pub fn in_memory() -> Result<Self, Error> {
+    pub fn in_memory() -> Result<Self, peg_queue::Error> {
         let conn = rusqlite::Connection::open_in_memory()?;
         let self_ = Self { conn };
         self_.initialize()?;
         Ok(self_)
     }
 
-    fn initialize(&self) -> Result<(), Error> {
+    fn initialize(&self) -> Result<(), peg_queue::Error> {
         self.conn.execute(Self::sql_schema(), rusqlite::params![])?;
 
         Ok(())
     }
 
-    fn insert(&self, entry: &Entry) -> Result<(), Error> {
+    fn insert(&self, entry: &Entry) -> Result<(), peg_queue::Error> {
         self.conn.execute(
             Self::sql_insert(),
             rusqlite::params![
@@ -120,7 +101,10 @@ impl SqlitePegQueue {
         Ok(())
     }
 
-    fn get_singe_entry_with_status(&self, status: &Status) -> Result<Option<Entry>, Error> {
+    fn get_singe_entry_with_status(
+        &self,
+        status: &Status,
+    ) -> Result<Option<Entry>, peg_queue::Error> {
         Ok(self
             .conn
             .prepare(Self::sql_select_status())?
@@ -133,14 +117,14 @@ impl SqlitePegQueue {
         &self,
         txid: &Txid,
         burn_header_hash: &BurnchainHeaderHash,
-    ) -> Result<Entry, Error> {
+    ) -> Result<Entry, peg_queue::Error> {
         Ok(self.conn.prepare(Self::sql_select_pk())?.query_row(
             rusqlite::params![txid.to_hex(), burn_header_hash.to_hex()],
             Entry::from_row,
         )?)
     }
 
-    fn max_observed_block_height(&self) -> Result<u64, Error> {
+    fn max_observed_block_height(&self) -> Result<u64, peg_queue::Error> {
         Ok(self
             .conn
             .query_row(
@@ -194,17 +178,18 @@ struct Entry {
     burn_header_hash: BurnchainHeaderHash,
     txid: Txid,
     block_height: u64,
-    op: SbtcOp,
+    op: peg_queue::SbtcOp,
     status: Status,
 }
 
 impl Entry {
     fn from_row(row: &rusqlite::Row) -> Result<Self, rusqlite::Error> {
-        let burn_header_hash =
-            BurnchainHeaderHash::from_hex(&row.get::<_, String>(0)?).map_err(Error::from)?;
-        let txid = Txid::from_hex(&row.get::<_, String>(1)?).map_err(Error::from)?;
+        let burn_header_hash = BurnchainHeaderHash::from_hex(&row.get::<_, String>(0)?)
+            .map_err(peg_queue::Error::from)?;
+        let txid = Txid::from_hex(&row.get::<_, String>(1)?).map_err(peg_queue::Error::from)?;
         let block_height = row.get::<_, i64>(2)? as u64; // Stacks will crash before the coordinator if this is invalid
-        let op: SbtcOp = serde_json::from_str(&row.get::<_, String>(3)?).map_err(Error::from)?;
+        let op: peg_queue::SbtcOp =
+            serde_json::from_str(&row.get::<_, String>(3)?).map_err(peg_queue::Error::from)?;
         let status: Status = row.get::<_, String>(4)?.parse()?;
 
         Ok(Self {
@@ -234,39 +219,14 @@ impl Status {
 }
 
 impl FromStr for Status {
-    type Err = Error;
+    type Err = peg_queue::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s {
             "new" => Self::New,
             "pending" => Self::Pending,
             "acknowledged" => Self::Acknowledged,
-            other => return Err(Error::UnrecognizedStatusString(other.to_owned())),
+            other => return Err(peg_queue::Error::UnrecognizedStatusString(other.to_owned())),
         })
-    }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Http network error: {0}")]
-    SqliteError(#[from] rusqlite::Error),
-
-    #[error("JSON serialization failure: {0}")]
-    JsonError(#[from] serde_json::Error),
-
-    #[error("Did not recognize status string: {0}")]
-    UnrecognizedStatusString(String),
-
-    #[error("Hex codec error: {0}")]
-    HexError(#[from] HexError),
-
-    #[error("Entry does not exist")]
-    EntryDoesNotExist,
-}
-
-// Workaround to allow non-perfect conversions in `Entry::from_row`
-impl From<Error> for rusqlite::Error {
-    fn from(err: Error) -> Self {
-        Self::InvalidColumnType(0, err.to_string(), rusqlite::types::Type::Text)
     }
 }
