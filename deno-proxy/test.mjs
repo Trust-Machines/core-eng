@@ -1,4 +1,4 @@
-import { stdin, stdout } from 'node:process'
+import { stdin, stdout, stderr } from 'node:process'
 import stacksConnect from 'npm:@stacks/connect'
 
 /**
@@ -11,7 +11,31 @@ import stacksConnect from 'npm:@stacks/connect'
 
 /** @typedef {JsonObject|boolean|string|number|null|JsonArray} Json */
 
-/** @type {(v: Json) => Json} */
+/** @type {(input: string) => Result<Json, "invalid JSON">} */
+const json_try_parse = input => {
+    try {
+        return ['ok', JSON.parse(input)]
+    } catch (_) {
+        return ['error', 'invalid JSON']
+    }
+}
+
+/**
+ * @template T
+ * @typedef {readonly["ok", T]} Ok
+ */
+
+/**
+ * @template E
+ * @typedef {readonly["error", E]} Error
+ */
+
+/** 
+ * @template T,E
+ * @typedef {Ok<T>|Error<E>} Result 
+ */
+
+/** @type {(v: Json) => Result<Json, string>} */
 const call = v => {
     switch (typeof v) {
         case 'boolean': return ['boolean', v]
@@ -39,14 +63,13 @@ stdin.setEncoding('utf8').on('readable', () => {
         } else {
             const input = buffer + x.substring(0, p)
             buffer = x.substring(p + 1)
-            let output
-            try {
-                output = ['ok', call(JSON.parse(input))]
-            } catch (e) {
-                output = ['err', e]
-            }
-            stdout.write(JSON.stringify(output))
-            stdout.write('\n')
+            const [t, v] = json_try_parse(input)
+            if (t === 'ok') {
+                stdout.write(JSON.stringify(call(v)))
+                stdout.write('\n')
+            } else {
+                stderr.write(`error: ${v}\n`)                
+            }                        
         }
     }
 })
