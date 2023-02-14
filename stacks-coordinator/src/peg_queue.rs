@@ -10,7 +10,7 @@ pub trait PegQueue {
     type Error: std::error::Error;
 
     fn sbtc_op(&self) -> Result<Option<SbtcOp>, Self::Error>;
-    fn poll(&self) -> Result<(), Self::Error>;
+    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<(), Self::Error>;
 
     fn acknowledge(
         &self,
@@ -41,8 +41,36 @@ impl PegQueue for SqlitePegQueue {
         Ok(Some(entry.op))
     }
 
-    fn poll(&self) -> Result<(), Self::Error> {
-        todo!();
+    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<(), Self::Error> {
+        let target_block_height = stacks_node.burn_block_height();
+
+        for block_height in (self.max_observed_block_height()? + 1)..=target_block_height {
+            for peg_in_op in stacks_node.get_peg_in_ops(block_height) {
+                let entry = Entry {
+                    block_height,
+                    status: Status::New,
+                    txid: peg_in_op.txid,
+                    burn_header_hash: peg_in_op.burn_header_hash,
+                    op: SbtcOp::PegIn(peg_in_op),
+                };
+
+                self.insert(&entry)?;
+            }
+
+            for peg_out_request_op in stacks_node.get_peg_out_request_ops(block_height) {
+                let entry = Entry {
+                    block_height,
+                    status: Status::New,
+                    txid: peg_out_request_op.txid,
+                    burn_header_hash: peg_out_request_op.burn_header_hash,
+                    op: SbtcOp::PegOutRequest(peg_out_request_op),
+                };
+
+                self.insert(&entry)?;
+            }
+        }
+
+        Ok(())
     }
 
     fn acknowledge(
@@ -83,6 +111,7 @@ impl SqlitePegQueue {
             rusqlite::params![
                 entry.txid.to_hex(),
                 entry.burn_header_hash.to_hex(),
+                entry.block_height as i64, // Stacks will crash before the coordinator if this is invalid
                 serde_json::to_string(&entry.op)?,
                 entry.status.as_str(),
             ],
@@ -111,11 +140,23 @@ impl SqlitePegQueue {
         )?)
     }
 
+    fn max_observed_block_height(&self) -> Result<u64, Error> {
+        Ok(self
+            .conn
+            .query_row(
+                Self::sql_select_max_burn_height(),
+                rusqlite::params![],
+                |row| row.get::<_, i64>(0),
+            )
+            .map(|count| count as u64)?)
+    }
+
     const fn sql_schema() -> &'static str {
         r#"
-        CREATE TABLE sbtc_ops (
+        CREATE TABLE IF NOT EXISTS sbtc_ops (
             txid TEXT NOT NULL,
             burn_header_hash TEXT NOT NULL,
+            block_height INTEGER NOT NULL,
             op TEXT NOT NULL,
             status TEXT NOT NULL,
 
@@ -126,7 +167,7 @@ impl SqlitePegQueue {
 
     const fn sql_insert() -> &'static str {
         r#"
-        REPLACE INTO sbtc_ops (txid, burn_header_hash, op, status) VALUES (?1, ?2, ?3, ?4)
+        REPLACE INTO sbtc_ops (txid, burn_header_hash, block_height, op, status) VALUES (?1, ?2, ?3, ?4, ?5)
         "#
     }
 
@@ -141,11 +182,18 @@ impl SqlitePegQueue {
         SELECT (txid, burn_header_hash, op, status) FROM sbtc_ops WHERE txid=?1 AND burn_header_hash=?2
         "#
     }
+
+    const fn sql_select_max_burn_height() -> &'static str {
+        r#"
+        SELECT MAX(burn_height) FROM sbtc_ops
+        "#
+    }
 }
 
 struct Entry {
     burn_header_hash: BurnchainHeaderHash,
     txid: Txid,
+    block_height: u64,
     op: SbtcOp,
     status: Status,
 }
@@ -155,12 +203,14 @@ impl Entry {
         let burn_header_hash =
             BurnchainHeaderHash::from_hex(&row.get::<_, String>(0)?).map_err(Error::from)?;
         let txid = Txid::from_hex(&row.get::<_, String>(1)?).map_err(Error::from)?;
-        let op: SbtcOp = serde_json::from_str(&row.get::<_, String>(2)?).map_err(Error::from)?;
-        let status: Status = row.get::<_, String>(3)?.parse()?;
+        let block_height = row.get::<_, i64>(2)? as u64; // Stacks will crash before the coordinator if this is invalid
+        let op: SbtcOp = serde_json::from_str(&row.get::<_, String>(3)?).map_err(Error::from)?;
+        let status: Status = row.get::<_, String>(4)?.parse()?;
 
         Ok(Self {
             burn_header_hash,
             txid,
+            block_height,
             op,
             status,
         })

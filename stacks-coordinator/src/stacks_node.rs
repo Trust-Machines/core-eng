@@ -1,13 +1,10 @@
 use blockstack_lib::chainstate::burn::operations as burn_ops;
-use blockstack_lib::types::chainstate::BurnchainHeaderHash as BitcoinHeaderHash;
 use blockstack_lib::types::chainstate::StacksAddress;
 
 pub trait StacksNode {
-    fn get_peg_in_ops(&self, bitcoin_block_hash: BitcoinHeaderHash) -> Vec<PegInOp>;
-    fn get_peg_out_request_ops(
-        &self,
-        bitcoin_block_hash: BitcoinHeaderHash,
-    ) -> Vec<PegOutRequestOp>;
+    fn get_peg_in_ops(&self, block_height: u64) -> Vec<PegInOp>;
+    fn get_peg_out_request_ops(&self, block_height: u64) -> Vec<PegOutRequestOp>;
+    fn burn_block_height(&self) -> u64;
     fn next_nonce(&self, addr: StacksAddress);
     fn broadcast_transaction(&self, tx: &StacksTransaction);
 }
