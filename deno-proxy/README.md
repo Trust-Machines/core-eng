@@ -10,11 +10,11 @@ cargo install deno
 
 ## Protocol
 
-The program communicates with `test.mjs` using STDIO. All messages should be ASCII symbols.
+The program communicates with `test.mjs` using STDIO.
 
 Each message contains 
 
-- a JSON part of the message,
+- a JSON part of the message. **Note:** the JSON shouldn't contain `\n` symbols.
 - `\n` symbol.
 
 ### Examples
