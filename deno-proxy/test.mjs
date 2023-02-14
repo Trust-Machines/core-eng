@@ -25,36 +25,28 @@ const call = v => {
     }
 }
 
-let len = 0
 /** @type {string} */
 let buffer = ""
 
-const process = () => {
-    while (true) {
-        if (len === 0) {
-            const p = buffer.indexOf('|');
-            if (p === -1) {
-                break
-            }
-            len = parseInt(buffer.substring(0, p))
-            buffer = buffer.substring(p + 1)
-        } else {
-            if (buffer.length < len) {
-                break
-            }
-            const result = JSON.stringify(call(JSON.parse(buffer.substring(0, len))))
-            stdout.write(`${result.length}|${result}`)
-            buffer = buffer.substring(len)
-            len = 0
-        }
-    }
-}
-
 stdin.setEncoding('utf8').on('readable', () => {
     while (true) {
+        /** @type {string|null} */
         const x = stdin.read()
         if (x === null) { break }
-        buffer += x
-        process()
+        const p = x.indexOf('\n')
+        if (p === -1) {
+            buffer += x
+        } else {
+            const input = buffer + x.substring(0, p)
+            buffer = x.substring(p + 1)
+            let output
+            try {
+                output = ['ok', call(JSON.parse(input))]
+            } catch (e) {
+                output = ['err', e]
+            }
+            stdout.write(JSON.stringify(output))
+            stdout.write('\n')
+        }
     }
 })

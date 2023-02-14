@@ -20,15 +20,12 @@ impl Js {
     pub fn call(&mut self, v: Value) -> Result<Value, Error> {
         let stdin = &mut self.stdin;
         let r = v.to_string();
-        stdin.write(format!("{}|{}", r.len(), r).as_bytes())?;
+        stdin.write(r.as_bytes());
+        stdin.write("\n".as_bytes());
         stdin.flush()?;
 
         let stdout = &mut self.stdout;
-        let len: usize = stdout.read_string_until('|')?.parse().to_io_result()?;
-        let buf = stdout.read_exact_vec(len)?;
-        let s = from_utf8(&buf).to_io_result()?;
-        let result = from_str(s)?;
-        Ok(result)
+        Ok(from_str(&stdout.read_string_until('\n')?)?)
     }
 }
 

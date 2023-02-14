@@ -12,19 +12,18 @@ The program communicates with `test.mjs` using STDIO. All messages should be ASC
 
 Each message contains 
 
-- a lenght of a JSON part of the message,
-- a '|' symbol,
-- a JSON part of the message.
+- a JSON part of the message,
+- `\n` symbol.
 
 ### Examples
 
 - one message 
   ```
-  8|{"a":42}
+  {"a":42}\n
   ```
 - multiple messages
   ```
-  8|{"a":42}11|[0,-1,true]
+  {"a":42}\n[0,-1,true]\n
   ```
 
 ## Debugging the `deno-proxy`
