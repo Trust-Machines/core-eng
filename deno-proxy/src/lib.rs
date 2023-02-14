@@ -41,7 +41,8 @@ pub fn new(path: &str) -> Result<Js, Error> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
-    let stdin = child.stdin.take().to_io_result()?;
-    let stdout = child.stdout.take().to_io_result()?;
-    Ok(Js { stdin, stdout })
+    Ok(Js { 
+        stdin: child.stdin.take().to_io_result()?,
+        stdout: child.stdout.take().to_io_result()?,
+    })
 }
