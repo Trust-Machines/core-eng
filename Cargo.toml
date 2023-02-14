@@ -27,3 +27,4 @@ sha3 = "0.10.6"
 ureq = { version = "2.6", features = [] }
 rand = "0.8.5"
 backoff = "0.4"
+mockall = "0.11.3"

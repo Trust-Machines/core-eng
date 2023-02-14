@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::str::FromStr;
 
 use blockstack_lib::burnchains::Txid;
@@ -8,6 +9,7 @@ use crate::stacks_node;
 
 pub struct SqlitePegQueue {
     conn: rusqlite::Connection,
+    start_block_height: u64,
 }
 
 impl peg_queue::PegQueue for SqlitePegQueue {
@@ -73,9 +75,22 @@ impl peg_queue::PegQueue for SqlitePegQueue {
 }
 
 impl SqlitePegQueue {
-    pub fn in_memory() -> Result<Self, peg_queue::Error> {
+    pub fn new<P: AsRef<Path>>(path: P, start_block_height: u64) -> Result<Self, peg_queue::Error> {
+        let conn = rusqlite::Connection::open(path)?;
+        let self_ = Self {
+            conn,
+            start_block_height,
+        };
+        self_.initialize()?;
+        Ok(self_)
+    }
+
+    pub fn in_memory(start_block_height: u64) -> Result<Self, peg_queue::Error> {
         let conn = rusqlite::Connection::open_in_memory()?;
-        let self_ = Self { conn };
+        let self_ = Self {
+            conn,
+            start_block_height,
+        };
         self_.initialize()?;
         Ok(self_)
     }
@@ -130,7 +145,11 @@ impl SqlitePegQueue {
             .query_row(
                 Self::sql_select_max_burn_height(),
                 rusqlite::params![],
-                |row| row.get::<_, i64>(0),
+                |row| {
+                    Ok(row
+                        .get::<_, i64>(0)
+                        .unwrap_or(self.start_block_height as i64))
+                },
             )
             .map(|count| count as u64)?)
     }
@@ -144,7 +163,7 @@ impl SqlitePegQueue {
             op TEXT NOT NULL,
             status TEXT NOT NULL,
 
-            PRIMARY_KEY(txid, burn_header_hash),
+            PRIMARY KEY(txid, burn_header_hash)
         ) 
         "#
     }
@@ -157,23 +176,24 @@ impl SqlitePegQueue {
 
     const fn sql_select_status() -> &'static str {
         r#"
-        SELECT (txid, burn_header_hash, op, status) FROM sbtc_ops WHERE status=?1
+        SELECT txid, burn_header_hash, block_height, op, status FROM sbtc_ops WHERE status=?1 ORDER BY block_height ASC
         "#
     }
 
     const fn sql_select_pk() -> &'static str {
         r#"
-        SELECT (txid, burn_header_hash, op, status) FROM sbtc_ops WHERE txid=?1 AND burn_header_hash=?2
+        SELECT txid, burn_header_hash, block_height, op, status FROM sbtc_ops WHERE txid=?1 AND burn_header_hash=?2
         "#
     }
 
     const fn sql_select_max_burn_height() -> &'static str {
         r#"
-        SELECT MAX(burn_height) FROM sbtc_ops
+        SELECT MAX(block_height) FROM sbtc_ops
         "#
     }
 }
 
+#[derive(Debug)]
 struct Entry {
     burn_header_hash: BurnchainHeaderHash,
     txid: Txid,
@@ -184,9 +204,9 @@ struct Entry {
 
 impl Entry {
     fn from_row(row: &rusqlite::Row) -> Result<Self, rusqlite::Error> {
-        let burn_header_hash = BurnchainHeaderHash::from_hex(&row.get::<_, String>(0)?)
+        let txid = Txid::from_hex(&row.get::<_, String>(0)?).map_err(peg_queue::Error::from)?;
+        let burn_header_hash = BurnchainHeaderHash::from_hex(&row.get::<_, String>(1)?)
             .map_err(peg_queue::Error::from)?;
-        let txid = Txid::from_hex(&row.get::<_, String>(1)?).map_err(peg_queue::Error::from)?;
         let block_height = row.get::<_, i64>(2)? as u64; // Stacks will crash before the coordinator if this is invalid
         let op: peg_queue::SbtcOp =
             serde_json::from_str(&row.get::<_, String>(3)?).map_err(peg_queue::Error::from)?;
@@ -202,6 +222,7 @@ impl Entry {
     }
 }
 
+#[derive(Debug)]
 enum Status {
     New,
     Pending,
@@ -228,5 +249,77 @@ impl FromStr for Status {
             "acknowledged" => Self::Acknowledged,
             other => return Err(peg_queue::Error::UnrecognizedStatusString(other.to_owned())),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{collections::hash_map::DefaultHasher, hash::Hasher};
+
+    use blockstack_lib::{
+        chainstate::stacks::address::PoxAddress, types::chainstate::StacksAddress,
+        util::hash::Hash160,
+    };
+
+    use crate::peg_queue::PegQueue;
+
+    use super::*;
+
+    #[test]
+    fn calling_sbtc_op_should_return_new_peg_ops() {
+        let peg_queue = SqlitePegQueue::in_memory(0).unwrap();
+        let number_of_simulated_blocks: u64 = 3;
+
+        let mut stacks_node_mock = stacks_node::MockStacksNode::new();
+
+        stacks_node_mock
+            .expect_burn_block_height()
+            .return_const(number_of_simulated_blocks);
+
+        stacks_node_mock
+            .expect_get_peg_out_request_ops()
+            .returning(|_| Vec::new());
+
+        stacks_node_mock
+            .expect_get_peg_in_ops()
+            .returning(|height| vec![peg_in_op(height)]);
+
+        // No ops before polling
+        assert!(peg_queue.sbtc_op().unwrap().is_none());
+
+        // Should cause the peg_queue to fetch 3 peg in ops
+        peg_queue.poll(&stacks_node_mock).unwrap();
+
+        for height in 1..=3 {
+            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
+            assert!(next_op.as_peg_in().is_some());
+            assert_eq!(next_op.as_peg_in().unwrap().block_height, height);
+        }
+    }
+
+    fn peg_in_op(block_height: u64) -> stacks_node::PegInOp {
+        let recipient_stx_addr = StacksAddress::new(26, Hash160([0; 20]));
+        let peg_wallet_address =
+            PoxAddress::Standard(StacksAddress::new(0, Hash160([0; 20])), None);
+
+        stacks_node::PegInOp {
+            recipient: recipient_stx_addr.into(),
+            peg_wallet_address,
+            amount: 1337,
+            memo: vec![1, 3, 3, 7],
+            txid: Txid(hash_and_expand(block_height, 0)),
+            burn_header_hash: BurnchainHeaderHash(hash_and_expand(block_height, 1)),
+            block_height,
+            vtxindex: 0,
+        }
+    }
+
+    fn hash_and_expand(val: u64, nonce: u64) -> [u8; 32] {
+        let mut hasher = DefaultHasher::new();
+        hasher.write_u64(val);
+        hasher.write_u64(nonce);
+        let hash = hasher.finish();
+
+        hash.to_be_bytes().repeat(4).try_into().unwrap()
     }
 }

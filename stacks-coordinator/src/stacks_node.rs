@@ -1,6 +1,7 @@
 use blockstack_lib::chainstate::burn::operations as burn_ops;
 use blockstack_lib::types::chainstate::StacksAddress;
 
+#[cfg_attr(test, mockall::automock)]
 pub trait StacksNode {
     fn get_peg_in_ops(&self, block_height: u64) -> Vec<PegInOp>;
     fn get_peg_out_request_ops(&self, block_height: u64) -> Vec<PegOutRequestOp>;
