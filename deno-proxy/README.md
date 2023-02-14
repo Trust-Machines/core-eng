@@ -1,5 +1,7 @@
 # Deno Proxy
 
+It's a simple example how to make RPC (remote procedure call) from Rust to JS.
+
 ## Deno Installation
 
 ```sh

@@ -11,15 +11,6 @@ import stacksConnect from 'npm:@stacks/connect'
 
 /** @typedef {JsonObject|boolean|string|number|null|JsonArray} Json */
 
-/** @type {(input: string) => Result<Json, "invalid JSON">} */
-const json_try_parse = input => {
-    try {
-        return ['ok', JSON.parse(input)]
-    } catch (_) {
-        return ['error', 'invalid JSON']
-    }
-}
-
 /**
  * @template T
  * @typedef {readonly["ok", T]} Ok
@@ -34,6 +25,15 @@ const json_try_parse = input => {
  * @template T,E
  * @typedef {Ok<T>|Error<E>} Result 
  */
+
+/** @type {(input: string) => Result<Json, "invalid JSON">} */
+const json_try_parse = input => {
+    try {
+        return ['ok', JSON.parse(input)]
+    } catch (_) {
+        return ['error', 'invalid JSON']
+    }
+}
 
 /** @type {(v: Json) => Result<Json, string>} */
 const call = v => {

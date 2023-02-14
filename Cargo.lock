@@ -476,6 +476,7 @@ dependencies = [
 name = "deno-proxy"
 version = "0.1.0"
 dependencies = [
+ "blockstack-core",
  "serde_json",
 ]
 
