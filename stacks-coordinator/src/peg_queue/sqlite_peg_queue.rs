@@ -232,7 +232,7 @@ impl Entry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum Status {
     New,
     Pending,
@@ -357,7 +357,23 @@ mod tests {
 
     #[test]
     fn acknowledged_entries_should_have_acknowledge_status() {
-        todo!();
+        let peg_queue = SqlitePegQueue::in_memory(0).unwrap();
+        let number_of_simulated_blocks: u64 = 1;
+
+        let stacks_node_mock = default_stacks_node_mock(number_of_simulated_blocks);
+        peg_queue.poll(&stacks_node_mock).unwrap();
+
+        let next_op = peg_queue.sbtc_op().unwrap().unwrap();
+        let peg_in_op = next_op.as_peg_in().unwrap();
+        peg_queue
+            .acknowledge(&peg_in_op.txid, &peg_in_op.burn_header_hash)
+            .unwrap();
+
+        let entry = peg_queue
+            .get_entry(&peg_in_op.txid, &peg_in_op.burn_header_hash)
+            .unwrap();
+
+        assert_eq!(entry.status, Status::Acknowledged);
     }
 
     fn default_stacks_node_mock(block_height: u64) -> stacks_node::MockStacksNode {
