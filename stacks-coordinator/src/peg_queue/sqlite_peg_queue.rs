@@ -176,7 +176,7 @@ impl SqlitePegQueue {
 
     const fn sql_select_status() -> &'static str {
         r#"
-        SELECT txid, burn_header_hash, block_height, op, status FROM sbtc_ops WHERE status=?1 ORDER BY block_height ASC
+        SELECT txid, burn_header_hash, block_height, op, status FROM sbtc_ops WHERE status=?1 ORDER BY block_height, op ASC
         "#
     }
 
@@ -257,8 +257,9 @@ mod tests {
     use std::{collections::hash_map::DefaultHasher, hash::Hasher};
 
     use blockstack_lib::{
-        chainstate::stacks::address::PoxAddress, types::chainstate::StacksAddress,
-        util::hash::Hash160,
+        chainstate::stacks::address::PoxAddress,
+        types::chainstate::StacksAddress,
+        util::{hash::Hash160, secp256k1::MessageSignature},
     };
 
     use crate::peg_queue::PegQueue;
@@ -277,12 +278,12 @@ mod tests {
             .return_const(number_of_simulated_blocks);
 
         stacks_node_mock
-            .expect_get_peg_out_request_ops()
-            .returning(|_| Vec::new());
-
-        stacks_node_mock
             .expect_get_peg_in_ops()
             .returning(|height| vec![peg_in_op(height)]);
+
+        stacks_node_mock
+            .expect_get_peg_out_request_ops()
+            .returning(|height| vec![peg_out_request_op(height)]);
 
         // No ops before polling
         assert!(peg_queue.sbtc_op().unwrap().is_none());
@@ -294,6 +295,10 @@ mod tests {
             let next_op = peg_queue.sbtc_op().unwrap().unwrap();
             assert!(next_op.as_peg_in().is_some());
             assert_eq!(next_op.as_peg_in().unwrap().block_height, height);
+
+            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
+            assert!(next_op.as_peg_out_request().is_some());
+            assert_eq!(next_op.as_peg_out_request().unwrap().block_height, height);
         }
     }
 
@@ -307,8 +312,27 @@ mod tests {
             peg_wallet_address,
             amount: 1337,
             memo: vec![1, 3, 3, 7],
-            txid: Txid(hash_and_expand(block_height, 0)),
-            burn_header_hash: BurnchainHeaderHash(hash_and_expand(block_height, 1)),
+            txid: Txid(hash_and_expand(block_height, 1)),
+            burn_header_hash: BurnchainHeaderHash(hash_and_expand(block_height, 0)),
+            block_height,
+            vtxindex: 0,
+        }
+    }
+
+    fn peg_out_request_op(block_height: u64) -> stacks_node::PegOutRequestOp {
+        let recipient_stx_addr = StacksAddress::new(26, Hash160([0; 20]));
+        let peg_wallet_address =
+            PoxAddress::Standard(StacksAddress::new(0, Hash160([0; 20])), None);
+
+        stacks_node::PegOutRequestOp {
+            recipient: PoxAddress::Standard(recipient_stx_addr, None),
+            peg_wallet_address,
+            amount: 1337,
+            fulfillment_fee: 1000,
+            signature: MessageSignature([0; 65]),
+            memo: vec![1, 3, 3, 7],
+            txid: Txid(hash_and_expand(block_height, 2)),
+            burn_header_hash: BurnchainHeaderHash(hash_and_expand(block_height, 0)),
             block_height,
             vtxindex: 0,
         }
