@@ -211,11 +211,15 @@ struct Entry {
 impl Entry {
     fn from_row(row: &SqliteRow) -> Result<Self, SqliteError> {
         let txid = Txid::from_hex(&row.get::<_, String>(0)?).map_err(PegQueueError::from)?;
+
         let burn_header_hash = BurnchainHeaderHash::from_hex(&row.get::<_, String>(1)?)
             .map_err(PegQueueError::from)?;
+
         let block_height = row.get::<_, i64>(2)? as u64; // Stacks will crash before the coordinator if this is invalid
+
         let op: SbtcOp =
             serde_json::from_str(&row.get::<_, String>(3)?).map_err(PegQueueError::from)?;
+
         let status: Status = row.get::<_, String>(4)?.parse()?;
 
         Ok(Self {
