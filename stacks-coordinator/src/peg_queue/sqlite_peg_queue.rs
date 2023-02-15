@@ -12,68 +12,6 @@ pub struct SqlitePegQueue {
     start_block_height: u64,
 }
 
-impl peg_queue::PegQueue for SqlitePegQueue {
-    type Error = peg_queue::Error;
-
-    fn sbtc_op(&self) -> Result<Option<peg_queue::SbtcOp>, Self::Error> {
-        let maybe_entry = self.get_singe_entry_with_status(&Status::New)?;
-
-        let Some(mut entry) = maybe_entry else {
-            return Ok(None)
-        };
-
-        entry.status = Status::Pending;
-        self.insert(&entry)?;
-
-        Ok(Some(entry.op))
-    }
-
-    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<(), Self::Error> {
-        let target_block_height = stacks_node.burn_block_height();
-
-        for block_height in (self.max_observed_block_height()? + 1)..=target_block_height {
-            for peg_in_op in stacks_node.get_peg_in_ops(block_height) {
-                let entry = Entry {
-                    block_height,
-                    status: Status::New,
-                    txid: peg_in_op.txid,
-                    burn_header_hash: peg_in_op.burn_header_hash,
-                    op: peg_queue::SbtcOp::PegIn(peg_in_op),
-                };
-
-                self.insert(&entry)?;
-            }
-
-            for peg_out_request_op in stacks_node.get_peg_out_request_ops(block_height) {
-                let entry = Entry {
-                    block_height,
-                    status: Status::New,
-                    txid: peg_out_request_op.txid,
-                    burn_header_hash: peg_out_request_op.burn_header_hash,
-                    op: peg_queue::SbtcOp::PegOutRequest(peg_out_request_op),
-                };
-
-                self.insert(&entry)?;
-            }
-        }
-
-        Ok(())
-    }
-
-    fn acknowledge(
-        &self,
-        txid: &Txid,
-        burn_header_hash: &BurnchainHeaderHash,
-    ) -> Result<(), Self::Error> {
-        let mut entry = self.get_entry(txid, burn_header_hash)?;
-
-        entry.status = Status::Acknowledged;
-        self.insert(&entry)?;
-
-        Ok(())
-    }
-}
-
 impl SqlitePegQueue {
     pub fn new<P: AsRef<Path>>(path: P, start_block_height: u64) -> Result<Self, peg_queue::Error> {
         let conn = rusqlite::Connection::open(path)?;
@@ -116,7 +54,7 @@ impl SqlitePegQueue {
         Ok(())
     }
 
-    fn get_singe_entry_with_status(
+    fn get_single_entry_with_status(
         &self,
         status: &Status,
     ) -> Result<Option<Entry>, peg_queue::Error> {
@@ -190,6 +128,68 @@ impl SqlitePegQueue {
         r#"
         SELECT MAX(block_height) FROM sbtc_ops
         "#
+    }
+}
+
+impl peg_queue::PegQueue for SqlitePegQueue {
+    type Error = peg_queue::Error;
+
+    fn sbtc_op(&self) -> Result<Option<peg_queue::SbtcOp>, Self::Error> {
+        let maybe_entry = self.get_single_entry_with_status(&Status::New)?;
+
+        let Some(mut entry) = maybe_entry else {
+            return Ok(None)
+        };
+
+        entry.status = Status::Pending;
+        self.insert(&entry)?;
+
+        Ok(Some(entry.op))
+    }
+
+    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<(), Self::Error> {
+        let target_block_height = stacks_node.burn_block_height();
+
+        for block_height in (self.max_observed_block_height()? + 1)..=target_block_height {
+            for peg_in_op in stacks_node.get_peg_in_ops(block_height) {
+                let entry = Entry {
+                    block_height,
+                    status: Status::New,
+                    txid: peg_in_op.txid,
+                    burn_header_hash: peg_in_op.burn_header_hash,
+                    op: peg_queue::SbtcOp::PegIn(peg_in_op),
+                };
+
+                self.insert(&entry)?;
+            }
+
+            for peg_out_request_op in stacks_node.get_peg_out_request_ops(block_height) {
+                let entry = Entry {
+                    block_height,
+                    status: Status::New,
+                    txid: peg_out_request_op.txid,
+                    burn_header_hash: peg_out_request_op.burn_header_hash,
+                    op: peg_queue::SbtcOp::PegOutRequest(peg_out_request_op),
+                };
+
+                self.insert(&entry)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn acknowledge(
+        &self,
+        txid: &Txid,
+        burn_header_hash: &BurnchainHeaderHash,
+    ) -> Result<(), Self::Error> {
+        let mut entry = self.get_entry(txid, burn_header_hash)?;
+
+        entry.status = Status::Acknowledged;
+        self.insert(&entry)?;
+
+        Ok(())
     }
 }
 
@@ -271,11 +271,91 @@ mod tests {
         let peg_queue = SqlitePegQueue::in_memory(0).unwrap();
         let number_of_simulated_blocks: u64 = 3;
 
+        let stacks_node_mock = default_stacks_node_mock(number_of_simulated_blocks);
+
+        // No ops before polling
+        assert!(peg_queue.sbtc_op().unwrap().is_none());
+
+        // Should cause the peg_queue to fetch 3 peg in ops
+        peg_queue.poll(&stacks_node_mock).unwrap();
+
+        for height in 1..=number_of_simulated_blocks {
+            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
+            assert!(next_op.as_peg_in().is_some());
+            assert_eq!(next_op.as_peg_in().unwrap().block_height, height);
+
+            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
+            assert!(next_op.as_peg_out_request().is_some());
+            assert_eq!(next_op.as_peg_out_request().unwrap().block_height, height);
+        }
+    }
+
+    #[test]
+    fn calling_poll_should_not_query_new_ops_if_at_block_height() {
+        let peg_queue = SqlitePegQueue::in_memory(0).unwrap();
+        let number_of_simulated_blocks: u64 = 3;
+
+        let stacks_node_mock = default_stacks_node_mock(number_of_simulated_blocks);
+
+        // Fast forward past first poll
+        peg_queue.poll(&stacks_node_mock).unwrap();
+        for _ in 1..=number_of_simulated_blocks {
+            peg_queue.sbtc_op().unwrap().unwrap();
+            peg_queue.sbtc_op().unwrap().unwrap();
+        }
+
         let mut stacks_node_mock = stacks_node::MockStacksNode::new();
 
         stacks_node_mock
             .expect_burn_block_height()
             .return_const(number_of_simulated_blocks);
+
+        stacks_node_mock.expect_get_peg_in_ops().never();
+        stacks_node_mock.expect_get_peg_out_request_ops().never();
+
+        peg_queue.poll(&stacks_node_mock).unwrap();
+    }
+
+    #[test]
+    fn calling_poll_should_find_new_ops_if_at_new_block_height() {
+        let peg_queue = SqlitePegQueue::in_memory(0).unwrap();
+        let number_of_simulated_blocks: u64 = 3;
+        let number_of_simulated_blocks_second_poll: u64 = 5;
+
+        let stacks_node_mock = default_stacks_node_mock(number_of_simulated_blocks);
+
+        // Fast forward past first poll
+        peg_queue.poll(&stacks_node_mock).unwrap();
+        for _ in 1..=number_of_simulated_blocks {
+            peg_queue.sbtc_op().unwrap().unwrap();
+            peg_queue.sbtc_op().unwrap().unwrap();
+        }
+
+        let stacks_node_mock = default_stacks_node_mock(number_of_simulated_blocks_second_poll);
+        peg_queue.poll(&stacks_node_mock).unwrap();
+
+        for height in number_of_simulated_blocks + 1..=number_of_simulated_blocks_second_poll {
+            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
+            assert!(next_op.as_peg_in().is_some());
+            assert_eq!(next_op.as_peg_in().unwrap().block_height, height);
+
+            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
+            assert!(next_op.as_peg_out_request().is_some());
+            assert_eq!(next_op.as_peg_out_request().unwrap().block_height, height);
+        }
+    }
+
+    #[test]
+    fn acknowledged_entries_should_have_acknowledge_status() {
+        todo!();
+    }
+
+    fn default_stacks_node_mock(block_height: u64) -> stacks_node::MockStacksNode {
+        let mut stacks_node_mock = stacks_node::MockStacksNode::new();
+
+        stacks_node_mock
+            .expect_burn_block_height()
+            .return_const(block_height);
 
         stacks_node_mock
             .expect_get_peg_in_ops()
@@ -285,21 +365,7 @@ mod tests {
             .expect_get_peg_out_request_ops()
             .returning(|height| vec![peg_out_request_op(height)]);
 
-        // No ops before polling
-        assert!(peg_queue.sbtc_op().unwrap().is_none());
-
-        // Should cause the peg_queue to fetch 3 peg in ops
-        peg_queue.poll(&stacks_node_mock).unwrap();
-
-        for height in 1..=3 {
-            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
-            assert!(next_op.as_peg_in().is_some());
-            assert_eq!(next_op.as_peg_in().unwrap().block_height, height);
-
-            let next_op = peg_queue.sbtc_op().unwrap().unwrap();
-            assert!(next_op.as_peg_out_request().is_some());
-            assert_eq!(next_op.as_peg_out_request().unwrap().block_height, height);
-        }
+        stacks_node_mock
     }
 
     fn peg_in_op(block_height: u64) -> stacks_node::PegInOp {
