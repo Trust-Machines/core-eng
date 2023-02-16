@@ -1,6 +1,6 @@
 use std::io::Error;
 
-use deno_proxy::new;
+use stackes_js_rs::new;
 use serde_json::from_str;
 
 fn test_wrap() -> Result<(), Error> {

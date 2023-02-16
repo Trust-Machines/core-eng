@@ -4,7 +4,6 @@ mod to_io_result;
 use std::{
     io::{Error, Write},
     process::{ChildStdin, ChildStdout, Command, Stdio},
-    str::from_utf8,
 };
 
 use read_ex::ReadEx;
@@ -20,8 +19,8 @@ impl Js {
     pub fn call(&mut self, v: Value) -> Result<Value, Error> {
         let stdin = &mut self.stdin;
         let r = v.to_string();
-        stdin.write(r.as_bytes());
-        stdin.write("\n".as_bytes());
+        stdin.write(r.as_bytes())?;
+        stdin.write("\n".as_bytes())?;
         stdin.flush()?;
 
         let stdout = &mut self.stdout;

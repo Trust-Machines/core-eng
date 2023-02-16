@@ -182,7 +182,7 @@ dependencies = [
 [[package]]
 name = "blockstack-core"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#a5c6b5ac27764a248a06e156ef443a97b48402cd"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#065079229cec80a26b5f454d2c4ad13934fb89d7"
 dependencies = [
  "chrono",
  "clarity",
@@ -341,7 +341,7 @@ dependencies = [
 [[package]]
 name = "clarity"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#a5c6b5ac27764a248a06e156ef443a97b48402cd"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#065079229cec80a26b5f454d2c4ad13934fb89d7"
 dependencies = [
  "integer-sqrt",
  "lazy_static",
@@ -476,14 +476,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "deno-proxy"
-version = "0.1.0"
-dependencies = [
- "blockstack-core",
- "serde_json",
 ]
 
 [[package]]
@@ -1162,9 +1154,9 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "p256k1"
-version = "2.0.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "071ffd20fb999bb9efcaddc61bc69b891322b91291a104ea9a9f3b66d8244361"
+checksum = "649fd659f348d413f370edc4553d8f00e69557633cd37b154489d3a572dc0653"
 dependencies = [
  "base58",
  "bindgen",
@@ -1827,7 +1819,7 @@ dependencies = [
  "slog",
  "term",
  "thread_local",
- "time 0.3.17",
+ "time 0.3.18",
 ]
 
 [[package]]
@@ -1856,9 +1848,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "stackes-js-rs"
+version = "0.1.0"
+dependencies = [
+ "blockstack-core",
+ "serde_json",
+]
+
+[[package]]
 name = "stacks-common"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#a5c6b5ac27764a248a06e156ef443a97b48402cd"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#065079229cec80a26b5f454d2c4ad13934fb89d7"
 dependencies = [
  "chrono",
  "curve25519-dalek",
@@ -2093,9 +2093,9 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.17"
+version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a561bf4617eebd33bca6434b988f39ed798e527f51a1e797d0ee4f61c0a38376"
+checksum = "af0097eaf301d576d0b2aead7a59facab6d53cc636340f0291fab8446a2e8613"
 dependencies = [
  "itoa",
  "libc",
