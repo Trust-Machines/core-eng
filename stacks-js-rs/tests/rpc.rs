@@ -1,10 +1,10 @@
 use std::io::Error;
 
 use serde_json::from_str;
-use stackes_js_rs::new;
+use stackes_js_rs::Js;
 
 fn test_wrap() -> Result<(), Error> {
-    let mut js = new(".")?;
+    let mut js = Js::new(".")?;
     {
         let result = js.call(from_str("{\"b\":[],\"a\":2}")?)?;
         assert_eq!(result.to_string(), "[\"object\",{\"a\":2,\"b\":[]}]");

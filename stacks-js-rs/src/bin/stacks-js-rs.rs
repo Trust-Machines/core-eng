@@ -1,5 +1,5 @@
-use stackes_js_rs::new;
+use stackes_js_rs::Js;
 
 fn main() {
-    let _ = new("./stacks-js-rs").unwrap();
+    let _ = Js::new("./stacks-js-rs").unwrap();
 }
