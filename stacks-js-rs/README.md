@@ -1,6 +1,7 @@
-# Deno Proxy
+# Stacks-js-rs
 
-It's a simple example how to make RPC (remote procedure call) from Rust to JS.
+Partial Implementation of Stacks on Rust using `stacks.js`. We use a simple 
+RPC (remote procedure call) from Rust to JS using STDIO.
 
 ## Deno Installation
 
@@ -9,8 +10,6 @@ cargo install deno
 ```
 
 ## Protocol
-
-The program communicates with `test.mjs` using STDIO.
 
 Each message contains 
 
@@ -28,16 +27,16 @@ Each message contains
   {"a":42}\n[0,-1,true]\n
   ```
 
-## Debugging the `deno-proxy`
+## Debugging the `stacks-js-rs`
 
-### Run Rust `deno-proxy`
+### Running `stacks-js-rs`
 
 ```sh
-cargo run --bin deno-proxy
+cargo run --bin stacks-js-rs
 ```
 
-### Run JS `deno-proxy`
+### Running `console.mjs`
 
 ```sh
-deno run --allow-env --allow-read ./deno-proxy/test.mjs
+deno run --allow-env --allow-read ./stacks-js-rs/console.mjs
 ```

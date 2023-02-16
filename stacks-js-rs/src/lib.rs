@@ -34,7 +34,7 @@ pub fn new(path: &str) -> Result<Js, Error> {
         .arg("run")
         .arg("--allow-env")
         .arg("--allow-read")
-        .arg(path.to_owned() + "/test.mjs")
+        .arg(path.to_owned() + "/console.mjs")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
