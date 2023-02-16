@@ -41,7 +41,7 @@ pub trait NetListen {
     type Error: Debug;
 
     fn listen(&self);
-    fn poll(&mut self, id: u64);
+    fn poll(&mut self, id: u32);
     fn next_message(&mut self) -> Option<Message>;
     fn send_message(&self, msg: Message) -> Result<(), Self::Error>;
 }
@@ -51,7 +51,7 @@ impl NetListen for HttpNetListen {
 
     fn listen(&self) {}
 
-    fn poll(&mut self, id: u64) {
+    fn poll(&mut self, id: u32) {
         let url = url_with_id(&self.net.stacks_node_url, id);
         debug!("poll {}", url);
         match ureq::get(&url).call() {
@@ -128,7 +128,7 @@ pub enum HttpNetError {
     NetworkError(#[from] Box<ureq::Error>),
 }
 
-fn url_with_id(base: &str, id: u64) -> String {
+fn url_with_id(base: &str, id: u32) -> String {
     let mut url = base.to_owned();
     url.push_str(&format!("?id={}", id));
     url

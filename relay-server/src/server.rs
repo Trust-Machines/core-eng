@@ -1,143 +1,123 @@
-use std::{
-    io::{Error, ErrorKind, Read, Write},
-    net::TcpStream,
+use std::io::{Error, ErrorKind, Write};
+
+use crate::{
+    http::{Message, Request, Response, ToIoResult},
+    io_stream::IoStream,
+    mem_io_stream::MemIoStreamEx,
+    mem_state::MemState,
+    state::State,
+    url::QueryEx,
 };
 
-use crate::{http::RequestEx, state::State, to_io_result::ToIoResult, url::QueryEx};
+/// The server keeps a state (messages) and can accept and respond to messages using the
+/// `update` function.
+///
+/// ## Example
+///
+/// ```
+/// let mut server = relay_server::Server::default();
+/// // send a message using a bidirectional stream.
+/// {
+///   const REQUEST: &str = "\
+///     POST / HTTP/1.0\r\n\
+///     Content-Length: 6\r\n\
+///     \r\n\
+///     Hello!";
+///   let response = server.call(REQUEST.as_bytes()).unwrap();
+///   const RESPONSE: &str = "\
+///     HTTP/1.0 200 OK\r\n\
+///     \r\n";
+///   assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
+/// }
+/// ```
+#[derive(Default)]
+pub struct Server(MemState);
 
-pub trait Stream {
-    type Read: Read;
-    type Write: Write;
-    fn istream(&mut self) -> &mut Self::Read;
-    fn ostream(&mut self) -> &mut Self::Write;
-}
+impl Server {
+    pub fn update(&mut self, io: &mut impl IoStream) -> Result<(), Error> {
+        let request = Request::read(io.istream())?;
+        let ostream = io.ostream();
 
-impl Stream for TcpStream {
-    type Read = TcpStream;
-    type Write = TcpStream;
-    fn istream(&mut self) -> &mut Self::Read {
-        self
-    }
-    fn ostream(&mut self) -> &mut Self::Write {
-        self
-    }
-}
-
-pub trait ServerEx: Stream {
-    fn update_state(&mut self, state: &mut State) -> Result<(), Error> {
-        let rm = self.istream().read_http_request()?;
-        let ostream = self.ostream();
-        let mut write = |text: &str| ostream.write(text.as_bytes());
-        let mut write_line = |line: &str| {
-            write(line)?;
-            write("\r\n")?;
-            Ok::<(), Error>(())
-        };
-        let mut write_response_line = || write_line("HTTP/1.1 200 OK");
-        match rm.method.as_str() {
+        let content = match request.method.as_str() {
             "GET" => {
-                let query = *rm.url.url_query().get("id").to_io_result("no id")?;
-                let msg = state
-                    .get(query.to_string())
-                    .map_or([].as_slice(), |v| v.as_slice());
-                let len = msg.len();
-                write_response_line()?;
-                write_line(format!("content-length:{len}").as_str())?;
-                write_line("")?;
-                ostream.write(msg)?;
+                let query = *request.url.url_query().get("id").to_io_result("no id")?;
+                self.0.get(query.to_string())
             }
             "POST" => {
-                state.post(rm.content);
-                write_response_line()?;
-                write_line("")?;
+                self.0.post(request.content);
+                Vec::default()
             }
             _ => return Err(Error::new(ErrorKind::InvalidData, "unknown HTTP method")),
         };
+        let response = Response::new(200, "OK".to_string(), Default::default(), content);
+        response.write(ostream)?;
+        ostream.flush()?;
         Ok(())
+    }
+    // TODO: move this function to a `test` mod.
+    pub fn call(&mut self, msg: &[u8]) -> Result<Vec<u8>, Error> {
+        let mut result = Vec::default();
+        let mut stream = msg.mem_io_stream(&mut result);
+        self.update(&mut stream)?;
+        if stream.i.position() != msg.len() as u64 {
+            return Err(Error::new(ErrorKind::InvalidData, "invalid request"));
+        }
+        Ok(result)
     }
 }
 
-impl<T: Stream> ServerEx for T {}
-
 #[cfg(test)]
 mod test {
-    use crate::{server::ServerEx, state::State};
-    use std::{io::Cursor, str::from_utf8};
+    use std::str::from_utf8;
 
-    use super::Stream;
-
-    struct MockStream {
-        i: Cursor<&'static str>,
-        o: Cursor<Vec<u8>>,
-    }
-
-    trait MockStreamEx {
-        fn mock_stream(self) -> MockStream;
-    }
-
-    impl MockStreamEx for &'static str {
-        fn mock_stream(self) -> MockStream {
-            MockStream {
-                i: Cursor::new(self),
-                o: Default::default(),
-            }
-        }
-    }
-
-    impl Stream for MockStream {
-        type Read = Cursor<&'static str>;
-        type Write = Cursor<Vec<u8>>;
-        fn istream(&mut self) -> &mut Self::Read {
-            &mut self.i
-        }
-        fn ostream(&mut self) -> &mut Self::Write {
-            &mut self.o
-        }
-    }
+    use super::*;
 
     #[test]
     fn test() {
-        let mut state = State::default();
+        let mut server = Server::default();
+        {
+            const REQUEST: &str = "\
+                POST / HTTP/1.0\r\n\
+                Content-Length: 6\r\n\
+                \r\n\
+                Hello!";
+            let response = server.call(REQUEST.as_bytes()).unwrap();
+            const RESPONSE: &str = "\
+                HTTP/1.0 200 OK\r\n\
+                \r\n";
+            assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
+        }
+        {
+            const REQUEST: &str = "\
+                GET /?id=x HTTP/1.0\r\n\
+                \r\n";
+            let response = server.call(REQUEST.as_bytes()).unwrap();
+            const RESPONSE: &str = "\
+                HTTP/1.0 200 OK\r\n\
+                content-length:6\r\n\
+                \r\n\
+                Hello!";
+            assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
+        }
+        {
+            const REQUEST: &str = "\
+                GET /?id=x HTTP/1.0\r\n\
+                \r\n";
+            let response = server.call(REQUEST.as_bytes()).unwrap();
+            const RESPONSE: &str = "\
+                HTTP/1.0 200 OK\r\n\
+                \r\n";
+            assert_eq!(from_utf8(&response).unwrap(), RESPONSE);
+        }
+        // invalid request
         {
             const REQUEST: &str = "\
                 POST / HTTP/1.1\r\n\
                 Content-Length: 6\r\n\
                 \r\n\
-                Hello!";
-            let mut stream = REQUEST.mock_stream();
-            stream.update_state(&mut state).unwrap();
-            assert_eq!(stream.i.position(), REQUEST.len() as u64);
-            const RESPONSE: &str = "\
-                HTTP/1.1 200 OK\r\n\
-                \r\n";
-            assert_eq!(from_utf8(stream.o.get_ref()).unwrap(), RESPONSE);
-        }
-        {
-            const REQUEST: &str = "\
-                GET /?id=x HTTP/1.1\r\n\
-                \r\n";
-            let mut stream = REQUEST.mock_stream();
-            stream.update_state(&mut state).unwrap();
-            assert_eq!(stream.i.position(), REQUEST.len() as u64);
-            const RESPONSE: &str = "\
-                HTTP/1.1 200 OK\r\n\
-                content-length:6\r\n\
-                \r\n\
-                Hello!";
-            assert_eq!(from_utf8(stream.o.get_ref()).unwrap(), RESPONSE);
-        }
-        {
-            const REQUEST: &str = "\
-                GET /?id=x HTTP/1.1\r\n\
-                \r\n";
-            let mut stream = REQUEST.mock_stream();
-            stream.update_state(&mut state).unwrap();
-            assert_eq!(stream.i.position(), REQUEST.len() as u64);
-            const RESPONSE: &str = "\
-                HTTP/1.1 200 OK\r\n\
-                content-length:0\r\n\
-                \r\n";
-            assert_eq!(from_utf8(stream.o.get_ref()).unwrap(), RESPONSE);
+                Hello!j";
+            let response = server.call(REQUEST.as_bytes());
+            assert!(response.is_err());
         }
     }
 }
