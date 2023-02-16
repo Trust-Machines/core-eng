@@ -31,13 +31,12 @@ impl Js {
         })
     }
     pub fn call(&mut self, v: Value) -> Result<Value, Error> {
-        let stdin = &mut self.stdin;
-        let r = v.to_string();
-        stdin.write(r.as_bytes())?;
-        stdin.write("\n".as_bytes())?;
-        stdin.flush()?;
-
-        let stdout = &mut self.stdout;
-        Ok(from_str(&stdout.read_string_until('\n')?)?)
+        {
+            let stdin = &mut self.stdin;
+            stdin.write(v.to_string().as_bytes())?;
+            stdin.write("\n".as_bytes())?;
+            stdin.flush()?;
+        }
+        Ok(from_str(&self.stdout.read_string_until('\n')?)?)
     }
 }
