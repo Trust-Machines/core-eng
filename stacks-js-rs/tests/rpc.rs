@@ -1,7 +1,7 @@
 use std::io::Error;
 
-use stackes_js_rs::new;
 use serde_json::from_str;
+use stackes_js_rs::new;
 
 fn test_wrap() -> Result<(), Error> {
     let mut js = new(".")?;
