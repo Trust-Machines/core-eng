@@ -19,8 +19,9 @@ jobs:
 
   test:
     strategy:
-      matrix: [ubuntu-latest, macosx-latest, windows-latest]
-    runs-on: ${{matrix}}
+      matrix: 
+        os: [ubuntu-latest, macosx-latest, windows-latest]
+    runs-on: ${{matrix.os}}
     steps:  
     - name: Run tests
       run: cargo test --verbose
