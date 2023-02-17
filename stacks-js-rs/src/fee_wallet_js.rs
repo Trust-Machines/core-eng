@@ -9,12 +9,10 @@ pub struct FeeWalletJs(Js);
 
 impl FeeWalletJs {
     fn mint_sbtc(&mut self, op: &PegInOp) -> Result<StacksTransaction, Error> {
-        let p = serde_json::to_string(op);
-        todo!()
+        self.0.call(&In::Mint(op))
     }
     fn burn_sbtc(&mut self, op: &PegOutRequestOp) -> Result<StacksTransaction, Error> {
-        let p = serde_json::to_string(op);
-        todo!()
+        self.0.call(&In::Burn(op))
     }
 }
 
