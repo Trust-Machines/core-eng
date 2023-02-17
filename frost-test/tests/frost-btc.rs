@@ -1,7 +1,9 @@
+use wtfrost::v1;
+
 //
 #[test]
 fn frost_dkg_btc() {
-    let signers = vec![];
+    let signers: Vec<v1::Signer> = vec![];
 
     // DKG
 
