@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::str::FromStr;
 
-use rusqlite::Connection as SqliteConnection;
+use rusqlite::Connection as RusqliteConnection;
 use rusqlite::Error as SqliteError;
 use rusqlite::Row as SqliteRow;
 
@@ -20,14 +20,14 @@ pub struct SqlitePegQueue {
 
 impl SqlitePegQueue {
     pub fn new<P: AsRef<Path>>(path: P, start_block_height: u64) -> Result<Self, Error> {
-        Self::from_connection(SqliteConnection::open(path)?, start_block_height)
+        Self::from_connection(rusqlite::Connection::open(path)?, start_block_height)
     }
 
     pub fn in_memory(start_block_height: u64) -> Result<Self, Error> {
-        Self::from_connection(SqliteConnection::open_in_memory()?, start_block_height)
+        Self::from_connection(rusqlite::Connection::open_in_memory()?, start_block_height)
     }
 
-    fn from_connection(conn: SqliteConnection, start_block_height: u64) -> Result<Self, Error> {
+    fn from_connection(conn: rusqlite::Connection, start_block_height: u64) -> Result<Self, Error> {
         let this = Self {
             conn,
             start_block_height,
