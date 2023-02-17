@@ -5,12 +5,9 @@ use blockstack_lib::{
     chainstate::{burn::operations::PegInOp, stacks::address::PoxAddress},
     types::chainstate::{BurnchainHeaderHash, StacksAddress},
     util::hash::Hash160,
-    vm::{
-        functions::principals,
-        types::{PrincipalData, StandardPrincipalData},
-    },
+    vm::types::{PrincipalData, StandardPrincipalData},
 };
-use serde_json::{from_str, Value, to_string};
+use serde_json::{from_str, to_string, Value};
 use stackes_js_rs::{fee_wallet_js::In, Js};
 
 fn to_value(s: &str) -> Result<Value, Error> {
@@ -19,30 +16,30 @@ fn to_value(s: &str) -> Result<Value, Error> {
 }
 
 fn test_wrap() -> Result<(), Error> {
-    let mut js = Js::new(".")?;
+    let mut js = Js::new("./mirror.mjs")?;
     {
         let result = js.call::<_, Value>(&to_value("{\"b\":[],\"a\":2}")?)?;
-        assert_eq!(result.to_string(), "[\"object\",{\"a\":2,\"b\":[]}]");
+        assert_eq!(result.to_string(), "[{\"a\":2,\"b\":[]}]");
     }
     {
         let result = js.call::<_, Value>(&to_value("[54,null]")?)?;
-        assert_eq!(result.to_string(), "[\"array\",[54,null]]");
+        assert_eq!(result.to_string(), "[[54,null]]");
     }
     {
         let result = js.call::<_, Value>(&to_value("42")?)?;
-        assert_eq!(result.to_string(), "[\"number\",42]");
+        assert_eq!(result.to_string(), "[42]");
     }
     {
         let result = js.call::<_, Value>(&to_value("\"Hello!\"")?)?;
-        assert_eq!(result.to_string(), "[\"string\",\"Hello!\"]");
+        assert_eq!(result.to_string(), "[\"Hello!\"]");
     }
     {
         let result = js.call::<_, Value>(&to_value("true")?)?;
-        assert_eq!(result.to_string(), "[\"boolean\",true]");
+        assert_eq!(result.to_string(), "[true]");
     }
     {
         let result = js.call::<_, Value>(&to_value("null")?)?;
-        assert_eq!(result.to_string(), "[\"null\"]");
+        assert_eq!(result.to_string(), "[null]");
     }
     Ok(())
 }
@@ -68,8 +65,8 @@ fn in_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let x = In::Mint(&p);
-    let mut js = Js::new(".").unwrap();
+    let mut js = Js::new("./mirror.mjs").unwrap();
     let result = js.call::<_, Value>(&x).unwrap();
-    let expected = r#"["object",{"Mint":{"amount":0,"block_height":0,"burn_header_hash":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"memo":[],"peg_wallet_address":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"recipient":{"Standard":[0,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]},"txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
+    let expected = r#"[{"Mint":{"amount":0,"block_height":0,"burn_header_hash":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"memo":[],"peg_wallet_address":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"recipient":{"Standard":[0,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]},"txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
     assert_eq!(to_string(&result).unwrap(), expected);
 }
