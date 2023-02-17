@@ -1,0 +1,18 @@
+---
+id: 0
+name: Mainnet deployment
+network: mainnet
+stacks-node: "https://stacks-node-api.mainnet.stacks.co"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: sbtc-alpha
+            expected-sender: SP2BJA4JYFJ7SDMNFJZ9TJ3GB80P9Z80ADPGK1C2F
+            cost: 19594
+            path: contracts/sbtc-alpha.clar
+            anchor-block-only: true
+            clarity-version: 1
+      epoch: "2.0"
