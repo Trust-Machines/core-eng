@@ -22,15 +22,19 @@ activity.
 
 ## Part 2 Peg In
 
-* user generates BTC TX from user to peg-wallet-address
-  * output 1: P2PKH of peg-wallet-address
-  * output 2: OP_RETURN <stx-address>
+* user creates Peg-In BTC TX
+  * output 1: OP_RETURN "<" <stx-address> <contract> <memo>
+  * output 2: P2PKH of peg-wallet-address
 * user publishes BTC TX
 
 ## Part 3 Peg Out
+* user creates Peg-Out request
+  * output 1: OP_RETURN ">" <amount> <signature> <memo>
+  * output 2: P2PKH user-bitcoin-address
 * coordinator requests and gathers nonces from the signers
-* coordinator generates BTC TX
-  * output 1: P2PKH of user-address
+* coordinator generates Peg-Out Fulfilment BTC TX
+  * output 1: OP_RETURN ">" <amount> <signature> <memo>
+  * output 2: P2PKH user-bitcoin-address 
 * coordinator flood-send signtaure request of BTC TX payload
 * signers respond with signature-share
 * coordinator gathers signature-shares from the signers
