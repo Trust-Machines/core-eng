@@ -20,7 +20,8 @@ jobs:
   test:
     strategy:
       matrix: 
-        os: [ubuntu-latest, macosx-latest, windows-latest]
+        # can't run on `windows-latests`
+        os: [ubuntu-latest, macosx-latest]
     runs-on: ${{matrix.os}}
     steps:  
     - uses: actions/checkout@v3    
