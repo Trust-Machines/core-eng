@@ -16,7 +16,7 @@ fn to_value(s: &str) -> Result<Value, Error> {
 }
 
 fn test_wrap() -> Result<(), Error> {
-    let mut js = Js::new("./mirror.mjs")?;
+    let mut js = Js::new("./mirror.ts")?;
     {
         let result = js.call::<_, Value>(&to_value("{\"b\":[],\"a\":2}")?)?;
         assert_eq!(result.to_string(), "[{\"a\":2,\"b\":[]}]");
@@ -65,7 +65,7 @@ fn in_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let x = In::Mint(&p);
-    let mut js = Js::new("./mirror.mjs").unwrap();
+    let mut js = Js::new("./mirror.ts").unwrap();
     let result = js.call::<_, Value>(&x).unwrap();
     let expected = r#"[{"Mint":{"amount":0,"block_height":0,"burn_header_hash":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"memo":[],"peg_wallet_address":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"recipient":{"Standard":[0,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]},"txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
     assert_eq!(to_string(&result).unwrap(), expected);

@@ -1,32 +1,20 @@
 import { stdin, stdout, stderr } from 'node:process'
 
-/**
- * @typedef {{
-*  readonly [k in string]: Json
-* }} JsonObject
-*/
+type JsonObject = {
+  readonly [k in string]: Json
+}
 
-/** @typedef {Json[]} JsonArray */
+type JsonArray = readonly Json[]
 
-/** @typedef {JsonObject|boolean|string|number|null|JsonArray} Json */
+export type Json = JsonObject|boolean|string|number|null|JsonArray
 
-/**
- * @template T
- * @typedef {readonly["ok", T]} Ok
- */
+type Ok<T> = readonly["ok", T]
 
-/**
- * @template E
- * @typedef {readonly["error", E]} Error
- */
+type Error<E> = readonly["error", E]
 
-/**
- * @template T,E
- * @typedef {Ok<T>|Error<E>} Result
- */
+type Result<T, E> = Ok<T>|Error<E>
 
-/** @type {(input: string) => Result<Json, "invalid JSON">} */
-const json_try_parse = input => {
+const json_try_parse = (input: string): Result<Json, "invalid JSON"> => {
     try {
         return ['ok', JSON.parse(input)]
     } catch (_) {
@@ -34,10 +22,9 @@ const json_try_parse = input => {
     }
 }
 
-/** @typedef {(input: Json) => Json} JsonMap */
+export type JsonMap = (input: Json) => Json
 
-/** @type {(f: JsonMap) => void} */
-export const listenStdio = f => {
+export const listenStdio = (f: JsonMap) => {
     /** @type {string} */
     let buffer = ""
     stdin.setEncoding('utf8').on('readable', () => {
