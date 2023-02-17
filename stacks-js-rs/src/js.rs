@@ -3,8 +3,8 @@ use std::{
     process::{ChildStdin, ChildStdout, Command, Stdio},
 };
 
-use serde_json::{from_str, Value};
-use stacks_coordinator::fee_wallet::FeeWallet;
+use serde::Serialize;
+use serde_json::{from_str, to_string, Value};
 
 use crate::{read_ex::ReadEx, to_io_result::ToIoResult};
 
@@ -28,10 +28,10 @@ impl Js {
             stdout: child.stdout.take().to_io_result()?,
         })
     }
-    pub fn call(&mut self, v: Value) -> Result<Value, Error> {
+    pub fn call<T: Serialize>(&mut self, input: &T) -> Result<Value, Error> {
         {
             let stdin = &mut self.stdin;
-            stdin.write(v.to_string().as_bytes())?;
+            stdin.write(to_string(input)?.as_bytes())?;
             stdin.write("\n".as_bytes())?;
             stdin.flush()?;
         }

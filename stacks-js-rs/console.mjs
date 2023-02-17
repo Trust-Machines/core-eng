@@ -3,7 +3,7 @@ import stacksConnect from 'npm:@stacks/connect'
 
 /**
  * @typedef {{
-*  [k in string]: Json
+*  readonly [k in string]: Json
 * }} JsonObject
 */
 
@@ -21,9 +21,9 @@ import stacksConnect from 'npm:@stacks/connect'
  * @typedef {readonly["error", E]} Error
  */
 
-/** 
+/**
  * @template T,E
- * @typedef {Ok<T>|Error<E>} Result 
+ * @typedef {Ok<T>|Error<E>} Result
  */
 
 /** @type {(input: string) => Result<Json, "invalid JSON">} */
@@ -68,8 +68,8 @@ stdin.setEncoding('utf8').on('readable', () => {
                 stdout.write(JSON.stringify(call(v)))
                 stdout.write('\n')
             } else {
-                stderr.write(`error: ${v}\n`)                
-            }                        
+                stderr.write(`error: ${v}\n`)
+            }
         }
     }
 })

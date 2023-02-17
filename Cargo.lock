@@ -1942,6 +1942,7 @@ name = "stackes-js-rs"
 version = "0.1.0"
 dependencies = [
  "blockstack-core",
+ "serde",
  "serde_json",
  "stacks-coordinator",
 ]
