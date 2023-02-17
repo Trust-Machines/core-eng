@@ -22,18 +22,21 @@ jobs:
 
   test:
     strategy:
-      matrix: 
+      matrix:
         # can't run on `windows-latests`
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{matrix.os}}
-    steps:  
-    - uses: actions/checkout@v3    
+    steps:
+    - uses: denoland/setup-deno@v1
+      with:
+        deno-version: v1.30.*
+    - uses: actions/checkout@v3
     - name: Run tests
       run: cargo test --verbose
 
   fmt:
     runs-on: ubuntu-latest
-    steps:  
-    - uses: actions/checkout@v3    
+    steps:
+    - uses: actions/checkout@v3
     - name: Run fmt check
       run: cargo fmt --check
