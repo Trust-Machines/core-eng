@@ -11,14 +11,20 @@ env:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose
+
+  test:
+    strategy:
+      matrix: [ubuntu-latest, macosx-latest, windows-latest]
+    runs-on: ${{matrix}}
+    steps:  
     - name: Run tests
       run: cargo test --verbose
+
+  fmt:
+    steps:  
     - name: Run fmt check
       run: cargo fmt --check
