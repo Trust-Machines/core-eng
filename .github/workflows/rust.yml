@@ -11,6 +11,7 @@ env:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Build
@@ -25,6 +26,7 @@ jobs:
       run: cargo test --verbose
 
   fmt:
+    runs-on: ubuntu-latest
     steps:  
     - name: Run fmt check
       run: cargo fmt --check
