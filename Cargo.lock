@@ -1943,6 +1943,7 @@ version = "0.1.0"
 dependencies = [
  "blockstack-core",
  "serde_json",
+ "stacks-coordinator",
 ]
 
 [[package]]
