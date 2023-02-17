@@ -3,10 +3,10 @@ use std::{
     process::{ChildStdin, ChildStdout, Command, Stdio},
 };
 
-use serde::Serialize;
-use serde_json::{from_str, to_string, Value};
+use serde::{Serialize, de::DeserializeOwned};
+use serde_json::{from_str, to_string};
 
-use crate::{read_ex::ReadEx, to_io_result::ToIoResult};
+use crate::{read_ex::ReadEx, to_io_result::TakeToIoResult};
 
 pub struct Js {
     stdin: ChildStdin,
@@ -24,11 +24,11 @@ impl Js {
             .stdout(Stdio::piped())
             .spawn()?;
         Ok(Js {
-            stdin: child.stdin.take().to_io_result()?,
-            stdout: child.stdout.take().to_io_result()?,
+            stdin: child.stdin.take_to_io_result()?,
+            stdout: child.stdout.take_to_io_result()?,
         })
     }
-    pub fn call<T: Serialize>(&mut self, input: &T) -> Result<Value, Error> {
+    pub fn call<I: Serialize, O: DeserializeOwned>(&mut self, input: &I) -> Result<O, Error> {
         {
             let stdin = &mut self.stdin;
             stdin.write(to_string(input)?.as_bytes())?;

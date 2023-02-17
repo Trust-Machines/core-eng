@@ -22,3 +22,15 @@ impl<T, E> ToIoResult for Result<T, E> {
         self.map_or(err("result"), Ok)
     }
 }
+
+pub trait TakeToIoResult {
+    type V;
+    fn take_to_io_result(&mut self) -> Result<Self::V, Error>;
+}
+
+impl<T> TakeToIoResult for Option<T> {
+    type V = T;
+    fn take_to_io_result(&mut self) -> Result<T, Error> {
+        self.take().to_io_result()
+    }
+}

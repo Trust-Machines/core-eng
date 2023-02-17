@@ -1,5 +1,6 @@
 use std::io::Error;
 
+use serde::Serialize;
 use stacks_coordinator::stacks_node::{PegInOp, PegOutRequestOp, StacksTransaction};
 
 use crate::Js;
@@ -15,4 +16,10 @@ impl FeeWalletJs {
         let p = serde_json::to_string(op);
         todo!()
     }
+}
+
+#[derive(Serialize)]
+pub enum In<'a> {
+    Mint(&'a PegInOp),
+    Burn(&'a PegOutRequestOp),
 }
