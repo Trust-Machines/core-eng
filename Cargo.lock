@@ -182,7 +182,7 @@ dependencies = [
 [[package]]
 name = "blockstack-core"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#2ef8209a2995cb4b39d13a13fa79aa33fc4574a4"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#1f4594b57efab2b21fc8d29dd4f7bdfe55408350"
 dependencies = [
  "chrono",
  "clarity",
@@ -341,7 +341,7 @@ dependencies = [
 [[package]]
 name = "clarity"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#2ef8209a2995cb4b39d13a13fa79aa33fc4574a4"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#1f4594b57efab2b21fc8d29dd4f7bdfe55408350"
 dependencies = [
  "integer-sqrt",
  "lazy_static",
@@ -1948,7 +1948,7 @@ dependencies = [
 [[package]]
 name = "stacks-common"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#2ef8209a2995cb4b39d13a13fa79aa33fc4574a4"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#1f4594b57efab2b21fc8d29dd4f7bdfe55408350"
 dependencies = [
  "chrono",
  "curve25519-dalek",
