@@ -2,8 +2,8 @@ use crate::bitcoin_node;
 use crate::stacks_node;
 
 pub trait FeeWallet {
-    fn mint_sbtc(&self, op: &stacks_node::PegInOp) -> stacks_node::StacksTransaction;
-    fn burn_sbtc(&self, op: &stacks_node::PegOutRequestOp) -> stacks_node::StacksTransaction;
+    fn mint_sbtc(&mut self, op: &stacks_node::PegInOp) -> stacks_node::StacksTransaction;
+    fn burn_sbtc(&mut self, op: &stacks_node::PegOutRequestOp) -> stacks_node::StacksTransaction;
     fn set_wallet_address(&self, address: PegWalletAddress) -> stacks_node::StacksTransaction;
 
     fn fulfill_peg_out(

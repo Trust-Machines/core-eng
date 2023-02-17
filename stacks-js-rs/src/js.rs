@@ -4,6 +4,7 @@ use std::{
 };
 
 use serde_json::{from_str, Value};
+use stacks_coordinator::fee_wallet::FeeWallet;
 
 use crate::{read_ex::ReadEx, to_io_result::ToIoResult};
 
