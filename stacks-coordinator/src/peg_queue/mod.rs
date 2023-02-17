@@ -1,6 +1,5 @@
 use blockstack_lib::burnchains::Txid;
 use blockstack_lib::types::chainstate::BurnchainHeaderHash;
-use blockstack_lib::util::HexError;
 
 use crate::stacks_node;
 
@@ -40,30 +39,5 @@ impl SbtcOp {
             Self::PegOutRequest(op) => Some(op),
             _ => None,
         }
-    }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Http network error: {0}")]
-    SqliteError(#[from] rusqlite::Error),
-
-    #[error("JSON serialization failure: {0}")]
-    JsonError(#[from] serde_json::Error),
-
-    #[error("Did not recognize status string: {0}")]
-    UnrecognizedStatusString(String),
-
-    #[error("Hex codec error: {0}")]
-    HexError(#[from] HexError),
-
-    #[error("Entry does not exist")]
-    EntryDoesNotExist,
-}
-
-// Workaround to allow non-perfect conversions in `Entry::from_row`
-impl From<Error> for rusqlite::Error {
-    fn from(err: Error) -> Self {
-        Self::InvalidColumnType(0, err.to_string(), rusqlite::types::Type::Text)
     }
 }
