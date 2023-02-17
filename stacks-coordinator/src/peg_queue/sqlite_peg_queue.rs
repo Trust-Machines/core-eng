@@ -20,29 +20,20 @@ pub struct SqlitePegQueue {
 
 impl SqlitePegQueue {
     pub fn new<P: AsRef<Path>>(path: P, start_block_height: u64) -> Result<Self, Error> {
-        let conn = SqliteConnection::open(path)?;
-        let self_ = Self {
-            conn,
-            start_block_height,
-        };
-        self_.initialize()?;
-        Ok(self_)
+        Self::from_connection(SqliteConnection::open(path)?, start_block_height)
     }
 
     pub fn in_memory(start_block_height: u64) -> Result<Self, Error> {
-        let conn = SqliteConnection::open_in_memory()?;
-        let self_ = Self {
+        Self::from_connection(SqliteConnection::open_in_memory()?, start_block_height)
+    }
+
+    fn from_connection(conn: SqliteConnection, start_block_height: u64) -> Result<Self, Error> {
+        let this = Self {
             conn,
             start_block_height,
         };
-        self_.initialize()?;
-        Ok(self_)
-    }
-
-    fn initialize(&self) -> Result<(), Error> {
-        self.conn.execute(Self::sql_schema(), rusqlite::params![])?;
-
-        Ok(())
+        this.conn.execute(Self::sql_schema(), rusqlite::params![])?;
+        Ok(this)
     }
 
     fn insert(&self, entry: &Entry) -> Result<(), Error> {
@@ -105,7 +96,7 @@ impl SqlitePegQueue {
             status TEXT NOT NULL,
 
             PRIMARY KEY(txid, burn_header_hash)
-        ) 
+        )
         "#
     }
 
