@@ -46,6 +46,6 @@ type Mint = {
 
 type Burn = Json
 
-const f = (input: Command): string => JSON.stringify(input)
+const f = (input: Command): string => 'Mint' in input ? 'Mint' : 'Burn'
 
 listenStdio(f as JsonMap)
