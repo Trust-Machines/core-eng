@@ -28,7 +28,7 @@ export const listenStdio = (f: JsonMap) => {
     /** @type {string} */
     let buffer = ""
     stdin.setEncoding('utf8').on('readable', () => {
-        while (true) {
+        for(;;) {
             /** @type {string|null} */
             const x = stdin.read()
             if (x === null) { break }

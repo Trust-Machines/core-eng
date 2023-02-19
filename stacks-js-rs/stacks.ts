@@ -1,4 +1,4 @@
-import { listenStdio, JsonMap, Json } from './rpc.ts'
+import { listenStdio, JsonMap } from './rpc.ts'
 
 // Example:
 //  {
@@ -26,11 +26,11 @@ type Command = { readonly Mint: Mint } | { readonly Burn: Burn }
 type PoxAddress = {
     readonly Standard: readonly[
         {
-            readonly bytes: string,
-            readonly version: string,
+            readonly bytes: string
+            readonly version: string
         },
         null
-    ],
+    ]
 }
 
 type PrincipalData = {
@@ -40,18 +40,27 @@ type PrincipalData = {
 type BurnchainHeaderHash = readonly number[]
 
 type Mint = {
-    readonly amount: number,
-    readonly block_height: number,
-    readonly burn_header_hash: BurnchainHeaderHash,
-    readonly memo: readonly number[],
-    readonly peg_wallet_address: PoxAddress,
-    readonly recipient: PrincipalData,
-    readonly txid: string,
-    readonly vtxindex: number,
+    readonly amount: number
+    readonly block_height: number
+    readonly burn_header_hash: BurnchainHeaderHash
+    readonly memo: readonly number[]
+    readonly peg_wallet_address: PoxAddress
+    readonly recipient: PrincipalData
+    readonly txid: string
+    readonly vtxindex: number
 }
 
 type Burn = {
-
+    readonly amount: number
+    readonly block_height: number
+    readonly burn_header_hash: readonly number[]
+    readonly fulfillment_fee: number
+    readonly memo: readonly number[]
+    readonly peg_wallet_address: PoxAddress
+    readonly recipient: PoxAddress
+    readonly signature: string
+    readonly txid: string
+    readonly vtxindex: number
 }
 
 const f = (input: Command): string => 'Mint' in input ? 'Mint' : 'Burn'
