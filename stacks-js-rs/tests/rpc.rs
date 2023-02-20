@@ -11,7 +11,7 @@ use blockstack_lib::{
     vm::types::{PrincipalData, StandardPrincipalData},
 };
 use serde_json::{from_str, to_string, Value};
-use stackes_js_rs::{fee_wallet_js::In, Js};
+use stackes_js_rs::{stacks_wallet_js::In, Js};
 
 fn to_value(s: &str) -> Result<Value, Error> {
     let x = from_str(s)?;

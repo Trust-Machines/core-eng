@@ -1,6 +1,6 @@
 import { listenStdio, JsonMap } from './rpc.ts'
 
-// Example:
+// Example from Rust serialization:
 //  {
 //      "Mint":{
 //          "amount":0,
