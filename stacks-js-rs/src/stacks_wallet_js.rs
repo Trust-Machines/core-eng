@@ -6,7 +6,7 @@ use stacks_coordinator::{
     stacks_node::{PegInOp, PegOutRequestOp},
 };
 
-use crate::Js;
+use crate::{rpc::Rpc, Js};
 
 pub struct StacksWalletJs(Js);
 

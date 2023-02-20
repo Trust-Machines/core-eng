@@ -10,7 +10,7 @@ use blockstack_lib::{
     util::{hash::Hash160, secp256k1::MessageSignature},
     vm::types::{PrincipalData, StandardPrincipalData},
 };
-use stackes_js_rs::{stacks_wallet_js::In, Js};
+use stackes_js_rs::{rpc::Rpc, stacks_wallet_js::In, Js};
 use stacks_coordinator::peg_wallet::PegWalletAddress;
 
 fn to_value(s: &str) -> Result<serde_json::Value, Error> {
