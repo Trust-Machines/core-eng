@@ -1,7 +1,10 @@
 use std::io::Error;
 
 use serde::Serialize;
-use stacks_coordinator::{stacks_node::{PegInOp, PegOutRequestOp, StacksTransaction}, peg_wallet::StacksWallet};
+use stacks_coordinator::{
+    peg_wallet::StacksWallet,
+    stacks_node::{PegInOp, PegOutRequestOp, StacksTransaction},
+};
 
 use crate::Js;
 
@@ -16,7 +19,10 @@ impl StacksWallet for FeeWalletJs {
         self.0.call(&In::Burn(op)).unwrap()
     }
 
-    fn set_wallet_address(&mut self, address: stacks_coordinator::peg_wallet::PegWalletAddress) -> String {
+    fn set_wallet_address(
+        &mut self,
+        address: stacks_coordinator::peg_wallet::PegWalletAddress,
+    ) -> String {
         todo!()
     }
 }

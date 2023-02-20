@@ -1,8 +1,8 @@
 use std::sync::mpsc;
 
-use crate::peg_wallet::{PegWallet, BitcoinWallet};
 use crate::peg_queue;
 use crate::peg_wallet::StacksWallet;
+use crate::peg_wallet::{BitcoinWallet, PegWallet};
 use crate::stacks_node;
 
 // Traits in scope
