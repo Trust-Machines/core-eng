@@ -19,7 +19,7 @@ pub trait Coordinator: Sized {
 
     // Required methods
     fn peg_queue(&self) -> &Self::PegQueue;
-    fn fee_wallet(&self) -> &mut Self::FeeWallet;
+    fn fee_wallet(&mut self) -> &mut Self::FeeWallet;
     fn frost_coordinator(&self) -> &Self::FrostCoordinator;
     fn stacks_node(&self) -> &Self::StacksNode;
     fn bitcoin_node(&self) -> &Self::BitcoinNode;
