@@ -25,7 +25,7 @@ pub trait Coordinator: Sized {
     fn bitcoin_node(&self) -> &Self::BitcoinNode;
 
     // Provided methods
-    fn run(self, commands: mpsc::Receiver<Command>) {
+    fn run(mut self, commands: mpsc::Receiver<Command>) {
         loop {
             match self.peg_queue().sbtc_op().unwrap() {
                 Some(peg_queue::SbtcOp::PegIn(op)) => self.peg_in(op),
@@ -44,12 +44,12 @@ pub trait Coordinator: Sized {
 
 // Private helper functions
 trait CoordinatorHelpers: Coordinator {
-    fn peg_in(&self, op: stacks_node::PegInOp) {
+    fn peg_in(&mut self, op: stacks_node::PegInOp) {
         let tx = self.fee_wallet().mint_sbtc(&op);
         self.stacks_node().broadcast_transaction(&tx);
     }
 
-    fn peg_out(&self, op: stacks_node::PegOutRequestOp) {
+    fn peg_out(&mut self, op: stacks_node::PegOutRequestOp) {
         let burn_tx = self.fee_wallet().burn_sbtc(&op);
         let fulfill_tx = self.fee_wallet().fulfill_peg_out(&op);
 
