@@ -10,40 +10,31 @@ use blockstack_lib::{
     util::{hash::Hash160, secp256k1::MessageSignature},
     vm::types::{PrincipalData, StandardPrincipalData},
 };
-use serde_json::{from_str, to_string, Value};
 use stackes_js_rs::{stacks_wallet_js::In, Js};
+use stacks_coordinator::peg_wallet::PegWalletAddress;
 
-fn to_value(s: &str) -> Result<Value, Error> {
-    let x = from_str(s)?;
+fn to_value(s: &str) -> Result<serde_json::Value, Error> {
+    let x = serde_json::from_str(s)?;
     Ok(x)
 }
 
+fn json_call(js: &mut Js, input: &str) -> Result<String, Error> {
+    Ok(js
+        .call::<_, serde_json::Value>(&to_value(input)?)?
+        .to_string())
+}
+
 fn test_wrap() -> Result<(), Error> {
-    let mut js = Js::new("./mirror.ts")?;
-    {
-        let result = js.call::<_, Value>(&to_value("{\"b\":[],\"a\":2}")?)?;
-        assert_eq!(result.to_string(), "[{\"a\":2,\"b\":[]}]");
-    }
-    {
-        let result = js.call::<_, Value>(&to_value("[54,null]")?)?;
-        assert_eq!(result.to_string(), "[[54,null]]");
-    }
-    {
-        let result = js.call::<_, Value>(&to_value("42")?)?;
-        assert_eq!(result.to_string(), "[42]");
-    }
-    {
-        let result = js.call::<_, Value>(&to_value("\"Hello!\"")?)?;
-        assert_eq!(result.to_string(), "[\"Hello!\"]");
-    }
-    {
-        let result = js.call::<_, Value>(&to_value("true")?)?;
-        assert_eq!(result.to_string(), "[true]");
-    }
-    {
-        let result = js.call::<_, Value>(&to_value("null")?)?;
-        assert_eq!(result.to_string(), "[null]");
-    }
+    let mut js = Js::new("./js/mirror.ts")?;
+    assert_eq!(
+        json_call(&mut js, "{\"b\":[],\"a\":2}")?,
+        "[{\"a\":2,\"b\":[]}]"
+    );
+    assert_eq!(json_call(&mut js, "[54,null]")?, "[[54,null]]");
+    assert_eq!(json_call(&mut js, "42")?, "[42]");
+    assert_eq!(json_call(&mut js, "\"Hello!\"")?, "[\"Hello!\"]");
+    assert_eq!(json_call(&mut js, "true")?, "[true]");
+    assert_eq!(json_call(&mut js, "null")?, "[null]");
     Ok(())
 }
 
@@ -69,10 +60,10 @@ fn mirror_peg_in_op_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let x = In::Mint(&p);
-    let mut js = Js::new("./mirror.ts").unwrap();
-    let result = js.call::<_, Value>(&x).unwrap();
+    let mut js = Js::new("./js/mirror.ts").unwrap();
+    let result: serde_json::Value = js.call(&x).unwrap();
     let expected = r#"[{"Mint":{"amount":0,"block_height":0,"burn_header_hash":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"memo":[],"peg_wallet_address":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"recipient":{"Standard":[0,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]},"txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
-    assert_eq!(to_string(&result).unwrap(), expected);
+    assert_eq!(serde_json::to_string(&result).unwrap(), expected);
 }
 
 #[test]
@@ -90,14 +81,14 @@ fn mirror_peg_out_request_op_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let x = In::Burn(&p);
-    let mut js = Js::new("./mirror.ts").unwrap();
-    let result = js.call::<_, Value>(&x).unwrap();
+    let mut js = Js::new("./js/mirror.ts").unwrap();
+    let result: serde_json::Value = js.call(&x).unwrap();
     let expected = r#"[{"Burn":{"amount":0,"block_height":0,"burn_header_hash":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"fulfillment_fee":0,"memo":[],"peg_wallet_address":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"recipient":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"signature":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
-    assert_eq!(to_string(&result).unwrap(), expected);
+    assert_eq!(serde_json::to_string(&result).unwrap(), expected);
 }
 
 #[test]
-fn stacks_peg_in_op_test() {
+fn stacks_mint() {
     let p = PegInOp {
         recipient: PrincipalData::Standard(StandardPrincipalData(0, [0; 20])),
         peg_wallet_address: pox_address(),
@@ -109,13 +100,13 @@ fn stacks_peg_in_op_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let x = In::Mint(&p);
-    let mut js = Js::new("./stacks.ts").unwrap();
-    let result = js.call::<_, String>(&x).unwrap();
+    let mut js = Js::new("./js/stacks.ts").unwrap();
+    let result: String = js.call(&x).unwrap();
     assert_eq!(result, "Mint");
 }
 
 #[test]
-fn stacks_peg_out_request_op_test() {
+fn stacks_burn() {
     let p = PegOutRequestOp {
         amount: 0,
         recipient: pox_address(),
@@ -129,7 +120,16 @@ fn stacks_peg_out_request_op_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let x = In::Burn(&p);
-    let mut js = Js::new("./stacks.ts").unwrap();
-    let result = js.call::<_, String>(&x).unwrap();
+    let mut js = Js::new("./js/stacks.ts").unwrap();
+    let result: String = js.call(&x).unwrap();
     assert_eq!(result, "Burn");
+}
+
+#[test]
+fn stacks_set_wallet_address() {
+    let p = PegWalletAddress([0; 32]);
+    let x = In::SetWalletAddress(&p);
+    let mut js = Js::new("./js/stacks.ts").unwrap();
+    let result: String = js.call(&x).unwrap();
+    assert_eq!(result, "SetWalletAddress");
 }

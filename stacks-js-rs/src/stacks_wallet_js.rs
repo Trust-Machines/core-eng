@@ -8,9 +8,9 @@ use stacks_coordinator::{
 
 use crate::Js;
 
-pub struct FeeWalletJs(Js);
+pub struct StacksWalletJs(Js);
 
-impl StacksWallet for FeeWalletJs {
+impl StacksWallet for StacksWalletJs {
     fn mint(&mut self, op: &stacks_coordinator::stacks_node::PegInOp) -> String {
         self.0.call(&In::Mint(op)).unwrap()
     }
@@ -23,7 +23,7 @@ impl StacksWallet for FeeWalletJs {
         &mut self,
         address: stacks_coordinator::peg_wallet::PegWalletAddress,
     ) -> String {
-        todo!()
+        self.0.call(&In::SetWalletAddress(&address)).unwrap()
     }
 }
 
@@ -31,4 +31,5 @@ impl StacksWallet for FeeWalletJs {
 pub enum In<'a> {
     Mint(&'a PegInOp),
     Burn(&'a PegOutRequestOp),
+    SetWalletAddress(&'a stacks_coordinator::peg_wallet::PegWalletAddress),
 }

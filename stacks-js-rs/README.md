@@ -38,5 +38,5 @@ cargo run --bin stacks-js-rs
 ### Running `mirror.mjs`
 
 ```sh
-deno run --allow-env --allow-read ./stacks-js-rs/mirror.mjs
+deno run --allow-env --allow-read ./stacks-js-rs/js/mirror.ts
 ```

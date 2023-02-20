@@ -21,7 +21,7 @@ import { listenStdio, JsonMap } from './rpc.ts'
 //      }
 //  }
 
-type Command = { readonly Mint: Mint } | { readonly Burn: Burn }
+type Command = { readonly Mint: Mint } | { readonly Burn: Burn } | { readonly SetWalletAddress: readonly number[] }
 
 type PoxAddress = {
     readonly Standard: readonly[
@@ -63,6 +63,11 @@ type Burn = {
     readonly vtxindex: number
 }
 
-const f = (input: Command): string => 'Mint' in input ? 'Mint' : 'Burn'
+const f = (input: Command): string => {
+    if ('Mint' in input) { return 'Mint' }
+    if ('Burn' in input) { return 'Burn' }
+    if ('SetWalletAddress' in input) { return 'SetWalletAddress' }
+    throw "unknown command"
+}
 
 listenStdio(f as JsonMap)

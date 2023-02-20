@@ -1,3 +1,5 @@
+use serde::Serialize;
+
 use crate::bitcoin_node;
 use crate::stacks_node;
 
@@ -22,4 +24,6 @@ pub trait PegWallet {
 }
 
 // TODO: Representation
-pub struct PegWalletAddress {} // Should correspond to a [u8; 32] - perhaps reuse a FROST type?
+// Should correspond to a [u8; 32] - perhaps reuse a FROST type?
+#[derive(Serialize)]
+pub struct PegWalletAddress(pub [u8; 32]);
