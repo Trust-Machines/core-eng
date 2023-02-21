@@ -62,7 +62,7 @@ fn mirror_peg_in_op_test() {
     let x = In::Mint(&p);
     let mut js = Js::new("./js/mirror.ts").unwrap();
     let result: serde_json::Value = js.call(&x).unwrap();
-    let expected = r#"[{"Mint":{"amount":0,"block_height":0,"burn_header_hash":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"memo":[],"peg_wallet_address":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"recipient":{"Standard":[0,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]},"txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
+    let expected = r#"[{"Mint":{"amount":0,"block_height":0,"burn_header_hash":"0000000000000000000000000000000000000000000000000000000000000000","memo":"","peg_wallet_address":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","recipient":"S0000000000000000000002AA028H","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
     assert_eq!(serde_json::to_string(&result).unwrap(), expected);
 }
 
@@ -83,7 +83,7 @@ fn mirror_peg_out_request_op_test() {
     let x = In::Burn(&p);
     let mut js = Js::new("./js/mirror.ts").unwrap();
     let result: serde_json::Value = js.call(&x).unwrap();
-    let expected = r#"[{"Burn":{"amount":0,"block_height":0,"burn_header_hash":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"fulfillment_fee":0,"memo":[],"peg_wallet_address":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"recipient":{"Standard":[{"bytes":"944f997c5553a6f3e1028e707c71b5fa0dd3afa7","version":0},null]},"signature":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
+    let expected = r#"[{"Burn":{"amount":0,"block_height":0,"burn_header_hash":"0000000000000000000000000000000000000000000000000000000000000000","fulfillment_fee":0,"memo":"","peg_wallet_address":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","recipient":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","signature":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
     assert_eq!(serde_json::to_string(&result).unwrap(), expected);
 }
 
