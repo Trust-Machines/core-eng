@@ -182,7 +182,7 @@ dependencies = [
 [[package]]
 name = "blockstack-core"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#1f4594b57efab2b21fc8d29dd4f7bdfe55408350"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#f0f54a6dba039a3fcaa004c2528ce74bf5d1c647"
 dependencies = [
  "chrono",
  "clarity",
@@ -341,7 +341,7 @@ dependencies = [
 [[package]]
 name = "clarity"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#1f4594b57efab2b21fc8d29dd4f7bdfe55408350"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#f0f54a6dba039a3fcaa004c2528ce74bf5d1c647"
 dependencies = [
  "integer-sqrt",
  "lazy_static",
@@ -1886,9 +1886,9 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "slab"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4614a76b2a8be0058caa9dbbaf66d988527d86d003c11a94fbd335d7661edcef"
+checksum = "6528351c9bc8ab22353f9d776db39a20288e8d6c37ef8cfe3317cf875eecfc2d"
 dependencies = [
  "autocfg",
 ]
@@ -1950,7 +1950,7 @@ dependencies = [
 [[package]]
 name = "stacks-common"
 version = "0.0.1"
-source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#1f4594b57efab2b21fc8d29dd4f7bdfe55408350"
+source = "git+https://github.com/stacks-network/stacks-blockchain/?branch=3493-sbtc-peg-out-wire-format#f0f54a6dba039a3fcaa004c2528ce74bf5d1c647"
 dependencies = [
  "chrono",
  "curve25519-dalek",
