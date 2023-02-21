@@ -1,5 +1,6 @@
-use stackes_js_rs::Js;
+use stackes_js_rs::{Js, rpc::Rpc};
 
 fn main() {
-    let _ = Js::new("./stacks-js-rs/mirror.ts").unwrap();
+    let mut js = Js::new("./stacks-js-rs/js/mirror.ts").unwrap();
+    js.call::<_, serde_json::Value>(&42).unwrap();
 }

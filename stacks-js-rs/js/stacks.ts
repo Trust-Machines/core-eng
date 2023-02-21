@@ -1,4 +1,4 @@
-import { listenStdio, JsonMap } from './rpc.ts'
+import * as rpc from "./rpc.ts";
 
 // Example from Rust serialization:
 //  {
@@ -21,53 +21,56 @@ import { listenStdio, JsonMap } from './rpc.ts'
 //      }
 //  }
 
-type Command = { readonly Mint: Mint } | { readonly Burn: Burn } | { readonly SetWalletAddress: readonly number[] }
+type Command =
+    | { readonly Mint: Mint }
+    | { readonly Burn: Burn }
+    | { readonly SetWalletAddress: readonly number[] };
 
 type PoxAddress = {
-    readonly Standard: readonly[
+    readonly Standard: readonly [
         {
-            readonly bytes: string
-            readonly version: string
+            readonly bytes: string;
+            readonly version: string;
         },
-        null
-    ]
-}
+        null,
+    ];
+};
 
 type PrincipalData = {
-    readonly Standard: readonly[number, readonly number[]]
-}
+    readonly Standard: readonly [number, readonly number[]];
+};
 
-type BurnchainHeaderHash = readonly number[]
+type BurnchainHeaderHash = readonly number[];
 
 type Mint = {
-    readonly amount: number
-    readonly block_height: number
-    readonly burn_header_hash: BurnchainHeaderHash
-    readonly memo: readonly number[]
-    readonly peg_wallet_address: PoxAddress
-    readonly recipient: PrincipalData
-    readonly txid: string
-    readonly vtxindex: number
-}
+    readonly amount: number;
+    readonly block_height: number;
+    readonly burn_header_hash: BurnchainHeaderHash;
+    readonly memo: readonly number[];
+    readonly peg_wallet_address: PoxAddress;
+    readonly recipient: PrincipalData;
+    readonly txid: string;
+    readonly vtxindex: number;
+};
 
 type Burn = {
-    readonly amount: number
-    readonly block_height: number
-    readonly burn_header_hash: readonly number[]
-    readonly fulfillment_fee: number
-    readonly memo: readonly number[]
-    readonly peg_wallet_address: PoxAddress
-    readonly recipient: PoxAddress
-    readonly signature: string
-    readonly txid: string
-    readonly vtxindex: number
-}
+    readonly amount: number;
+    readonly block_height: number;
+    readonly burn_header_hash: readonly number[];
+    readonly fulfillment_fee: number;
+    readonly memo: readonly number[];
+    readonly peg_wallet_address: PoxAddress;
+    readonly recipient: PoxAddress;
+    readonly signature: string;
+    readonly txid: string;
+    readonly vtxindex: number;
+};
 
 const f = (input: Command): string => {
-    if ('Mint' in input) { return 'Mint' }
-    if ('Burn' in input) { return 'Burn' }
-    if ('SetWalletAddress' in input) { return 'SetWalletAddress' }
-    throw "unknown command"
-}
+    if ("Mint" in input) return "Mint";
+    if ("Burn" in input) return "Burn";
+    if ("SetWalletAddress" in input) return "SetWalletAddress";
+    throw "unknown command";
+};
 
-listenStdio(f as JsonMap)
+rpc.listenStdio(f as rpc.JsonMap);

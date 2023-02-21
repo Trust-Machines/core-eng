@@ -30,8 +30,8 @@ pub trait Coordinator: Sized {
     fn run(mut self, commands: mpsc::Receiver<Command>) {
         loop {
             match self.peg_queue().sbtc_op().unwrap() {
-                Some(peg_queue::SbtcOp::PegIn(op)) => self.peg_in(op).unwrap(),
-                Some(peg_queue::SbtcOp::PegOutRequest(op)) => self.peg_out(op).unwrap(),
+                Some(peg_queue::SbtcOp::PegIn(op)) => self.peg_in(op),
+                Some(peg_queue::SbtcOp::PegOutRequest(op)) => self.peg_out(op),
                 None => self.peg_queue().poll(self.stacks_node()).unwrap(),
             }
 
@@ -46,22 +46,20 @@ pub trait Coordinator: Sized {
 
 // Private helper functions
 trait CoordinatorHelpers: Coordinator {
-    fn peg_in(&mut self, op: stacks_node::PegInOp) -> io::Result<()> {
-        let tx = self.fee_wallet().stacks_mut().mint(&op)?;
+    fn peg_in(&mut self, op: stacks_node::PegInOp) {
+        let tx = self.fee_wallet().stacks_mut().mint(&op);
         self.stacks_node().broadcast_transaction(&tx);
-        Ok(())
     }
 
-    fn peg_out(&mut self, op: stacks_node::PegOutRequestOp) -> io::Result<()> {
+    fn peg_out(&mut self, op: stacks_node::PegOutRequestOp) {
         let stacks = self.fee_wallet().stacks_mut();
-        let burn_tx = self.fee_wallet().stacks_mut().burn(&op)?;
+        let burn_tx = self.fee_wallet().stacks_mut().burn(&op);
         let fulfill_tx = self.fee_wallet().bitcoin_mut().fulfill_peg_out(&op);
 
         // TODO: Sign fulfill tx with frost
 
         self.stacks_node().broadcast_transaction(&burn_tx);
         self.bitcoin_node().broadcast_transaction(&fulfill_tx);
-        Ok(())
     }
 }
 

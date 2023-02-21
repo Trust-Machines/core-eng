@@ -1,3 +1,3 @@
-import { listenStdio } from './rpc.ts'
+import { listenStdio } from "./rpc.ts";
 
-listenStdio(v => [v])
+listenStdio((v) => [v]);

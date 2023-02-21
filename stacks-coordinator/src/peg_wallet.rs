@@ -6,15 +6,9 @@ use crate::bitcoin_node;
 use crate::stacks_node;
 
 pub trait StacksWallet {
-    fn mint(&mut self, op: &stacks_node::PegInOp) -> io::Result<stacks_node::StacksTransaction>;
-    fn burn(
-        &mut self,
-        op: &stacks_node::PegOutRequestOp,
-    ) -> io::Result<stacks_node::StacksTransaction>;
-    fn set_wallet_address(
-        &mut self,
-        address: PegWalletAddress,
-    ) -> io::Result<stacks_node::StacksTransaction>;
+    fn mint(&mut self, op: &stacks_node::PegInOp) -> stacks_node::StacksTransaction;
+    fn burn(&mut self, op: &stacks_node::PegOutRequestOp) -> stacks_node::StacksTransaction;
+    fn set_wallet_address(&mut self, address: PegWalletAddress) -> stacks_node::StacksTransaction;
 }
 
 pub trait BitcoinWallet {
