@@ -15,10 +15,7 @@ impl StacksWallet for StacksWalletJs {
         self.0.call(&In::Mint(op)).unwrap()
     }
 
-    fn burn(
-        &mut self,
-        op: &stacks_coordinator::stacks_node::PegOutRequestOp,
-    ) -> String {
+    fn burn(&mut self, op: &stacks_coordinator::stacks_node::PegOutRequestOp) -> String {
         self.0.call(&In::Burn(op)).unwrap()
     }
 

@@ -1,4 +1,4 @@
-use stackes_js_rs::{Js, rpc::Rpc};
+use stackes_js_rs::{rpc::Rpc, Js};
 
 fn main() {
     let mut js = Js::new("./stacks-js-rs/js/mirror.ts").unwrap();
