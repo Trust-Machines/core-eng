@@ -1,3 +1,3 @@
-import { listenStdio } from "./rpc.ts"
+import { listenStdio, toAsync } from "./rpc.ts"
 
-listenStdio((v) => [v])
+listenStdio(toAsync(v => [v]))

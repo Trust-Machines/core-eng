@@ -24,7 +24,9 @@ const json_try_parse = (input: string): Result<Json, "invalid JSON"> => {
 
 export type JsonMap = (input: Json) => Json
 
-export const listenStdio = (f: JsonMap) => {
+export type AsyncJsonMap = (input: Json) => Promise<Json>
+
+export const listenStdio = (f: AsyncJsonMap) => {
     /** @type {string} */
     let buffer = ""
     stdin.setEncoding("utf8").on("readable", () => {
@@ -40,8 +42,7 @@ export const listenStdio = (f: JsonMap) => {
                 buffer = x.substring(p + 1)
                 const [t, v] = json_try_parse(input)
                 if (t === "ok") {
-                    stdout.write(JSON.stringify(f(v)))
-                    stdout.write("\n")
+                    f(v).then(output => stdout.write(`${JSON.stringify(output)}\n`))
                 } else {
                     stderr.write(`error: ${v}\n`)
                 }
@@ -49,3 +50,5 @@ export const listenStdio = (f: JsonMap) => {
         }
     })
 }
+
+export const toAsync = (f: JsonMap): AsyncJsonMap => v => Promise.resolve(f(v))

@@ -27,15 +27,7 @@ Each message contains
   {"a":42}\n[0,-1,true]\n
   ```
 
-## Debugging the `stacks-js-rs`
-
-### Running `stacks-js-rs`
-
-```sh
-cargo run --bin stacks-js-rs
-```
-
-### Running `mirror.mjs`
+### Running `mirror.ts`
 
 ```sh
 deno run --allow-env --allow-read ./stacks-js-rs/js/mirror.ts

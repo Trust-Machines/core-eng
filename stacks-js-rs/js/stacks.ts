@@ -1,4 +1,5 @@
-import * as rpc from "./rpc.ts";
+import { listenStdio, toAsync, JsonMap } from './rpc.ts'
+// import { makeContractCall } from 'npm:@stacks/transactions'
 
 // Example from Rust serialization:
 //  {
@@ -50,10 +51,10 @@ type Burn = {
 }
 
 const f = (input: Command): string => {
-    if ("Mint" in input) return "Mint";
-    if ("Burn" in input) return "Burn";
-    if ("SetWalletAddress" in input) return "SetWalletAddress";
-    throw "unknown command";
+    if ("Mint" in input) return "Mint"
+    if ("Burn" in input) return "Burn"
+    if ("SetWalletAddress" in input) return "SetWalletAddress"
+    throw "unknown command"
 }
 
-rpc.listenStdio(f as rpc.JsonMap);
+listenStdio(toAsync(f as JsonMap))
