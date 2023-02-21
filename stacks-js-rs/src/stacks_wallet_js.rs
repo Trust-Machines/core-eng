@@ -1,8 +1,6 @@
-use std::io;
-
 use serde::Serialize;
 use stacks_coordinator::{
-    peg_wallet::StacksWallet,
+    peg_wallet::{PegWalletAddress, StacksWallet},
     stacks_node::{PegInOp, PegOutRequestOp},
 };
 
@@ -10,20 +8,23 @@ use crate::{rpc::Rpc, Js};
 
 pub struct StacksWalletJs(Js);
 
+impl StacksWalletJs {
+    fn call(&mut self, input: &In) -> String {
+        self.0.call(input).unwrap()
+    }
+}
+
 impl StacksWallet for StacksWalletJs {
-    fn mint(&mut self, op: &stacks_coordinator::stacks_node::PegInOp) -> String {
-        self.0.call(&In::Mint(op)).unwrap()
+    fn mint(&mut self, op: &PegInOp) -> String {
+        self.call(&In::Mint(op))
     }
 
-    fn burn(&mut self, op: &stacks_coordinator::stacks_node::PegOutRequestOp) -> String {
-        self.0.call(&In::Burn(op)).unwrap()
+    fn burn(&mut self, op: &PegOutRequestOp) -> String {
+        self.call(&In::Burn(op))
     }
 
-    fn set_wallet_address(
-        &mut self,
-        address: stacks_coordinator::peg_wallet::PegWalletAddress,
-    ) -> String {
-        self.0.call(&In::SetWalletAddress(&address)).unwrap()
+    fn set_wallet_address(&mut self, address: PegWalletAddress) -> String {
+        self.call(&In::SetWalletAddress(&address))
     }
 }
 
@@ -31,5 +32,5 @@ impl StacksWallet for StacksWalletJs {
 pub enum In<'a> {
     Mint(&'a PegInOp),
     Burn(&'a PegOutRequestOp),
-    SetWalletAddress(&'a stacks_coordinator::peg_wallet::PegWalletAddress),
+    SetWalletAddress(&'a PegWalletAddress),
 }
