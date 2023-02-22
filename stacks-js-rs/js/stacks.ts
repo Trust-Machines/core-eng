@@ -18,7 +18,7 @@ import { AnchorMode, bufferCVFromString, makeContractCall } from 'npm:@stacks/tr
 type Command =
     | { readonly Mint: Mint }
     | { readonly Burn: Burn }
-    | { readonly SetWalletAddress: readonly number[] }
+    | { readonly SetWalletAddress: SetWalletAddress }
 
 type PoxAddress = string
 
@@ -52,25 +52,33 @@ type Burn = {
     readonly vtxindex: number
 }
 
-const f = async (input: Command): Promise<string> => {
-    if ("Mint" in input) {
-        try {
-            await makeContractCall({
-                contractAddress: 'SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X',
-                contractName: 'contract_name',
-                functionName: 'contract_function',
-                functionArgs: [bufferCVFromString('foo')],
-                anchorMode: AnchorMode.Any,
-                //
-                senderKey: '0001020304050607080910111213141516171819202122232425262728293031',
-            })
-        } catch(e) {
-            return `${e}`
-        }
-        return "Mint"
+type SetWalletAddress = readonly number[]
+
+const mint = async (_input: Mint): Promise<string> => {
+    try {
+        await makeContractCall({
+            contractAddress: 'SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X',
+            contractName: 'contract_name',
+            functionName: 'contract_function',
+            functionArgs: [bufferCVFromString('foo')],
+            anchorMode: AnchorMode.Any,
+            //
+            senderKey: '0001020304050607080910111213141516171819202122232425262728293031',
+        })
+    } catch (e) {
+        return `${e}`
     }
-    if ("Burn" in input) return "Burn"
-    if ("SetWalletAddress" in input) return "SetWalletAddress"
+    return "Mint"
+}
+
+const burn = async (_input: Burn): Promise<string> => await "Burn"
+
+const set_wallet_address = async (_input: SetWalletAddress): Promise<string> => await "SetWalletAddress"
+
+const f = (input: Command): Promise<string> => {
+    if ("Mint" in input) return mint(input.Mint)
+    if ("Burn" in input) return burn(input.Burn)
+    if ("SetWalletAddress" in input) return set_wallet_address(input.SetWalletAddress)
     throw "unknown command"
 }
 
