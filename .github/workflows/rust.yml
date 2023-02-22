@@ -31,6 +31,8 @@ jobs:
       with:
         deno-version: v1.30.*
     - uses: actions/checkout@v3
+    # We need to cache JS script dependencies before running `carg test`.
+    # The `cargo test` command may spawn multiple `deno` processes.
     - name: Cache JS script dependencies
       run: deno cache ./stacks-js-rs/js/stacks.ts
     - name: Run tests
