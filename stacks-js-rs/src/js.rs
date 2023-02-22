@@ -1,12 +1,16 @@
 use std::{
-    io::{Write, self},
+    io::{self, Write},
     process::{Child, ChildStdin, ChildStdout, Command, Stdio},
 };
 
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::{from_str, to_string};
 
-use crate::{read_ex::ReadEx, rpc::Rpc, to_io_result::{TakeToIoResult, ToIoResult}};
+use crate::{
+    read_ex::ReadEx,
+    rpc::Rpc,
+    to_io_result::{TakeToIoResult, ToIoResult},
+};
 
 pub struct Js {
     child: Child,

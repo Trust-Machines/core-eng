@@ -10,7 +10,11 @@ use blockstack_lib::{
     util::{hash::Hash160, secp256k1::MessageSignature},
     vm::types::{PrincipalData, StandardPrincipalData},
 };
-use stackes_js_rs::{rpc::Rpc, stacks_wallet_js::{In, StacksWalletJs}, Js};
+use stackes_js_rs::{
+    rpc::Rpc,
+    stacks_wallet_js::{In, StacksWalletJs},
+    Js,
+};
 use stacks_coordinator::peg_wallet::{PegWalletAddress, StacksWallet};
 
 fn to_value(s: &str) -> Result<serde_json::Value, Error> {
@@ -107,7 +111,8 @@ fn mirror_set_wallet_address_test() {
     let x = In::SetWalletAddress(&p);
     let mut js = Js::new("./js/mirror.ts").unwrap();
     let result: serde_json::Value = js.call(&x).unwrap();
-    let expected = r#"{"SetWalletAddress":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}"#;
+    let expected =
+        r#"{"SetWalletAddress":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}"#;
     assert_eq!(serde_json::to_string(&result).unwrap(), expected);
 }
 
