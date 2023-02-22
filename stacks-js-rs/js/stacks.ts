@@ -54,7 +54,11 @@ type Burn = {
 
 type SetWalletAddress = readonly number[]
 
-const mint = async (_input: Mint): Promise<string> => {
+type MintCommand = (input: Mint) => Promise<string>
+type BurnCommand = (input: Burn) => Promise<string>
+type SetWalletAddressCommand = (input: SetWalletAddress) => Promise<string>
+
+const mint: MintCommand = async (): Promise<string> => {
     try {
         await makeContractCall({
             contractAddress: 'SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X',
@@ -71,9 +75,11 @@ const mint = async (_input: Mint): Promise<string> => {
     return "Mint"
 }
 
-const burn = async (_input: Burn): Promise<string> => await "Burn"
+const burn: BurnCommand = async (): Promise<string> =>
+    await "Burn"
 
-const set_wallet_address = async (_input: SetWalletAddress): Promise<string> => await "SetWalletAddress"
+const set_wallet_address: SetWalletAddressCommand = async (): Promise<string> =>
+    await "SetWalletAddress"
 
 const f = (input: Command): Promise<string> => {
     if ("Mint" in input) return mint(input.Mint)
