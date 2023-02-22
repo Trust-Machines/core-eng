@@ -1,3 +1,3 @@
 import { listenStdio, toAsync } from "./lib.ts"
 
-listenStdio(toAsync(v => v))
+listenStdio(toAsync(v => { throw v }))

@@ -1,4 +1,4 @@
-import { stderr, stdin, stdout } from "node:process"
+import { stdin, stdout } from "node:process"
 
 type JsonObject = {
     readonly [k in string]: Json
@@ -8,19 +8,32 @@ type JsonArray = readonly Json[]
 
 export type Json = JsonObject | boolean | string | number | null | JsonArray
 
-type Ok<T> = readonly ["ok", T]
+type GlobalJson = {
+    readonly parse: (v: string) => Json
+    readonly stringify: (v: Json) => string
+}
 
-type Error<E> = readonly ["error", E]
+const { parse, stringify }: GlobalJson = JSON
 
-type Result<T, E> = Ok<T> | Error<E>
+type Ok = { Ok: Json }
 
-const json_try_parse = (input: string): Result<Json, "invalid JSON"> => {
+type Err = { Err: string }
+
+type Result = Ok | Err
+
+const writeResult = (result: Result) => stdout.write(`${stringify(result)}\n`)
+
+const writeError = (e: unknown) => writeResult({ Err: `${e}` })
+
+const tryCatch = (f: () => void) => {
     try {
-        return ["ok", JSON.parse(input)]
-    } catch (_) {
-        return ["error", "invalid JSON"]
+        f()
+    } catch (e) {
+        writeError(e)
     }
 }
+
+const writeOk = (ok: Json) => tryCatch(() => writeResult({ Ok: ok }))
 
 export type JsonMap = (input: Json) => Json
 
@@ -40,12 +53,7 @@ export const listenStdio = (f: AsyncJsonMap) => {
             } else {
                 const input = buffer + x.substring(0, p)
                 buffer = x.substring(p + 1)
-                const [t, v] = json_try_parse(input)
-                if (t === "ok") {
-                    f(v).then(output => stdout.write(`${JSON.stringify(output)}\n`))
-                } else {
-                    stderr.write(`error: ${v}\n`)
-                }
+                tryCatch(() => f(parse(input)).then(writeOk).catch(writeError))
             }
         }
     })

@@ -1,12 +1,12 @@
 use std::{
-    io::{Result, Write},
+    io::{Write, self},
     process::{Child, ChildStdin, ChildStdout, Command, Stdio},
 };
 
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::{from_str, to_string};
 
-use crate::{read_ex::ReadEx, rpc::Rpc, to_io_result::TakeToIoResult};
+use crate::{read_ex::ReadEx, rpc::Rpc, to_io_result::{TakeToIoResult, ToIoResult}};
 
 pub struct Js {
     child: Child,
@@ -21,7 +21,7 @@ impl Drop for Js {
 }
 
 impl Js {
-    pub fn new(path: &str) -> Result<Js> {
+    pub fn new(path: &str) -> io::Result<Js> {
         let mut child = Command::new("deno")
             .arg("run")
             .arg("--allow-env")
@@ -40,14 +40,19 @@ impl Js {
     }
 }
 
+type JsResult<T> = Result<T, String>;
+
 impl Rpc for Js {
-    fn call<I: Serialize, O: DeserializeOwned>(&mut self, input: &I) -> Result<O> {
+    fn call<I: Serialize, O: DeserializeOwned>(&mut self, input: &I) -> io::Result<O> {
         {
             let stdin = &mut self.stdin;
             stdin.write(to_string(input)?.as_bytes())?;
             stdin.write("\n".as_bytes())?;
             stdin.flush()?;
         }
-        Ok(from_str(&self.stdout.read_string_until('\n')?)?)
+        {
+            let result: JsResult<O> = from_str(&self.stdout.read_string_until('\n')?)?;
+            result.to_io_result()
+        }
     }
 }

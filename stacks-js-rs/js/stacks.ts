@@ -1,5 +1,5 @@
-import { listenStdio, toAsync, JsonMap } from './rpc.ts'
-// import { makeContractCall } from 'npm:@stacks/transactions'
+import { listenStdio, toAsync, type JsonMap } from './lib.ts'
+import { makeContractCall } from 'npm:@stacks/transactions'
 
 // Example from Rust serialization:
 //  {
@@ -24,13 +24,15 @@ type PoxAddress = string
 
 type PrincipalData = string
 
-type BurnchainHeaderHash = readonly number[]
+type BurnchainHeaderHash = string
+
+type Memo = string
 
 type Mint = {
     readonly amount: number
     readonly block_height: number
     readonly burn_header_hash: BurnchainHeaderHash
-    readonly memo: readonly number[]
+    readonly memo: Memo
     readonly peg_wallet_address: PoxAddress
     readonly recipient: PrincipalData
     readonly txid: string
@@ -40,9 +42,9 @@ type Mint = {
 type Burn = {
     readonly amount: number
     readonly block_height: number
-    readonly burn_header_hash: readonly number[]
+    readonly burn_header_hash: BurnchainHeaderHash
     readonly fulfillment_fee: number
-    readonly memo: readonly number[]
+    readonly memo: Memo
     readonly peg_wallet_address: PoxAddress
     readonly recipient: PoxAddress
     readonly signature: string

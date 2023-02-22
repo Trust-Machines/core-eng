@@ -28,19 +28,33 @@ fn test_wrap() -> Result<(), Error> {
     let mut js = Js::new("./js/mirror.ts")?;
     assert_eq!(
         json_call(&mut js, "{\"b\":[],\"a\":2}")?,
-        "[{\"a\":2,\"b\":[]}]"
+        "{\"a\":2,\"b\":[]}"
     );
-    assert_eq!(json_call(&mut js, "[54,null]")?, "[[54,null]]");
-    assert_eq!(json_call(&mut js, "42")?, "[42]");
-    assert_eq!(json_call(&mut js, "\"Hello!\"")?, "[\"Hello!\"]");
-    assert_eq!(json_call(&mut js, "true")?, "[true]");
-    assert_eq!(json_call(&mut js, "null")?, "[null]");
+    assert_eq!(json_call(&mut js, "[54,null]")?, "[54,null]");
+    assert_eq!(json_call(&mut js, "42")?, "42");
+    assert_eq!(json_call(&mut js, "\"Hello!\"")?, "\"Hello!\"");
+    assert_eq!(json_call(&mut js, "true")?, "true");
+    assert_eq!(json_call(&mut js, "null")?, "null");
     Ok(())
 }
 
 #[test]
 fn test() {
     test_wrap().unwrap();
+}
+
+#[test]
+fn test_err() {
+    let mut js = Js::new("./js/throw.ts").unwrap();
+    let error = js.call::<_, serde_json::Value>(&42);
+    assert!(error.is_err());
+}
+
+#[test]
+fn test_async_err() {
+    let mut js = Js::new("./js/async_throw.ts").unwrap();
+    let error = js.call::<_, serde_json::Value>(&42);
+    assert!(error.is_err());
 }
 
 fn pox_address() -> PoxAddress {
@@ -62,7 +76,7 @@ fn mirror_peg_in_op_test() {
     let x = In::Mint(&p);
     let mut js = Js::new("./js/mirror.ts").unwrap();
     let result: serde_json::Value = js.call(&x).unwrap();
-    let expected = r#"[{"Mint":{"amount":0,"block_height":0,"burn_header_hash":"0000000000000000000000000000000000000000000000000000000000000000","memo":"","peg_wallet_address":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","recipient":"S0000000000000000000002AA028H","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
+    let expected = r#"{"Mint":{"amount":0,"block_height":0,"burn_header_hash":"0000000000000000000000000000000000000000000000000000000000000000","memo":"","peg_wallet_address":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","recipient":"S0000000000000000000002AA028H","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}"#;
     assert_eq!(serde_json::to_string(&result).unwrap(), expected);
 }
 
@@ -83,7 +97,17 @@ fn mirror_peg_out_request_op_test() {
     let x = In::Burn(&p);
     let mut js = Js::new("./js/mirror.ts").unwrap();
     let result: serde_json::Value = js.call(&x).unwrap();
-    let expected = r#"[{"Burn":{"amount":0,"block_height":0,"burn_header_hash":"0000000000000000000000000000000000000000000000000000000000000000","fulfillment_fee":0,"memo":"","peg_wallet_address":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","recipient":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","signature":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}]"#;
+    let expected = r#"{"Burn":{"amount":0,"block_height":0,"burn_header_hash":"0000000000000000000000000000000000000000000000000000000000000000","fulfillment_fee":0,"memo":"","peg_wallet_address":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","recipient":"1EXCN4m6mNL88QzPwksBnpVqr5F1dC4SGa","signature":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","txid":"0000000000000000000000000000000000000000000000000000000000000000","vtxindex":0}}"#;
+    assert_eq!(serde_json::to_string(&result).unwrap(), expected);
+}
+
+#[test]
+fn mirror_set_wallet_address_test() {
+    let p = PegWalletAddress([0; 32]);
+    let x = In::SetWalletAddress(&p);
+    let mut js = Js::new("./js/mirror.ts").unwrap();
+    let result: serde_json::Value = js.call(&x).unwrap();
+    let expected = r#"{"SetWalletAddress":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}"#;
     assert_eq!(serde_json::to_string(&result).unwrap(), expected);
 }
 
