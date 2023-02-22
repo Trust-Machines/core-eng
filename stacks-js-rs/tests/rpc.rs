@@ -10,8 +10,8 @@ use blockstack_lib::{
     util::{hash::Hash160, secp256k1::MessageSignature},
     vm::types::{PrincipalData, StandardPrincipalData},
 };
-use stackes_js_rs::{rpc::Rpc, stacks_wallet_js::In, Js};
-use stacks_coordinator::peg_wallet::PegWalletAddress;
+use stackes_js_rs::{rpc::Rpc, stacks_wallet_js::{In, StacksWalletJs}, Js};
+use stacks_coordinator::peg_wallet::{PegWalletAddress, StacksWallet};
 
 fn to_value(s: &str) -> Result<serde_json::Value, Error> {
     let x = serde_json::from_str(s)?;
@@ -155,5 +155,49 @@ fn stacks_set_wallet_address() {
     let x = In::SetWalletAddress(&p);
     let mut js = Js::new("./js/stacks.ts").unwrap();
     let result: String = js.call(&x).unwrap();
+    assert_eq!(result, "SetWalletAddress");
+}
+
+#[test]
+fn stacks_mint_test() {
+    let p = PegInOp {
+        recipient: PrincipalData::Standard(StandardPrincipalData(0, [0; 20])),
+        peg_wallet_address: pox_address(),
+        amount: 0,
+        memo: Vec::default(),
+        txid: Txid([0; 32]),
+        vtxindex: 0,
+        block_height: 0,
+        burn_header_hash: BurnchainHeaderHash([0; 32]),
+    };
+    let mut wallet = StacksWalletJs(Js::new("./js/stacks.ts").unwrap());
+    let result = wallet.mint(&p);
+    assert_eq!(result, "Mint");
+}
+
+#[test]
+fn stacks_burn_test() {
+    let p = PegOutRequestOp {
+        amount: 0,
+        recipient: pox_address(),
+        signature: MessageSignature([0; 65]),
+        peg_wallet_address: pox_address(),
+        fulfillment_fee: 0,
+        memo: Vec::default(),
+        txid: Txid([0; 32]),
+        vtxindex: 0,
+        block_height: 0,
+        burn_header_hash: BurnchainHeaderHash([0; 32]),
+    };
+    let mut wallet = StacksWalletJs(Js::new("./js/stacks.ts").unwrap());
+    let result = wallet.burn(&p);
+    assert_eq!(result, "Burn");
+}
+
+#[test]
+fn stacks_set_wallet_address_test() {
+    let p = PegWalletAddress([0; 32]);
+    let mut wallet = StacksWalletJs(Js::new("./js/stacks.ts").unwrap());
+    let result = wallet.set_wallet_address(p);
     assert_eq!(result, "SetWalletAddress");
 }

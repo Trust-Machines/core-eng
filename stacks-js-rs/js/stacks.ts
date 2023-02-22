@@ -1,5 +1,5 @@
-import { listenStdio, toAsync, type JsonMap } from './lib.ts'
-import { makeContractCall } from 'npm:@stacks/transactions'
+import { listenStdio, type AsyncJsonMap } from './lib.ts'
+import { AnchorMode, bufferCVFromString, makeContractCall } from 'npm:@stacks/transactions'
 
 // Example from Rust serialization:
 //  {
@@ -52,11 +52,25 @@ type Burn = {
     readonly vtxindex: number
 }
 
-const f = (input: Command): string => {
-    if ("Mint" in input) return "Mint"
+const f = async (input: Command): Promise<string> => {
+    if ("Mint" in input) {
+        try {
+            const st = await makeContractCall({
+                contractAddress: 'SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X',
+                contractName: 'contract_name',
+                functionName: 'contract_function',
+                functionArgs: [bufferCVFromString('foo')],
+                senderKey: '0001020304050607080910111213141516171819202122232425262728293031',
+                anchorMode: AnchorMode.Any,
+            })
+        } catch(e) {
+            return `${e}`
+        }
+        return "Mint"
+    }
     if ("Burn" in input) return "Burn"
     if ("SetWalletAddress" in input) return "SetWalletAddress"
     throw "unknown command"
 }
 
-listenStdio(toAsync(f as JsonMap))
+listenStdio(f as AsyncJsonMap)

@@ -6,7 +6,7 @@ use stacks_coordinator::{
 
 use crate::{rpc::Rpc, Js};
 
-pub struct StacksWalletJs(Js);
+pub struct StacksWalletJs(pub Js);
 
 impl StacksWalletJs {
     fn call(&mut self, input: &In) -> String {

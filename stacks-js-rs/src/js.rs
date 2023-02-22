@@ -26,6 +26,7 @@ impl Js {
             .arg("run")
             .arg("--allow-env")
             .arg("--allow-read")
+            .arg("--allow-net")
             .arg(path.to_owned())
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
