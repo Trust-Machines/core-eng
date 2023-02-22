@@ -31,6 +31,8 @@ jobs:
       with:
         deno-version: v1.30.*
     - uses: actions/checkout@v3
+    - name: Cache JS script dependencies
+      run: deno cache ./stacks-js-rs/js/stacks.ts
     - name: Run tests
       run: cargo test --verbose
 
