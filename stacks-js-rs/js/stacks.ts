@@ -55,7 +55,7 @@ type Burn = {
 const f = async (input: Command): Promise<string> => {
     if ("Mint" in input) {
         try {
-            const st = await makeContractCall({
+            await makeContractCall({
                 contractAddress: 'SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X',
                 contractName: 'contract_name',
                 functionName: 'contract_function',
