@@ -3,8 +3,9 @@ use stacks_coordinator::{
     peg_wallet::{PegWalletAddress, StacksWallet},
     stacks_node::{PegInOp, PegOutRequestOp},
 };
+use yarpc::rpc::Rpc;
 
-use crate::{rpc::Rpc, Js};
+use crate::Js;
 
 pub struct StacksWalletJs(pub Js);
 

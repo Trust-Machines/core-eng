@@ -11,11 +11,11 @@ use blockstack_lib::{
     vm::types::{PrincipalData, StandardPrincipalData},
 };
 use stackes_js_rs::{
-    rpc::Rpc,
     stacks_wallet_js::{In, StacksWalletJs},
     Js,
 };
 use stacks_coordinator::peg_wallet::{PegWalletAddress, StacksWallet};
+use yarpc::rpc::Rpc;
 
 fn to_value(s: &str) -> Result<serde_json::Value, Error> {
     let x = serde_json::from_str(s)?;

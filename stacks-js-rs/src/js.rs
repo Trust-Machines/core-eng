@@ -5,10 +5,10 @@ use std::{
 
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::{from_str, to_string};
+use yarpc::rpc::Rpc;
 
 use crate::{
     read_ex::ReadEx,
-    rpc::Rpc,
     to_io_result::{TakeToIoResult, ToIoResult},
 };
 
