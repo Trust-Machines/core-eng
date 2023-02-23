@@ -8,7 +8,8 @@ use serde_json::{from_str, to_string};
 
 use crate::{
     read_ex::ReadEx,
-    to_io_result::{TakeToIoResult, ToIoResult}, rpc::Rpc,
+    rpc::Rpc,
+    to_io_result::{TakeToIoResult, ToIoResult},
 };
 
 pub struct Js {

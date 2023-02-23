@@ -45,4 +45,3 @@ fn test_async_err() {
     let error = js.call::<_, serde_json::Value>(&42);
     assert!(error.is_err());
 }
-
