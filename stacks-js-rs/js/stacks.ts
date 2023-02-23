@@ -1,4 +1,4 @@
-import { listenStdio, type AsyncJsonMap } from './lib.ts'
+import { listenStdio, type AsyncJsonMap } from '../../yarpc/js/lib.ts'
 import { AnchorMode, bufferCVFromString, makeContractCall } from 'npm:@stacks/transactions'
 
 // Example from Rust serialization:

@@ -1,4 +1,4 @@
-import { stdin, stdout } from "node:process"
+import { stdin, stdout } from 'node:process'
 
 type JsonObject = {
     readonly [k in string]: Json
@@ -41,11 +41,11 @@ export type AsyncJsonMap = (input: Json) => Promise<Json>
 
 export const listenStdio = (f: AsyncJsonMap) => {
     let buffer = ""
-    stdin.setEncoding("utf8").on("readable", () => {
+    stdin.setEncoding('utf8').on('readable', () => {
         for (; ;) {
             const x: string = stdin.read()
             if (x === null) { break }
-            const i = x.indexOf("\n")
+            const i = x.indexOf('\n')
             if (i === -1) {
                 buffer += x
             } else {
