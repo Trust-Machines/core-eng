@@ -58,13 +58,41 @@ type MintCommand = (input: Mint) => Promise<string>
 type BurnCommand = (input: Burn) => Promise<string>
 type SetWalletAddressCommand = (input: SetWalletAddress) => Promise<string>
 
+/*
+export interface ContractCallOptions {
+    contractAddress: string;
+    contractName: string;
+    functionName: string;
+    functionArgs: ClarityValue[];
+    fee?: IntegerType;
+    feeEstimateApiUrl?: string;
+    nonce?: IntegerType;
+    network?: StacksNetworkName | StacksNetwork;
+    anchorMode: AnchorMode;
+    postConditionMode?: PostConditionMode;
+    postConditions?: PostCondition[];
+    validateWithAbi?: boolean | ClarityAbi;
+    sponsored?: boolean;
+}
+*/
+
+// (define-public (mint! (amount uint) (dst principal) (peg-in-txid (string-ascii 72)))
 const mint: MintCommand = async (): Promise<string> => {
     try {
+/*
+    pub sbtc_contract: ContractIdentifier, // contract_name and contract_address
+    pub stacks_private_key: StacksPrivateKey, //< sender_key
+    pub bitcoin_private_key: BitcoinPrivateKey,
+    pub signer_relay_url: String,
+    pub stacks_node_rpc_url: Url,
+    pub bitcoin_node_rpc_url: Url,
+    pub frost_dkg_round_id: u64,
+*/
         await makeContractCall({
             contractAddress: 'SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X',
             contractName: 'contract_name',
-            functionName: 'contract_function',
-            functionArgs: [bufferCVFromString('foo')],
+            functionName: 'mint', // clarity function:
+            functionArgs: [bufferCVFromString('foo')], //
             anchorMode: AnchorMode.Any,
             //
             senderKey: '0001020304050607080910111213141516171819202122232425262728293031',
@@ -75,9 +103,11 @@ const mint: MintCommand = async (): Promise<string> => {
     return "Mint"
 }
 
+// (define-public (burn! (amount uint) (src principal) (peg-out-txid (string-ascii 72)))
 const burn: BurnCommand = async (): Promise<string> =>
     await "Burn"
 
+// (define-public (set-bitcoin-wallet-address (addr (string-ascii 72)))
 const set_wallet_address: SetWalletAddressCommand = async (): Promise<string> =>
     await "SetWalletAddress"
 

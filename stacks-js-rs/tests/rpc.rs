@@ -128,7 +128,7 @@ fn stacks_mint_test() {
         block_height: 0,
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
-    let mut wallet = StacksWalletJs(Js::new("./js/stacks.ts").unwrap());
+    let mut wallet = StacksWalletJs::new(Js::new("./js/stacks.ts").unwrap());
     let result = wallet.mint(&p);
     assert_eq!(result, "Mint");
 }
@@ -147,7 +147,7 @@ fn stacks_burn_test() {
         block_height: 0,
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
-    let mut wallet = StacksWalletJs(Js::new("./js/stacks.ts").unwrap());
+    let mut wallet = StacksWalletJs::new(Js::new("./js/stacks.ts").unwrap());
     let result = wallet.burn(&p);
     assert_eq!(result, "Burn");
 }
@@ -155,7 +155,7 @@ fn stacks_burn_test() {
 #[test]
 fn stacks_set_wallet_address_test() {
     let p = PegWalletAddress([0; 32]);
-    let mut wallet = StacksWalletJs(Js::new("./js/stacks.ts").unwrap());
+    let mut wallet = StacksWalletJs::new(Js::new("./js/stacks.ts").unwrap());
     let result = wallet.set_wallet_address(p);
     assert_eq!(result, "SetWalletAddress");
 }

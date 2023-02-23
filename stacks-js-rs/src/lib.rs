@@ -5,11 +5,16 @@ use stacks_coordinator::{
 };
 use yarpc::{js::Js, rpc::Rpc};
 
-pub struct StacksWalletJs(pub Js);
+pub struct StacksWalletJs {
+    pub js: Js,
+}
 
 impl StacksWalletJs {
+    pub fn new(js: Js) -> Self {
+        Self { js }
+    }
     fn call(&mut self, input: &In) -> String {
-        self.0.call(input).unwrap()
+        self.js.call(input).unwrap()
     }
 }
 
