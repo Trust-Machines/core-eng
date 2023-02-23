@@ -100,22 +100,22 @@ const mint: MintCommand = async (): Promise<string> => {
     } catch (e) {
         return `${e}`
     }
-    return "Mint"
+    return 'Mint'
 }
 
 // (define-public (burn! (amount uint) (src principal) (peg-out-txid (string-ascii 72)))
 const burn: BurnCommand = async (): Promise<string> =>
-    await "Burn"
+    await 'Burn'
 
 // (define-public (set-bitcoin-wallet-address (addr (string-ascii 72)))
 const set_wallet_address: SetWalletAddressCommand = async (): Promise<string> =>
-    await "SetWalletAddress"
+    await 'SetWalletAddress'
 
-const f = (input: Command): Promise<string> => {
-    if ("Mint" in input) return mint(input.Mint)
-    if ("Burn" in input) return burn(input.Burn)
-    if ("SetWalletAddress" in input) return set_wallet_address(input.SetWalletAddress)
-    throw "unknown command"
+const dispatch = (input: Command): Promise<string> => {
+    if ('Mint' in input) return mint(input.Mint)
+    if ('Burn' in input) return burn(input.Burn)
+    if ('SetWalletAddress' in input) return set_wallet_address(input.SetWalletAddress)
+    throw 'unknown command'
 }
 
-listenStdio(f as AsyncJsonMap)
+listenStdio(dispatch as AsyncJsonMap)

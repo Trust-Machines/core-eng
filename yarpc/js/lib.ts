@@ -1,10 +1,10 @@
 import { stdin, stdout } from 'node:process'
 
-type JsonObject = {
+export type JsonObject = {
     readonly [k in string]: Json
 }
 
-type JsonArray = readonly Json[]
+export type JsonArray = readonly Json[]
 
 export type Json = JsonObject | boolean | string | number | null | JsonArray
 
@@ -13,7 +13,13 @@ type GlobalJson = {
     readonly stringify: (v: Json) => string
 }
 
-const { parse, stringify }: GlobalJson = JSON
+const { parse }: GlobalJson = JSON
+
+const stringify = (s: Json) => JSON.stringify(s, (_, value) =>
+    typeof value === 'bigint'
+        ? value.toString()
+        : value // return everything else unchanged
+)
 
 type Ok = { Ok: Json }
 

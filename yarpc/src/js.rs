@@ -25,6 +25,7 @@ impl Drop for Js {
 }
 
 impl Js {
+    /// Note: the function spawns a `deno` process.
     pub fn new(path: &str) -> io::Result<Js> {
         let mut child = Command::new("deno")
             .arg("run")
