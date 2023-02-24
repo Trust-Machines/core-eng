@@ -8,17 +8,12 @@ export type JsonArray = readonly Json[]
 
 export type Json = JsonObject | boolean | string | number | null | JsonArray
 
-type GlobalJson = {
-    readonly parse: (v: string) => Json
-    readonly stringify: (v: Json) => string
-}
+const { parse, stringify: JsonStringify } = JSON
 
-const { parse }: GlobalJson = JSON
-
-const stringify = (s: Json) => JSON.stringify(s, (_, value) =>
+const stringify = (s: Json) => JsonStringify(s, (_, value) =>
     typeof value === 'bigint'
         ? value.toString()
-        : value // return everything else unchanged
+        : value
 )
 
 type Ok = { Ok: Json }
