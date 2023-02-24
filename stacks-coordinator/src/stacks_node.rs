@@ -1,7 +1,7 @@
 use blockstack_lib::chainstate::burn::operations as burn_ops;
 use blockstack_lib::types::chainstate::StacksAddress;
 
-use crate::stacks_transaction::StacksTransaction;
+pub use crate::stacks_transaction::StacksTransaction;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait StacksNode {
