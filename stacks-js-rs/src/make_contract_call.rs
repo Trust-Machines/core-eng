@@ -7,7 +7,8 @@ pub type ClarityValue = serde_json::Value;
 
 pub type PostCondition = serde_json::Value;
 
-pub type IntegerType = serde_json::Value;
+// number | string | bigint | Uint8Array | BN;
+pub type IntegerType = String;
 
 pub type StacksNetworkNameOrStacksNetwork = serde_json::Value;
 
@@ -46,7 +47,11 @@ pub type ChainID = serde_json::Number;
 
 pub type Authorization = serde_json::Value;
 
-type AnchorMode = serde_json::Value;
+pub type AnchorMode = u8;
+
+pub const ON_CHAIN_ONLY: AnchorMode = 1;
+pub const OFF_CHAIN_ONLY: AnchorMode = 2;
+pub const ANY: AnchorMode = 3;
 
 type Payload = serde_json::Value;
 
@@ -55,7 +60,7 @@ type PostConditionMode = serde_json::Value;
 type LengthPrefixedList = serde_json::Value;
 
 #[allow(non_snake_case)]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct StacksTransaction {
     pub version: TransactionVersion,
     pub chainId: ChainID,
