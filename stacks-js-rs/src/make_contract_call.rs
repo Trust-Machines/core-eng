@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use serde::{Deserialize, Serialize};
 use yarpc::{js::Js, rpc::Rpc};
 
@@ -18,15 +20,24 @@ pub struct SignedContractCallOptions {
     pub contractName: String,
     pub functionName: String,
     pub functionArgs: Vec<ClarityValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub fee: Option<IntegerType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub feeEstimateApiUrl: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub nonce: Option<IntegerType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<StacksNetworkNameOrStacksNetwork>,
     pub anchorMode: AnchorMode,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub postConditionMode: Option<PostConditionMode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub postConditions: Option<PostCondition>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub validateWithAbi: Option<BooleanOrClarityAbi>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sponsored: Option<bool>,
+    pub senderKey: String,
 }
 
 pub type TransactionVersion = serde_json::Number;
@@ -44,7 +55,7 @@ type PostConditionMode = serde_json::Value;
 type LengthPrefixedList = serde_json::Value;
 
 #[allow(non_snake_case)]
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StacksTransaction {
     pub version: TransactionVersion,
     pub chainId: ChainID,
@@ -60,5 +71,9 @@ pub struct MakeContractCall(Js);
 impl MakeContractCall {
     pub fn call(&mut self, input: &SignedContractCallOptions) -> StacksTransaction {
         self.0.call(input).unwrap()
+    }
+    pub fn new(path: &str) -> Self {
+        let file_name = Path::new(path).join("stacks-js-rs/js/make_contract_call.ts");
+        Self(Js::new(file_name.to_str().unwrap()).unwrap())
     }
 }

@@ -13,7 +13,7 @@ pub struct StacksWalletJs {
 
 impl StacksWalletJs {
     pub fn new(path: &str) -> Self {
-        let file_name = Path::new(path).join("stacks-js-rs/js/stacks.ts");
+        let file_name = Path::new(path).join("stacks-js-rs/js/dispatch.ts");
         Self {
             js: Js::new(file_name.to_str().unwrap()).unwrap(),
         }

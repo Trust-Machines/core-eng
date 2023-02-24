@@ -1,12 +1,20 @@
-use std::io::{Error, ErrorKind};
+use std::{
+    any,
+    fmt::Display,
+    io::{Error, ErrorKind},
+};
 
 pub trait ToIoResult {
     type V;
     fn to_io_result(self) -> Result<Self::V, Error>;
 }
 
+fn error(msg: &str) -> Error {
+    Error::new(ErrorKind::InvalidData, msg)
+}
+
 fn err<T>(msg: &str) -> Result<T, Error> {
-    Err(Error::new(ErrorKind::InvalidData, msg))
+    Err(error(msg))
 }
 
 impl<T> ToIoResult for Option<T> {
@@ -19,7 +27,14 @@ impl<T> ToIoResult for Option<T> {
 impl<T, E> ToIoResult for Result<T, E> {
     type V = T;
     fn to_io_result(self) -> Result<Self::V, Error> {
-        self.map_or(err("result"), Ok)
+        self.map_or(err(any::type_name::<E>()), Ok)
+        /*
+        self.map_err(|e| {
+            println!("{e}");
+            Error::new(ErrorKind::InvalidData, e)
+            // error(any::type_name::<E>())
+        })
+        */
     }
 }
 

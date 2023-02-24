@@ -49,15 +49,17 @@ impl Js {
 type JsResult<T> = Result<T, String>;
 
 impl Rpc for Js {
-    fn call<I: Serialize, O: DeserializeOwned>(&mut self, input: &I) -> io::Result<O> {
+    fn call<I: Serialize, O: Serialize + DeserializeOwned>(&mut self, input: &I) -> io::Result<O> {
         {
             let stdin = &mut self.stdin;
-            stdin.write(to_string(input)?.as_bytes())?;
+            let i = to_string(input)?;
+            stdin.write(i.as_bytes())?;
             stdin.write("\n".as_bytes())?;
             stdin.flush()?;
         }
         {
-            let result: JsResult<O> = from_str(&self.stdout.read_string_until('\n')?)?;
+            let o = self.stdout.read_string_until('\n')?;
+            let result: JsResult<O> = from_str(&o)?;
             result.to_io_result()
         }
     }
