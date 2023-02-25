@@ -34,7 +34,7 @@ jobs:
     # We need to cache JS script dependencies before running `cargo test`.
     # The `cargo test` command may spawn multiple `deno` processes.
     - name: Cache JS script dependencies
-      run: deno cache ./stacks-js-rs/js/stacks.ts
+      run: deno cache ./stacks-coordinator/js/make_contract_call.ts
     - name: Run tests
       run: cargo test --verbose
 
