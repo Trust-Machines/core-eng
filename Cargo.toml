@@ -6,7 +6,6 @@ members = [
   "frost-coordinator",
   "stacks-coordinator",
   "stacks-signer",
-  "stacks-js-rs",
   "yarpc"]
 
 [workspace.dependencies]

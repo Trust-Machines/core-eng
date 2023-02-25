@@ -78,7 +78,7 @@ impl MakeContractCall {
         self.0.call(input).unwrap()
     }
     pub fn new(path: &str) -> Self {
-        let file_name = Path::new(path).join("stacks-js-rs/js/make_contract_call.ts");
+        let file_name = Path::new(path).join("stacks-coordinator/js/make_contract_call.ts");
         Self(Js::new(file_name.to_str().unwrap()).unwrap())
     }
 }

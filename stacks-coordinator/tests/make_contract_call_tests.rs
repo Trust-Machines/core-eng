@@ -1,4 +1,4 @@
-use stackes_js_rs::make_contract_call::{MakeContractCall, SignedContractCallOptions, ANY};
+use stacks_coordinator::make_contract_call::{MakeContractCall, SignedContractCallOptions, ANY};
 
 #[test]
 fn make_contract_call_test() {

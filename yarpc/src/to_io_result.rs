@@ -1,6 +1,5 @@
 use std::{
     any,
-    fmt::Display,
     io::{Error, ErrorKind},
 };
 
@@ -28,13 +27,6 @@ impl<T, E> ToIoResult for Result<T, E> {
     type V = T;
     fn to_io_result(self) -> Result<Self::V, Error> {
         self.map_or(err(any::type_name::<E>()), Ok)
-        /*
-        self.map_err(|e| {
-            println!("{e}");
-            Error::new(ErrorKind::InvalidData, e)
-            // error(any::type_name::<E>())
-        })
-        */
     }
 }
 

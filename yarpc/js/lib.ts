@@ -24,7 +24,7 @@ type Result = Ok | Err
 
 const writeResult = (result: Result) => stdout.write(`${stringify(result)}\n`)
 
-const writeError = (e: unknown) => writeResult({ Err: `${e}` })
+const writeError = (e: unknown) => writeResult({ Err: `lib: ${e}` })
 
 const tryCatch = (f: () => void) => {
     try {

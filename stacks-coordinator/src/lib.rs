@@ -3,6 +3,8 @@ pub mod cli;
 pub mod config;
 pub mod coordinator;
 pub mod frost_coordinator;
+pub mod make_contract_call;
 pub mod peg_queue;
 pub mod peg_wallet;
 pub mod stacks_node;
+pub mod stacks_wallet_js;
