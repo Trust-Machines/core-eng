@@ -19,8 +19,13 @@ jobs:
         deno-version: v1.30.*
     - name: Build
       run: cargo build --verbose
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Cargo.lock
+        path: Cargo.lock
 
   test:
+    needs: build
     strategy:
       matrix:
         # can't run on `windows-latests`
@@ -33,10 +38,13 @@ jobs:
     - uses: actions/checkout@v3
     # We need to cache JS script dependencies before running `cargo test`.
     # The `cargo test` command may spawn multiple `deno` processes.
+    - uses: actions/download-artifact@v3
+      with:
+        name: Cargo.lock
     - name: Cache JS script dependencies
       run: deno cache ./stacks-js-rs/js/stacks.ts
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --verbose --locked
 
   fmt:
     runs-on: ubuntu-latest
