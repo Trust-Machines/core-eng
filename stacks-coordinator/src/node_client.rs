@@ -1,4 +1,6 @@
-use blockstack_lib::{net::BurnchainOps, types::chainstate::StacksAddress};
+use blockstack_lib::{
+    chainstate::stacks::address::StacksAddressExtensions, types::chainstate::StacksAddress,
+};
 use reqwest::blocking::Client;
 use serde_json::{from_value, Value};
 
@@ -56,9 +58,16 @@ impl StacksNode for NodeClient {
             .unwrap()
     }
 
-    // TODO: Figure out what is nonce and how to get it
-    fn next_nonce(&self, addr: StacksAddress) {
-        todo!()
+    fn next_nonce(&self, addr: StacksAddress) -> u64 {
+        let url = self.build_url(&format!("/v2/accounts/{}", addr.to_b58()));
+
+        self.client
+            .get(url)
+            .send()
+            .and_then(|res| res.json::<Value>())
+            .map(|json| json["nonce"].as_u64().unwrap())
+            .unwrap()
+            + 1
     }
 
     // TODO: Find appropriate type for tx
