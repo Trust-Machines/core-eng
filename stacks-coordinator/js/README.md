@@ -7,7 +7,7 @@ RPC (remote procedure call) from Rust to JS using STDIO.
 
 Run
 ```sh
-deno run --allow-env --allow-read --allow-net ./stacks-js-rs/js/make_contract_call.ts
+deno run --allow-env --allow-read --allow-net ./stacks-coordinator/js/make_contract_call.ts
 ```
 
 and enter
