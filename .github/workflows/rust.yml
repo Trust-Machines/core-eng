@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: denoland/setup-deno@v1
       with:
-        deno-version: v1.30.*
+        deno-version: v1.*
     - name: Build
       run: cargo build --verbose
     - uses: actions/upload-artifact@v3
@@ -34,7 +34,7 @@ jobs:
     steps:
     - uses: denoland/setup-deno@v1
       with:
-        deno-version: v1.30.*
+        deno-version: v1.*
     - uses: actions/checkout@v3
     # We need to cache JS script dependencies before running `cargo test`.
     # The `cargo test` command may spawn multiple `deno` processes.
@@ -42,7 +42,7 @@ jobs:
       with:
         name: Cargo.lock
     - name: Cache JS script dependencies
-      run: deno cache ./stacks-coordinator/js/make_contract_call.ts
+      run: deno cache ./stacks-coordinator/js/stacks_transactions.ts
     - name: Run tests
       run: cargo test --verbose --locked
 

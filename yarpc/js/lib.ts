@@ -58,4 +58,11 @@ export const listenStdio = (f: AsyncJsonMap) => {
     })
 }
 
+export type CommandMap = { readonly [k in string]: AsyncJsonMap }
+
+export type DispatchCommand = readonly [string, Json];
+
+export const dispatch = (map: CommandMap): AsyncJsonMap =>
+    (([name, arg]: DispatchCommand) => map[name](arg)) as AsyncJsonMap
+
 export const toAsync = (f: JsonMap): AsyncJsonMap => v => Promise.resolve(f(v))
