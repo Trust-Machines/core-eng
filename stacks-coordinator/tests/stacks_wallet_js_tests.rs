@@ -17,6 +17,14 @@ fn pox_address() -> PoxAddress {
     PoxAddress::Standard(StacksAddress::new(0, Hash160::from_data(&[0; 20])), None)
 }
 
+fn stacks_wallet_js() -> StacksWalletJs {
+    StacksWalletJs::new(
+        "..",
+        "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE".to_string(),
+        "0001020304050607080910111213141516171819202122232425262728293031".to_string(),
+    )
+}
+
 #[test]
 fn stacks_mint_test() {
     let p = PegInOp {
@@ -29,10 +37,7 @@ fn stacks_mint_test() {
         block_height: 0,
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
-    let mut wallet = StacksWalletJs::new(
-        "..",
-        "0001020304050607080910111213141516171819202122232425262728293031".to_string(),
-    );
+    let mut wallet = stacks_wallet_js();
     let result = wallet.mint(&p);
     // assert_eq!(result, "Mint");
 }

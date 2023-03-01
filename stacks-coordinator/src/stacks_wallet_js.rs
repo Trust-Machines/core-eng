@@ -6,19 +6,21 @@ use crate::{
 
 pub struct StacksWalletJs {
     make_contract_call: MakeContractCall,
+    contract_address: String,
     sender_key: String,
 }
 
 impl StacksWalletJs {
-    pub fn new(path: &str, sender_key: String) -> Self {
+    pub fn new(path: &str, contract_address: String, sender_key: String) -> Self {
         Self {
             make_contract_call: MakeContractCall::new(path),
+            contract_address,
             sender_key,
         }
     }
     fn call(&mut self, function_name: String) -> StacksTransaction {
         let input = SignedContractCallOptions {
-            contractAddress: "SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X".to_string(),
+            contractAddress: self.contract_address.clone(),
             contractName: "".to_string(),
             functionName: function_name,
             functionArgs: Vec::default(),
