@@ -20,12 +20,14 @@ type Ok = { Ok: Json }
 
 type Err = { Err: string }
 
+/// This type is compatible with Rust `serde` serialization of `std::Result`.
 type Result = Ok | Err
 
 const writeResult = (result: Result) => stdout.write(`${stringify(result)}\n`)
 
 const writeError = (e: unknown) => writeResult({ Err: `lib: ${e}` })
 
+/// Writes an error into STDIO if the f throws an exception.
 const tryCatch = (f: () => void) => {
     try {
         f()
@@ -63,6 +65,6 @@ export type CommandMap = { readonly [k in string]: AsyncJsonMap }
 export type DispatchCommand = readonly [string, Json];
 
 export const dispatch = (map: CommandMap): AsyncJsonMap =>
-    (([name, arg]: DispatchCommand) => map[name](arg)) as AsyncJsonMap
+    (([command, arg]: DispatchCommand) => map[command](arg)) as AsyncJsonMap
 
 export const toAsync = (f: JsonMap): AsyncJsonMap => v => Promise.resolve(f(v))

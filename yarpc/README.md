@@ -26,7 +26,7 @@ Each message contains
   {"a":42}\n[0,-1,true]\n
   ```
 
-### Running `mirror.ts`
+### Running `mirror.ts` test
 
 ```sh
 deno run --allow-env --allow-read ./yarpc/js/test/mirror.ts
