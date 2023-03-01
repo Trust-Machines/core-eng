@@ -42,7 +42,7 @@ jobs:
       with:
         name: Cargo.lock
     - name: Cache JS script dependencies
-      run: deno cache ./stacks-coordinator/js/stacks_transactions.ts
+      run: deno cache ./yarpc/js/stacks/transactions.ts
     - name: Run tests
       run: cargo test --verbose --locked
 
