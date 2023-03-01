@@ -20,26 +20,39 @@ pub type BooleanOrClarityAbi = serde_json::Value;
 #[derive(Serialize)]
 pub struct SignedContractCallOptions {
     pub contractAddress: String,
+
     pub contractName: String,
+
     pub functionName: String,
+
     pub functionArgs: Vec<ClarityValue>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fee: Option<IntegerType>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub feeEstimateApiUrl: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nonce: Option<IntegerType>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<StacksNetworkNameOrStacksNetwork>,
+
     pub anchorMode: AnchorMode,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub postConditionMode: Option<PostConditionMode>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub postConditions: Option<PostCondition>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub validateWithAbi: Option<BooleanOrClarityAbi>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sponsored: Option<bool>,
+
     pub senderKey: String,
 }
 
