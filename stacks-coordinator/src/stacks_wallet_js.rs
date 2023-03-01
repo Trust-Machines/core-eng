@@ -1,7 +1,8 @@
 use crate::{
-    make_contract_call::{MakeContractCall, SignedContractCallOptions, StacksTransaction, ANY},
+    make_contract_call::{MakeContractCall, SignedContractCallOptions, ANY},
     peg_wallet::{PegWalletAddress, StacksWallet},
     stacks_node::{PegInOp, PegOutRequestOp},
+    stacks_transaction::StacksTransaction,
 };
 
 pub struct StacksWalletJs {
@@ -40,16 +41,13 @@ impl StacksWalletJs {
 }
 
 impl StacksWallet for StacksWalletJs {
-    fn mint(&mut self, op: &PegInOp) -> String {
-        let x = self.call("mint".to_string());
-        serde_json::to_string(&x).unwrap()
+    fn mint(&mut self, op: &PegInOp) -> StacksTransaction {
+        self.call("mint".to_string())
     }
-    fn burn(&mut self, op: &PegOutRequestOp) -> String {
-        let x = self.call("burn".to_string());
-        serde_json::to_string(&x).unwrap()
+    fn burn(&mut self, op: &PegOutRequestOp) -> StacksTransaction {
+        self.call("burn".to_string())
     }
-    fn set_wallet_address(&mut self, address: PegWalletAddress) -> String {
-        let x = self.call("set_wallet_address".to_string());
-        serde_json::to_string(&x).unwrap()
+    fn set_wallet_address(&mut self, address: PegWalletAddress) -> StacksTransaction {
+        self.call("set_wallet_address".to_string())
     }
 }

@@ -3,6 +3,8 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use yarpc::{dispatch_command::DispatchCommand, js::Js, rpc::Rpc};
 
+use crate::stacks_transaction::StacksTransaction;
+
 pub type ClarityValue = serde_json::Value;
 
 pub type PostCondition = serde_json::Value;
@@ -53,23 +55,11 @@ pub const ON_CHAIN_ONLY: AnchorMode = 1;
 pub const OFF_CHAIN_ONLY: AnchorMode = 2;
 pub const ANY: AnchorMode = 3;
 
-type Payload = serde_json::Value;
+pub type Payload = serde_json::Value;
 
-type PostConditionMode = serde_json::Value;
+pub type PostConditionMode = serde_json::Value;
 
-type LengthPrefixedList = serde_json::Value;
-
-#[allow(non_snake_case)]
-#[derive(Serialize, Deserialize, Debug)]
-pub struct StacksTransaction {
-    pub version: TransactionVersion,
-    pub chainId: ChainID,
-    pub auth: Authorization,
-    pub anchorMode: AnchorMode,
-    pub payload: Payload,
-    pub postConditionMode: PostConditionMode,
-    pub postConditions: LengthPrefixedList,
-}
+pub type LengthPrefixedList = serde_json::Value;
 
 pub struct MakeContractCall(Js);
 

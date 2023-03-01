@@ -7,4 +7,5 @@ pub mod make_contract_call;
 pub mod peg_queue;
 pub mod peg_wallet;
 pub mod stacks_node;
+pub mod stacks_transaction;
 pub mod stacks_wallet_js;
