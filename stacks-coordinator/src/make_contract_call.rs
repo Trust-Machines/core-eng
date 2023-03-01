@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use yarpc::{js::Js, rpc::Rpc, dispatch_command::DispatchCommand};
+use yarpc::{dispatch_command::DispatchCommand, js::Js, rpc::Rpc};
 
 pub type ClarityValue = serde_json::Value;
 
@@ -75,7 +75,9 @@ pub struct MakeContractCall(Js);
 
 impl MakeContractCall {
     pub fn call(&mut self, input: &SignedContractCallOptions) -> StacksTransaction {
-        self.0.call(&DispatchCommand("makeContractCall".to_string(), input)).unwrap()
+        self.0
+            .call(&DispatchCommand("makeContractCall".to_string(), input))
+            .unwrap()
     }
     pub fn new(path: &str) -> Self {
         let file_name = Path::new(path).join("yarpc/js/stacks/transactions.ts");

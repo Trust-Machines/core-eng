@@ -56,10 +56,7 @@ fn stacks_burn_test() {
         block_height: 0,
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
-    let mut wallet = StacksWalletJs::new(
-        "..",
-        "0001020304050607080910111213141516171819202122232425262728293031".to_string(),
-    );
+    let mut wallet = stacks_wallet_js();
     let result = wallet.burn(&p);
     // assert_eq!(result, "Burn");
 }
@@ -67,10 +64,7 @@ fn stacks_burn_test() {
 #[test]
 fn stacks_set_wallet_address_test() {
     let p = PegWalletAddress([0; 32]);
-    let mut wallet = StacksWalletJs::new(
-        "..",
-        "0001020304050607080910111213141516171819202122232425262728293031".to_string(),
-    );
+    let mut wallet = stacks_wallet_js();
     let result = wallet.set_wallet_address(p);
     // assert_eq!(result, "SetWalletAddress");
 }
