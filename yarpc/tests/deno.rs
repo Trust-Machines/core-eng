@@ -14,7 +14,7 @@ fn json_call(js: &mut Js, input: &str) -> io::Result<String> {
 }
 
 fn test_wrap() -> io::Result<()> {
-    let mut js = Js::new("./js/mirror.ts")?;
+    let mut js = Js::new("./js/tests/mirror.ts")?;
     assert_eq!(
         json_call(&mut js, "{\"b\":[],\"a\":2}")?,
         "{\"a\":2,\"b\":[]}"
@@ -34,14 +34,14 @@ fn test() {
 
 #[test]
 fn test_err() {
-    let mut js = Js::new("./js/throw.ts").unwrap();
+    let mut js = Js::new("./js/tests/throw.ts").unwrap();
     let error = js.call::<_, serde_json::Value>(&42);
     assert!(error.is_err());
 }
 
 #[test]
 fn test_async_err() {
-    let mut js = Js::new("./js/async_throw.ts").unwrap();
+    let mut js = Js::new("./js/tests/async_throw.ts").unwrap();
     let error = js.call::<_, serde_json::Value>(&42);
     assert!(error.is_err());
 }

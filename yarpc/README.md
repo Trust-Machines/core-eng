@@ -29,5 +29,5 @@ Each message contains
 ### Running `mirror.ts`
 
 ```sh
-deno run --allow-env --allow-read ./yarpc/js/mirror.ts
+deno run --allow-env --allow-read ./yarpc/js/test/mirror.ts
 ```
