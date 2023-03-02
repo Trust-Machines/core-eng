@@ -8,11 +8,12 @@ mod tests {
     use hashbrown::HashMap;
     use rand_core::{CryptoRng, OsRng, RngCore};
     use wtfrost::{
-        common::{PolyCommitment, PublicNonce},
+        common::PolyCommitment,
         errors::DkgError,
-        v1::{Party, SignatureAggregator, SignatureShare},
+        v1::{Party, SignatureAggregator},
     };
 
+    #[allow(non_snake_case)]
     fn distribute(
         parties: &mut Vec<Party>,
         A: &Vec<PolyCommitment>,
@@ -44,6 +45,7 @@ mod tests {
         Ok(())
     }
 
+    #[allow(non_snake_case)]
     fn select_parties<RNG: RngCore + CryptoRng>(N: usize, T: usize, rng: &mut RNG) -> Vec<usize> {
         let mut indices: Vec<usize> = Vec::new();
 
@@ -81,6 +83,7 @@ mod tests {
     */
 
     #[test]
+    #[allow(non_snake_case)]
     fn pure_frost() {
         // let num_nonces = 5;
         let N: usize = 10;
@@ -92,7 +95,7 @@ mod tests {
         let mut parties = (0..N)
             .map(|i| Party::new(i, N, T, &mut rng))
             .collect::<Vec<_>>();
-        let nonces = parties
+        let _nonces = parties
             .iter_mut()
             .map(|p| p.gen_nonce(&mut rng))
             .collect::<Vec<_>>();
@@ -102,12 +105,12 @@ mod tests {
             .collect::<Vec<_>>();
 
         distribute(&mut parties, &commitments).unwrap();
-        let sig_agg = SignatureAggregator::new(N, T, commitments).unwrap();
+        let _sig_agg = SignatureAggregator::new(N, T, commitments).unwrap();
 
         let num_sigs = 7;
-        for sig_ct in 0..num_sigs {
-            let msg = "It was many and many a year ago".to_string();
-            let signers = select_parties(N, T, &mut rng);
+        for _sig_ct in 0..num_sigs {
+            let _msg = "It was many and many a year ago".to_string();
+            let _signers = select_parties(N, T, &mut rng);
             // let nonce_ctr = sig_agg.get_nonce_ctr();
             /*
             let sig_shares = collect_signatures(&parties, &signers, &nonces, &msg);
