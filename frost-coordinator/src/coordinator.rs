@@ -175,7 +175,7 @@ where
             .collect();
 
         // request signature shares
-        for (party_id, _nonce_response) in &self.public_nonces {
+        for party_id in self.public_nonces.keys() {
             let signature_share_request_message = Message {
                 msg: MessageTypes::SignShareRequest(SignatureShareRequest {
                     dkg_id: self.current_dkg_id,
@@ -208,7 +208,7 @@ where
                 }
             }
 
-            if waiting_for_signature_shares.len() == 0 {
+            if waiting_for_signature_shares.is_empty() {
                 break;
             }
         }
@@ -236,7 +236,7 @@ where
 
         info!("Signature ({}, {})", sig.R, sig.z);
 
-        return Ok(sig);
+        Ok(sig)
     }
 
     pub fn calculate_aggregate_public_key(&mut self) -> Result<Point, Error> {
@@ -282,7 +282,7 @@ where
                 }
                 (_, _) => {}
             }
-            if ids_to_await.len() == 0 {
+            if ids_to_await.is_empty() {
                 let key = self.calculate_aggregate_public_key()?;
                 info!("Aggregate public key {}", key);
                 return Ok(());
