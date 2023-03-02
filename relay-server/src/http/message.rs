@@ -72,13 +72,13 @@ pub trait Message: Sized {
         const CONTENT_LENGTH: &[u8] = "content-length".as_bytes();
         const COLON: &[u8] = ":".as_bytes();
 
-        o.write(self.first_line().join(" ").as_bytes())?;
-        o.write(EOL)?;
+        o.write_all(self.first_line().join(" ").as_bytes())?;
+        o.write_all(EOL)?;
         let mut write_header = |k: &[u8], v: &[u8]| -> Result<(), Error> {
-            o.write(k)?;
-            o.write(COLON)?;
-            o.write(v)?;
-            o.write(EOL)?;
+            o.write_all(k)?;
+            o.write_all(COLON)?;
+            o.write_all(v)?;
+            o.write_all(EOL)?;
             Ok(())
         };
         for (k, v) in self.headers().iter() {
@@ -89,8 +89,9 @@ pub trait Message: Sized {
         if len > 0 {
             write_header(CONTENT_LENGTH, len.to_string().as_bytes())?;
         }
-        o.write(EOL)?;
-        o.write(&content)?;
+        //These could cause partial writes. Should we check the returned number of written bytes?
+        o.write_all(EOL)?;
+        o.write_all(content)?;
         Ok(())
     }
 }
