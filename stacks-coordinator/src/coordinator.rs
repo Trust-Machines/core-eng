@@ -1,4 +1,3 @@
-use std::io;
 use std::sync::mpsc;
 
 use crate::peg_queue;
@@ -52,7 +51,7 @@ trait CoordinatorHelpers: Coordinator {
     }
 
     fn peg_out(&mut self, op: stacks_node::PegOutRequestOp) {
-        let stacks = self.fee_wallet().stacks_mut();
+        let _stacks = self.fee_wallet().stacks_mut();
         let burn_tx = self.fee_wallet().stacks_mut().burn(&op);
         let fulfill_tx = self.fee_wallet().bitcoin_mut().fulfill_peg_out(&op);
 

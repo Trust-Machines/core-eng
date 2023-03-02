@@ -226,7 +226,7 @@ impl SigningRound {
             }
         }
         let dkg_end = MessageTypes::DkgEnd(DkgEnd {
-            dkg_id: self.dkg_id.unwrap() as u64,
+            dkg_id: self.dkg_id.unwrap(),
             signer_id: self.signer.signer_id as usize,
         });
         info!(
@@ -306,7 +306,7 @@ impl SigningRound {
         } else {
             debug!("SignShareRequest for {} dropped.", sign_request.party_id);
         }
-        return Ok(msgs);
+        Ok(msgs)
     }
 
     pub fn dkg_begin(&mut self, dkg_begin: DkgBegin) -> Result<Vec<MessageTypes>, String> {
@@ -319,14 +319,14 @@ impl SigningRound {
         for (_idx, party) in self.signer.frost_signer.parties.iter().enumerate() {
             info!("sending dkg private share for party #{}", party.id);
             let private_shares = MessageTypes::DkgPrivateShares(DkgPrivateShares {
-                dkg_id: self.dkg_id.unwrap() as u64,
+                dkg_id: self.dkg_id.unwrap(),
                 party_id: party.id as u32,
                 private_shares: party.get_shares(),
             });
             msgs.push(private_shares);
             info!("sending dkg public commitment for party #{}", party.id);
             let public_share = MessageTypes::DkgPublicShare(DkgPublicShare {
-                dkg_id: self.dkg_id.unwrap() as u64,
+                dkg_id: self.dkg_id.unwrap(),
                 party_id: party.id as u32,
                 public_share: party.get_poly_commitment(&mut rng),
             });

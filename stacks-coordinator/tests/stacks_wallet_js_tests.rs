@@ -38,7 +38,7 @@ fn stacks_mint_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let mut wallet = stacks_wallet_js();
-    let result = wallet.mint(&p);
+    let _result = wallet.mint(&p);
     // assert_eq!(result, "Mint");
 }
 
@@ -57,7 +57,7 @@ fn stacks_burn_test() {
         burn_header_hash: BurnchainHeaderHash([0; 32]),
     };
     let mut wallet = stacks_wallet_js();
-    let result = wallet.burn(&p);
+    let _result = wallet.burn(&p);
     // assert_eq!(result, "Burn");
 }
 
@@ -65,6 +65,6 @@ fn stacks_burn_test() {
 fn stacks_set_wallet_address_test() {
     let p = PegWalletAddress([0; 32]);
     let mut wallet = stacks_wallet_js();
-    let result = wallet.set_wallet_address(p);
+    let _result = wallet.set_wallet_address(p);
     // assert_eq!(result, "SetWalletAddress");
 }

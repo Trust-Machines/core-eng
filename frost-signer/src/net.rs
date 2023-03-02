@@ -56,17 +56,14 @@ impl NetListen for HttpNetListen {
         debug!("poll {}", url);
         match ureq::get(&url).call() {
             Ok(response) => {
-                match response.status() {
-                    200 => {
-                        match bincode::deserialize_from::<_, Message>(response.into_reader()) {
-                            Ok(msg) => {
-                                debug!("received {:?}", msg);
-                                self.in_queue.push(msg);
-                            }
-                            Err(_e) => {}
-                        };
-                    }
-                    _ => {}
+                if response.status() == 200 {
+                    match bincode::deserialize_from::<_, Message>(response.into_reader()) {
+                        Ok(msg) => {
+                            debug!("received {:?}", msg);
+                            self.in_queue.push(msg);
+                        }
+                        Err(_e) => {}
+                    };
                 };
             }
             Err(e) => {

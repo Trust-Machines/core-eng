@@ -8,7 +8,7 @@ mod tests {
     #[test]
     fn template_test() {
         let mut server = Server::default();
-        let mut signers = [
+        let _signers = [
             SigningRound::new(7, 10, 0, [0, 1].to_vec()),
             SigningRound::new(7, 10, 0, [2, 3].to_vec()),
             SigningRound::new(7, 10, 0, [4, 5, 6, 7, 8].to_vec()),

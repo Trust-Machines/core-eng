@@ -249,6 +249,7 @@ impl FromStr for Status {
     }
 }
 
+#[allow(clippy::enum_variant_names)]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Http network error: {0}")]

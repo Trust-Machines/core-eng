@@ -3,7 +3,7 @@ use wtfrost::v1;
 //
 #[test]
 fn frost_dkg_btc() {
-    let signers: Vec<v1::Signer> = vec![];
+    let _signers: Vec<v1::Signer> = vec![];
 
     // DKG
 

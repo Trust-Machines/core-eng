@@ -45,6 +45,8 @@ impl Config {
         let content = fs::read_to_string(path).map_err(|e| format!("Invalid path: {}", &e))?;
         Self::from_str(&content)
     }
+
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(content: &str) -> Result<Config, String> {
         let config: Config = toml::from_str(content).map_err(|e| format!("Invalid toml: {}", e))?;
         Ok(config)
