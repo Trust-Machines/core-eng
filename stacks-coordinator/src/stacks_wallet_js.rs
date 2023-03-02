@@ -41,13 +41,13 @@ impl StacksWalletJs {
 }
 
 impl StacksWallet for StacksWalletJs {
-    fn mint(&mut self, op: &PegInOp) -> StacksTransaction {
+    fn mint(&mut self, _op: &PegInOp) -> StacksTransaction {
         self.call("mint".to_string())
     }
-    fn burn(&mut self, op: &PegOutRequestOp) -> StacksTransaction {
+    fn burn(&mut self, _op: &PegOutRequestOp) -> StacksTransaction {
         self.call("burn".to_string())
     }
-    fn set_wallet_address(&mut self, address: PegWalletAddress) -> StacksTransaction {
+    fn set_wallet_address(&mut self, _address: PegWalletAddress) -> StacksTransaction {
         self.call("set_wallet_address".to_string())
     }
 }

@@ -1,6 +1,5 @@
 use blockstack_lib::chainstate::burn::operations as burn_ops;
 use blockstack_lib::types::chainstate::StacksAddress;
-use serde::{Deserialize, Serialize};
 
 use crate::stacks_transaction::StacksTransaction;
 
