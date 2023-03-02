@@ -32,7 +32,7 @@ impl Js {
             .arg("--allow-env")
             .arg("--allow-read")
             .arg("--allow-net")
-            .arg(path.to_owned())
+            .arg(path)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()?;
@@ -53,8 +53,8 @@ impl Rpc for Js {
         {
             let stdin = &mut self.stdin;
             let i = to_string(input)?;
-            stdin.write(i.as_bytes())?;
-            stdin.write("\n".as_bytes())?;
+            stdin.write_all(i.as_bytes())?;
+            stdin.write_all("\n".as_bytes())?;
             stdin.flush()?;
         }
         {

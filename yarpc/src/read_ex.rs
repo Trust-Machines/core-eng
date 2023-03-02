@@ -18,8 +18,7 @@ pub trait ReadEx: Read {
         Ok(buf)
     }
     fn read_exact_vec(&mut self, len: usize) -> Result<Vec<u8>, Error> {
-        let mut buf = Vec::with_capacity(len);
-        buf.resize(len, 0);
+        let mut buf = vec![0; len];
         self.read_exact(&mut buf)?;
         Ok(buf)
     }
