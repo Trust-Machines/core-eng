@@ -70,7 +70,6 @@ impl StacksNode for NodeClient {
             + 1
     }
 
-    // TODO: Find appropriate type for tx
     fn broadcast_transaction(&self, tx: &StacksTransaction) {
         let url = self.build_url("/v2/transactions");
 
@@ -90,9 +89,17 @@ mod tests {
     // Temporary debugging
     #[test]
     #[ignore]
-    fn get_block_height() {
+    fn send_tx() {
         let client = NodeClient::new("http://localhost:20443");
 
-        dbg!(client.burn_block_height());
+        client.broadcast_transaction(&StacksTransaction {
+            version: 1.into(),
+            chainId: 1.into(),
+            auth: Value::Null,
+            anchorMode: 1,
+            payload: Value::Null,
+            postConditionMode: Value::Null,
+            postConditions: Value::Null,
+        });
     }
 }
