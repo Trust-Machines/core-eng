@@ -6,3 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+blockstack-core = { workspace = true }
+clap = { workspace = true }
+frost-signer = { path = "../frost-signer" }
+rand_core = "0.6"
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+wtfrost = "3.0"
