@@ -23,7 +23,7 @@ impl Secp256k1 {
             );
             let mut file = File::create(filepath)?;
             file.write_all(private_key.as_bytes())?;
-            info!("Private key written succesfully.");
+            info!("Private key written successfully.");
         } else {
             println!("{}", private_key);
         }
