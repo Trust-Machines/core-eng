@@ -30,3 +30,24 @@ impl Secp256k1 {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::secp256k1::Secp256k1;
+    use testdir::testdir;
+
+    #[test]
+    fn generate_private_key() {
+        let mut filepath = testdir!();
+        filepath.push(".priv_key");
+        assert!(!filepath.exists());
+
+        let secp256k1 = Secp256k1 {
+            filepath: Some(filepath.clone()),
+        };
+        secp256k1.generate_private_key().unwrap();
+        assert!(filepath.exists());
+
+        assert_eq!(std::fs::metadata(filepath).unwrap().len(), 66);
+    }
+}
