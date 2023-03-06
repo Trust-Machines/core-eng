@@ -1,6 +1,6 @@
 - Read about the new (as of 2023) GitHub Projects: https://github.blog/2022-11-15-the-journey-of-your-work-has-never-been-clearer/
 
-- GitHub Projects are a collection of issues are PRs.
+- GitHub Projects are a collection of issues and PRs.
 
 - GitHub Issues have:
   - one or more linked Projects
