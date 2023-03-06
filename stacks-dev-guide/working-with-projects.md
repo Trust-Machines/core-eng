@@ -15,6 +15,13 @@
     - we do not want cycles for issue/sub-issue edges,
     - however, back-references to ancestor issues in discussions or comments are allowed.
 
-- The following searchers should be empty. Else, please fix the missing meta data:
+- Issues should be tagged with a project:
+  - [Core Eng Project - sBTC](https://github.com/orgs/Trust-Machines/projects/5)
+  - [Core Eng - Public](https://github.com/orgs/Trust-Machines/projects/9/views/1) - Anything related to Core Eng Team and not to sBTC
+  - [Core Eng - Private](https://github.com/orgs/Trust-Machines/projects/7) - Anything sensitive (devops, etc)
+  
+- Pulls should be tagged with an issue, or tagged with a project (if moving fast, but let's minimize this!)
+
+- The following searches should be empty. Else, please fix the missing meta data:
   - [core-eng Issues with no linked Project](https://github.com/Trust-Machines/core-eng/issues?q=is%3Aissue+is%3Aopen+no%3Aproject)
   - [core-eng Pulls with ono linked Issues](https://github.com/Trust-Machines/core-eng/pulls?q=is%3Apr+is%3Aopen+-linked%3Aissue+)
