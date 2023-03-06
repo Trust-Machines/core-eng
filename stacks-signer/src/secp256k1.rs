@@ -1,7 +1,8 @@
-use blockstack_lib::util::secp256k1::Secp256k1PrivateKey;
 use clap::Args;
+use rand_core::OsRng;
 use std::{fs::File, io::prelude::*, path::PathBuf};
 use tracing::info;
+use wtfrost::Scalar;
 
 #[derive(Args)]
 pub struct Secp256k1 {
@@ -14,15 +15,15 @@ impl Secp256k1 {
     /// Generate a random Secp256k1 private key
     pub fn generate_private_key(self) -> std::io::Result<()> {
         info!("Generating a new private key.");
-        // TODO: May be able to directly use wtfrost when the appropriate bytes are exposed
-        let private_key = Secp256k1PrivateKey::new().to_hex();
+        let mut rnd = OsRng::default();
+        let private_key = Scalar::random(&mut rnd);
         if let Some(filepath) = self.filepath {
             info!(
                 "Writing private key to provided output file: {}",
                 filepath.to_string_lossy()
             );
             let mut file = File::create(filepath)?;
-            file.write_all(private_key.as_bytes())?;
+            file.write_all(private_key.to_string().as_bytes())?;
             info!("Private key written successfully.");
         } else {
             println!("{}", private_key);
@@ -48,6 +49,6 @@ mod test {
         secp256k1.generate_private_key().unwrap();
         assert!(filepath.exists());
 
-        assert_eq!(std::fs::metadata(filepath).unwrap().len(), 66);
+        assert_eq!(std::fs::metadata(filepath).unwrap().len(), 44);
     }
 }
