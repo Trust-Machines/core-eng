@@ -24,7 +24,7 @@ jobs:
         name: Cargo.lock
         path: Cargo.lock
 
-  test-debug:
+  test:
     needs: build
     strategy:
       matrix:
