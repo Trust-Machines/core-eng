@@ -1,3 +1,5 @@
+TLDR: no issues without a linked project and no PRs without a linked issue.
+
 - Read about the new (as of 2023) GitHub Projects: https://github.blog/2022-11-15-the-journey-of-your-work-has-never-been-clearer/
 
 - GitHub Projects are a collection of issues and PRs.
