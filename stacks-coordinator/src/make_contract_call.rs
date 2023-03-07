@@ -78,7 +78,7 @@ impl SignedContractCallOptions {
             contractAddress: contract_address.to_string(),
             contractName: contract_name.to_string(),
             functionName: function_name.to_string(),
-            functionArgs: function_args.iter().map(|v| ClaritySerializable::serialize(v)).collect(),
+            functionArgs: function_args.iter().map(ClaritySerializable::serialize).collect(),
             fee,
             feeEstimateApiUrl: fee_estimate_api_url.map(str::to_string),
             nonce,
