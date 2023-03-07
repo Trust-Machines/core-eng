@@ -30,6 +30,7 @@ jobs:
       matrix:
         # can't run on `windows-latests`
         os: [ubuntu-latest, macos-latest]
+        type: ['', '--release']
     runs-on: ${{matrix.os}}
     steps:
     - uses: denoland/setup-deno@v1
@@ -44,7 +45,7 @@ jobs:
     - name: Cache JS script dependencies
       run: deno cache ./yarpc/js/stacks/transactions.ts
     - name: Run tests
-      run: cargo test --verbose --locked
+      run: cargo test --verbose --locked ${{matrix.type}}
 
   fmt:
     runs-on: ubuntu-latest
