@@ -5,7 +5,7 @@ use yarpc::{dispatch_command::DispatchCommand, js::Js, rpc::Rpc};
 
 use crate::stacks_transaction::StacksTransaction;
 
-pub type ClarityValue = serde_json::Value;
+pub type ClarityValue = String;
 
 pub type PostCondition = serde_json::Value;
 
@@ -54,6 +54,42 @@ pub struct SignedContractCallOptions {
     pub sponsored: Option<bool>,
 
     pub senderKey: String,
+}
+
+impl SignedContractCallOptions {
+    pub fn new(
+        contract_address: &str,
+        contract_name: &str,
+        function_name: &str,
+        function_args: &[ClarityValue],
+        fee: Option<IntegerType>,
+        fee_estimate_api_url: Option<&str>,
+        nonce: Option<IntegerType>,
+        network: Option<StacksNetworkNameOrStacksNetwork>,
+        anchor_mode: AnchorMode,
+        post_condition_mode: Option<PostConditionMode>,
+        post_conditions: Option<PostCondition>,
+        validate_with_abi: Option<BooleanOrClarityAbi>,
+        sponsored: Option<bool>,
+        sender_key: &str,
+    ) -> Self {
+        Self {
+            contractAddress: contract_address.to_string(),
+            contractName: contract_name.to_string(),
+            functionName: function_name.to_string(),
+            functionArgs: function_args.to_vec(),
+            fee,
+            feeEstimateApiUrl: fee_estimate_api_url.map(str::to_string),
+            nonce,
+            network,
+            anchorMode: anchor_mode,
+            postConditionMode: post_condition_mode,
+            postConditions: post_conditions,
+            validateWithAbi: validate_with_abi,
+            sponsored,
+            senderKey: sender_key.to_string(),
+        }
+    }
 }
 
 pub type TransactionVersion = serde_json::Number;

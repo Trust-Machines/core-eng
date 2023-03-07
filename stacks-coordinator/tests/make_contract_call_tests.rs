@@ -3,22 +3,22 @@ use stacks_coordinator::make_contract_call::{MakeContractCall, SignedContractCal
 #[test]
 fn make_contract_call_test() {
     let mut c = MakeContractCall::new("..");
-    let input = SignedContractCallOptions {
-        contractAddress: "SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X".to_string(),
-        contractName: "".to_string(),
-        functionName: "mint".to_string(),
-        functionArgs: Vec::default(),
-        fee: Some("0".to_string()),
-        feeEstimateApiUrl: None,
-        nonce: None,
-        network: None,
-        anchorMode: ANY,
-        postConditionMode: None,
-        postConditions: None,
-        validateWithAbi: None,
-        sponsored: None,
-        senderKey: "0001020304050607080910111213141516171819202122232425262728293031".to_string(),
-    };
+    let input = SignedContractCallOptions::new(
+        "SPBMRFRPPGCDE3F384WCJPK8PQJGZ8K9QKK7F59X",
+        "",
+        "mint",
+        &[],
+        Some("0".to_string()),
+        None,
+        None,
+        None,
+        ANY,
+        None,
+        None,
+        None,
+        None,
+        "0001020304050607080910111213141516171819202122232425262728293031",
+    );
     {
         let input_s = serde_json::to_string(&input).unwrap();
         println!("{input_s}");
