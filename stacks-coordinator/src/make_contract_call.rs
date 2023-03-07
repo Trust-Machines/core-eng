@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use blockstack_lib::vm::{Value, database::ClaritySerializable};
 use serde::Serialize;
 use yarpc::{dispatch_command::DispatchCommand, js::Js, rpc::Rpc};
 
@@ -61,7 +62,7 @@ impl SignedContractCallOptions {
         contract_address: &str,
         contract_name: &str,
         function_name: &str,
-        function_args: &[ClarityValue],
+        function_args: &[Value],
         fee: Option<IntegerType>,
         fee_estimate_api_url: Option<&str>,
         nonce: Option<IntegerType>,
@@ -77,7 +78,7 @@ impl SignedContractCallOptions {
             contractAddress: contract_address.to_string(),
             contractName: contract_name.to_string(),
             functionName: function_name.to_string(),
-            functionArgs: function_args.to_vec(),
+            functionArgs: function_args.iter().map(|v| ClaritySerializable::serialize(v)).collect(),
             fee,
             feeEstimateApiUrl: fee_estimate_api_url.map(str::to_string),
             nonce,
