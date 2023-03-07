@@ -284,7 +284,7 @@ impl SigningRound {
             .frost_signer
             .parties
             .iter()
-            .find(|p| p.id == sign_request.party_id.try_into().unwrap())
+            .find(|p| p.id == sign_request.party_id as usize)
         {
             //let party_nonces = &self.public_nonces;
             let signer_ids: Vec<usize> = sign_request
