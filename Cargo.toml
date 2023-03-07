@@ -10,7 +10,6 @@ members = [
 
 [workspace.dependencies]
 blockstack-core = { git = "https://github.com/stacks-network/stacks-blockchain/", branch = "3493-sbtc-peg-out-wire-format" }
-clarity = { git = "https://github.com/stacks-network/stacks-blockchain/", branch = "3493-sbtc-peg-out-wire-format" }
 clap = { version = "4.1.1", features = ["derive"] }
 wtfrost = "3.0"
 rusqlite = "0.24.2"
