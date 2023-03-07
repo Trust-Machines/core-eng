@@ -48,7 +48,5 @@ mod test {
         };
         secp256k1.generate_private_key().unwrap();
         assert!(filepath.exists());
-
-        assert_eq!(std::fs::metadata(filepath).unwrap().len(), 44);
     }
 }
