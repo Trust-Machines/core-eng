@@ -1,6 +1,8 @@
 # A Relay Server
 
-The `relay-server` is an HTTP service that has two functions:
+The `relay-server` is an HTTP service that allows clients to send messages and retrieve the messages in the order they were received. The messages are stored on the server, and the clients are identified by an `id` that is passed in the URL of the request.
+
+It has two functions:
 
 - Accepting messages and storing all of them. `POST` method. 
   For example, `curl 'http://127.0.0.1:9776' -X POST -d 'message'`. 
@@ -9,27 +11,16 @@ The `relay-server` is an HTTP service that has two functions:
 
 ## Installation (optional)
 
+The server can be installed using the command
+
 ```sh
 cargo install relay-server --git https://github.com/Trust-Machines/core-eng
 ```
 
 ## Start the `relay-server` server
 
-Run
-
-```sh
-cargo run relay-server 
-```
-
-from the root of the repository, or
-
-```
-relay-server
-```
-
-if the `relay-server` is installed.
-
-The default address is `http://127.0.0.1:9776`.
+To start the server, you can run `cargo run relay-server` from the root of the repository, 
+or simply `relay-server` if it's installed. The default address for the server is http://127.0.0.1:9776.
 
 ## Integration Test
 
@@ -37,24 +28,54 @@ The default address is `http://127.0.0.1:9776`.
 2. Run [./test.sh](./test.sh) in another terminal.
 3. Close the server using `Ctrl+C`.
 
-## Using the server as a library
+## Using as a library
 
-The `relay-server` library is designed not to use IO directly, and all IO bindings are moved to executables. See [/src/bin/relay-server.rs](/src/bin/relay-server.rs) as an example.
+In addition to being used as a standalone server, the `relay-server` can also be used as a library in your own Rust projects. The library is designed not to use IO directly, and all IO bindings are moved to executables.
+
+### As a local server
+
+The `Server` type can be used as in memory server. By default, it doesn't listen any port. A user 
+should bind it with IO.
 
 ```rust
-// create a server
-let mut server = relay_server::Server::default();
-// send a message using a bidirectional stream.
+use relay_server::{Call, Method, Server, Response};
+
+let mut server = Server::default();
+// send a message "Hello!"
 {
-  const REQUEST: &str = "\
-    POST / HTTP/1.0\r\n\
-    Content-Length: 6\r\n\
-    \r\n\
-    Hello!";
-  let response = server.call(REQUEST.as_bytes()).unwrap();
-  const RESPONSE: &str = "\
-    HTTP/1.0 200 OK\r\n\
-    \r\n";
-  assert_eq!(std::str::from_utf8(&response).unwrap(), RESPONSE);
+    let request = Method::POST.request(
+        "/".to_string(),
+        Default::default(),
+        "Hello!".as_bytes().to_vec(),
+    );
+    let response = server.call(request).unwrap();
+    let expected = Response::new(
+        200,
+        "OK".to_string(),
+        Default::default(),
+        Default::default(),
+    );
+    assert_eq!(response, expected);
 }
+```
+
+See also [src/bin/relay-server.rs](src/bin/relay-server.rs) as an example.
+
+### Using `State` trait
+
+There are two implementations of the `State` trait:
+- `MemState` keeps a relay-server state in memory.
+- `ProxyState` is a proxy object which communicates with provided IO to 
+  get and update a remote `relay-server`.
+
+```rust
+use relay_server::{MemState, State};
+
+let mut mem_state = MemState::default();
+
+mem_state.post(b"Hello world!".to_vec());
+
+let message = mem_state.get("node".to_string()).unwrap();
+
+assert_eq!(message, b"Hello world!".to_vec());
 ```

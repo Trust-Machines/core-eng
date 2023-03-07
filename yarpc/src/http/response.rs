@@ -1,11 +1,10 @@
 use std::{collections::HashMap, io::Read};
 
-use super::{
-    message::{Message, PROTOCOL},
-    ToIoResult,
-};
+use crate::to_io_result::ToIoResult;
 
-#[derive(Debug)]
+use super::message::{Message, PROTOCOL};
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct Response {
     pub protocol: String,
     pub code: u16,

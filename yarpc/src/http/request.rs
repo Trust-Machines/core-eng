@@ -1,31 +1,16 @@
 use std::{collections::HashMap, io::Error};
 
-use super::{message::PROTOCOL, Message, ToIoResult};
+use crate::to_io_result::ToIoResult;
 
-#[derive(Debug)]
+use super::{method::Method, Message};
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct Request {
-    pub method: String,
+    pub method: Method,
     pub url: String,
     pub protocol: String,
     pub headers: HashMap<String, String>,
     pub content: Vec<u8>,
-}
-
-impl Request {
-    pub fn new(
-        method: String,
-        url: String,
-        headers: HashMap<String, String>,
-        content: Vec<u8>,
-    ) -> Self {
-        Self {
-            method,
-            url,
-            protocol: PROTOCOL.to_owned(),
-            headers,
-            content,
-        }
-    }
 }
 
 impl Message for Request {
@@ -35,7 +20,8 @@ impl Message for Request {
         content: Vec<u8>,
     ) -> Result<Self, Error> {
         let mut i = first_line.into_iter();
-        let method = i.next().to_io_result("no method")?;
+        let method = Method::try_parse(&i.next().to_io_result("unexpected end of message")?)
+            .to_io_result("unknown method")?;
         let url = i.next().to_io_result("no URL")?;
         let protocol = i.next().to_io_result("no protocol")?;
         Ok(Request {
@@ -49,7 +35,7 @@ impl Message for Request {
 
     fn first_line(&self) -> Vec<String> {
         [
-            self.method.to_owned(),
+            self.method.to_str().to_string(),
             self.url.to_owned(),
             self.protocol.to_owned(),
         ]
@@ -69,6 +55,8 @@ impl Message for Request {
 mod tests {
     use std::{io::Cursor, str::from_utf8};
 
+    use crate::http::request::Method::{GET, POST};
+
     use super::{Message, Request};
 
     #[test]
@@ -80,7 +68,7 @@ mod tests {
             Hello!";
         let mut read = Cursor::new(REQUEST);
         let rm = Request::read(&mut read).unwrap();
-        assert_eq!(rm.method, "POST");
+        assert_eq!(rm.method, POST);
         assert_eq!(rm.url, "/");
         assert_eq!(rm.protocol, "HTTP/1.1");
         assert_eq!(rm.headers.len(), 0);
@@ -106,7 +94,7 @@ mod tests {
             Hello!";
         let mut read = Cursor::new(REQUEST);
         let rm = Request::read(&mut read).unwrap();
-        assert_eq!(rm.method, "POST");
+        assert_eq!(rm.method, POST);
         assert_eq!(rm.url, "/");
         assert_eq!(rm.protocol, "HTTP/1.1");
         assert_eq!(rm.headers.len(), 1);
@@ -161,7 +149,7 @@ mod tests {
             \r\n";
         let mut read = Cursor::new(REQUEST);
         let rm = Request::read(&mut read).unwrap();
-        assert_eq!(rm.method, "GET");
+        assert_eq!(rm.method, GET);
         assert_eq!(rm.url, "/images/logo.png");
         assert_eq!(rm.protocol, "HTTP/1.1");
         assert!(rm.headers.is_empty());

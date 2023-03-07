@@ -8,8 +8,7 @@ license = "GPLv3"
 
 [dependencies]
 relay-server = { path = "../relay-server" }
-frost-coordinator = { path = "../frost-coordinator" }
-frost-signer = { path = "../frost-signer" }
+yarpc = { path = "../yarpc" }
 rand_core = { workspace = true }
 hashbrown = { workspace = true }
 wtfrost = { workspace = true }

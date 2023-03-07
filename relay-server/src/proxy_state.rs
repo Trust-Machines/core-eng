@@ -1,58 +1,41 @@
-use std::{collections::HashMap, io::Error};
+use std::io::Error;
+
+use yarpc::http::{Call, Method};
 
 use crate::state::State;
 
-/// The MemState struct holds the state of the relay-server in memory.
-///
-/// ## Example
-///
-/// ```
-/// use relay_server::{MemState, State};
-///
-/// let mut mem_state = MemState::default();
-///
-/// mem_state.post(b"Hello world!".to_vec());
-///
-/// let message = mem_state.get("node".to_string()).unwrap();
-///
-/// assert_eq!(message, b"Hello world!".to_vec());
-/// ```
-#[derive(Default)]
-pub struct MemState {
-    /// The value for this map is an index for the last read message for this node.
-    highwaters: HashMap<String, usize>,
-    queue: Vec<Vec<u8>>,
-}
+pub struct ProxyState<T: Call>(pub T);
 
-impl State for MemState {
+impl<T: Call> State for ProxyState<T> {
     fn get(&mut self, node_id: String) -> Result<Vec<u8>, Error> {
-        let first_unread = self
-            .highwaters
-            .get(&node_id)
-            .map_or(0, |last_read| *last_read + 1);
-        let result = self.queue.get(first_unread);
-        Ok(if let Some(r) = result {
-            self.highwaters.insert(node_id, first_unread);
-            r.clone()
-        } else {
-            Vec::default()
-        })
+        Ok(self
+            .0
+            .call(Method::GET.request(
+                format!("/?id={node_id}"),
+                Default::default(),
+                Default::default(),
+            ))?
+            .content)
     }
+
     fn post(&mut self, msg: Vec<u8>) -> Result<(), Error> {
-        self.queue.push(msg);
+        self.0
+            .call(Method::POST.request("/".to_string(), Default::default(), msg))?;
         Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{MemState, State};
+    use super::super::*;
+    use super::*;
+
     #[test]
-    fn state_test() {
-        let mut state = MemState::default();
+    fn test() {
+        let mut state = ProxyState(Server::default());
         assert!(state.get(1.to_string()).unwrap().is_empty());
         assert!(state.get(3.to_string()).unwrap().is_empty());
-        assert_eq!(0, state.highwaters.len());
+        // assert_eq!(0, state.highwaters.len());
         state.post("Msg # 0".as_bytes().to_vec()).unwrap();
         assert_eq!(
             "Msg # 0".as_bytes().to_vec(),

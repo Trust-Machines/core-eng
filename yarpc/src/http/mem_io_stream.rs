@@ -1,6 +1,6 @@
 use std::io::Cursor;
 
-use crate::io_stream::IoStream;
+use super::io_stream::IoStream;
 
 pub struct MemIoStream<'a> {
     pub i: Cursor<&'a [u8]>,

@@ -1,6 +1,7 @@
 use std::{io::Error, net::TcpListener};
 
-use relay_server::{IoStream, Server};
+use relay_server::Server;
+use yarpc::http::IoStream;
 
 pub fn run_server<T: IoStream>(i: &mut impl Iterator<Item = Result<T, Error>>) {
     let mut server = Server::default();

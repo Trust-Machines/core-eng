@@ -3,9 +3,14 @@ use std::{
     io::{Error, Read, Write},
 };
 
-use super::{to_io_result::io_error, ToIoResult};
+use crate::{
+    read_ex::ReadEx,
+    to_io_result::{err, ToIoResult},
+};
 
-pub const PROTOCOL: &str = "HTTP/1.0";
+pub const PROTOCOL: &str = "HTTP/1.1";
+
+const CONTENT_LENGTH: &str = "content-length";
 
 pub trait Message: Sized {
     fn new(
@@ -18,23 +23,10 @@ pub trait Message: Sized {
     fn content(&self) -> &Vec<u8>;
 
     fn read(i: &mut impl Read) -> Result<Self, Error> {
-        let mut read_byte = || -> Result<u8, Error> {
-            let mut buf = [0; 1];
-            i.read_exact(&mut buf)?;
-            Ok(buf[0])
-        };
-
         let mut read_line = || -> Result<String, Error> {
-            let mut result = String::default();
-            loop {
-                let b = read_byte()?;
-                if b == 13 {
-                    break;
-                };
-                result.push(b as char);
-            }
-            if read_byte()? != 10 {
-                return Err(io_error("invalid HTTP line"));
+            let result = i.read_string_until('\r')?;
+            if i.read_byte()? != 10 {
+                return err("invalid HTTP line");
             }
             Ok(result)
         };
@@ -51,25 +43,24 @@ pub trait Message: Sized {
                 break;
             }
             let (name, value) = {
-                let (name, value) = line.split_once(':').to_io_result("")?;
+                let (name, value) = line.split_once(':').to_io_result("invalid header format")?;
                 (name.to_lowercase(), value.trim())
             };
-            if name == "content-length" {
+            if name == CONTENT_LENGTH {
                 content_length = value.parse().to_io_result("invalid content-length")?;
             } else {
                 headers.insert(name, value.to_string());
             }
         }
 
-        let mut content = vec![0; content_length];
-        i.read_exact(content.as_mut_slice())?;
+        let content = i.read_exact_vec(content_length)?;
 
         // return the message
         Self::new(first_line, headers, content)
     }
     fn write(&self, o: &mut impl Write) -> Result<(), Error> {
         const EOL: &[u8] = "\r\n".as_bytes();
-        const CONTENT_LENGTH: &[u8] = "content-length".as_bytes();
+        const CONTENT_LENGTH_BYTES: &[u8] = CONTENT_LENGTH.as_bytes();
         const COLON: &[u8] = ":".as_bytes();
 
         o.write_all(self.first_line().join(" ").as_bytes())?;
@@ -87,7 +78,7 @@ pub trait Message: Sized {
         let content = self.content();
         let len = content.len();
         if len > 0 {
-            write_header(CONTENT_LENGTH, len.to_string().as_bytes())?;
+            write_header(CONTENT_LENGTH_BYTES, len.to_string().as_bytes())?;
         }
         //These could cause partial writes. Should we check the returned number of written bytes?
         o.write_all(EOL)?;

@@ -1,9 +1,9 @@
 use std::{
-    io::{Read, Write},
+    io::{Error, Read, Write},
     net::TcpStream,
 };
 
-use crate::http::{Message, Request, Response};
+use crate::http::{Call, Message, Request, Response};
 
 /// A trait for bidirectional stream.
 ///
@@ -13,14 +13,17 @@ pub trait IoStream: Sized {
     type Write: Write;
     fn istream(&mut self) -> &mut Self::Read;
     fn ostream(&mut self) -> &mut Self::Write;
-    fn call(mut self, request: Request) -> Response {
+}
+
+impl<T: IoStream> Call for T {
+    fn call(&mut self, request: Request) -> Result<Response, Error> {
         let o = self.ostream();
         // send data to a callee.
-        request.write(o).unwrap();
+        request.write(o)?;
         // make sure we deliver all data to to the callee.
-        o.flush().unwrap();
+        o.flush()?;
         // read data from the callee.
-        Response::read(self.istream()).unwrap()
+        Response::read(self.istream())
     }
 }
 

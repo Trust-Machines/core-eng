@@ -60,7 +60,7 @@ impl Rpc for Js {
         {
             let o = self.stdout.read_string_until('\n')?;
             let result: JsResult<O> = from_str(&o)?;
-            result.to_io_result()
+            result.to_io_result("JS returns Err")
         }
     }
 }

@@ -1,6 +1,6 @@
 use std::io;
 
-use yarpc::{js::Js, rpc::Rpc};
+use yarpc::rpc::{js::Js, Rpc};
 
 fn to_value(s: &str) -> io::Result<serde_json::Value> {
     let x = serde_json::from_str(s)?;
