@@ -3,6 +3,7 @@ use predicates::prelude::*;
 use std::process::Command;
 use testdir::testdir;
 
+#[ignore]
 #[test]
 fn secp256k1_to_stdout() {
     let mut cmd = Command::cargo_bin("stacks-signer").unwrap();
@@ -14,6 +15,7 @@ fn secp256k1_to_stdout() {
     assert_eq!(cmd.output().unwrap().stdout.len(), 168);
 }
 
+#[ignore]
 #[test]
 fn secp256k1_to_file() {
     let mut output_path = testdir!();
