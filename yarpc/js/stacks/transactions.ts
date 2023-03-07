@@ -1,4 +1,19 @@
 import { listenStdio, dispatch, CommandMap } from '../lib.ts'
-import * as transactions from 'npm:@stacks/transactions'
+import {
+    type SignedContractCallOptions,
+    makeContractCall,
+} from 'npm:@stacks/transactions'
 
-listenStdio(dispatch(transactions as unknown as CommandMap))
+type MakeContractCallInput = {
+    readonly[k in keyof SignedContractCallOptions]:
+        k extends 'functionArgs' ? readonly string[] : SignedContractCallOptions[k]
+}
+
+const t = {
+    makeContractCall: (input: MakeContractCallInput) => {
+        const o = { ...input, functionArgs: [] }
+        return makeContractCall(o)
+    }
+}
+
+listenStdio(dispatch(t as unknown as CommandMap))
