@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use blockstack_lib::vm::{Value, database::ClaritySerializable};
+use blockstack_lib::vm::{database::ClaritySerializable, Value};
 use serde::Serialize;
 use yarpc::{dispatch_command::DispatchCommand, js::Js, rpc::Rpc};
 
@@ -63,33 +63,32 @@ impl SignedContractCallOptions {
         contract_name: &str,
         function_name: &str,
         function_args: &[Value],
-        fee: Option<IntegerType>,
-        fee_estimate_api_url: Option<&str>,
-        nonce: Option<IntegerType>,
-        network: Option<StacksNetworkNameOrStacksNetwork>,
         anchor_mode: AnchorMode,
-        post_condition_mode: Option<PostConditionMode>,
-        post_conditions: Option<PostCondition>,
-        validate_with_abi: Option<BooleanOrClarityAbi>,
-        sponsored: Option<bool>,
         sender_key: &str,
     ) -> Self {
         Self {
             contractAddress: contract_address.to_string(),
             contractName: contract_name.to_string(),
             functionName: function_name.to_string(),
-            functionArgs: function_args.iter().map(ClaritySerializable::serialize).collect(),
-            fee,
-            feeEstimateApiUrl: fee_estimate_api_url.map(str::to_string),
-            nonce,
-            network,
+            functionArgs: function_args
+                .iter()
+                .map(ClaritySerializable::serialize)
+                .collect(),
+            fee: None,
+            feeEstimateApiUrl: None,
+            nonce: None,
+            network: None,
             anchorMode: anchor_mode,
-            postConditionMode: post_condition_mode,
-            postConditions: post_conditions,
-            validateWithAbi: validate_with_abi,
-            sponsored,
+            postConditionMode: None,
+            postConditions: None,
+            validateWithAbi: None,
+            sponsored: None,
             senderKey: sender_key.to_string(),
         }
+    }
+    pub fn with_fee(mut self, fee: u128) -> Self {
+        self.fee = Some(fee.to_string());
+        self
     }
 }
 
