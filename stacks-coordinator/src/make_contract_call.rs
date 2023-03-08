@@ -59,17 +59,17 @@ pub struct SignedContractCallOptions {
 
 impl SignedContractCallOptions {
     pub fn new(
-        contract_address: &str,
-        contract_name: &str,
-        function_name: &str,
+        contract_address: impl Into<String>,
+        contract_name: impl Into<String>,
+        function_name: impl Into<String>,
         function_args: &[Value],
         anchor_mode: AnchorMode,
-        sender_key: &str,
+        sender_key: impl Into<String>,
     ) -> Self {
         Self {
-            contractAddress: contract_address.to_string(),
-            contractName: contract_name.to_string(),
-            functionName: function_name.to_string(),
+            contractAddress: contract_address.into(),
+            contractName: contract_name.into(),
+            functionName: function_name.into(),
             functionArgs: function_args
                 .iter()
                 .map(ClaritySerializable::serialize)
@@ -83,7 +83,7 @@ impl SignedContractCallOptions {
             postConditions: None,
             validateWithAbi: None,
             sponsored: None,
-            senderKey: sender_key.to_string(),
+            senderKey: sender_key.into(),
         }
     }
     pub fn with_fee(mut self, fee: u128) -> Self {
