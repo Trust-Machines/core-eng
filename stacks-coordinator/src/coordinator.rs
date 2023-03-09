@@ -1,6 +1,5 @@
 use std::sync::mpsc;
 
-use crate::peg_queue;
 use crate::peg_wallet::StacksWallet;
 use crate::peg_wallet::{BitcoinWallet, PegWallet};
 use crate::stacks_node;
@@ -8,7 +7,7 @@ use crate::stacks_node;
 // Traits in scope
 use crate::bitcoin_node::BitcoinNode;
 use crate::frost_coordinator::FrostCoordinator;
-use crate::peg_queue::PegQueue;
+use crate::peg_queue::{PegQueue, SbtcOp};
 use crate::stacks_node::StacksNode;
 
 pub trait Coordinator: Sized {
@@ -29,8 +28,8 @@ pub trait Coordinator: Sized {
     fn run(mut self, commands: mpsc::Receiver<Command>) {
         loop {
             match self.peg_queue().sbtc_op().unwrap() {
-                Some(peg_queue::SbtcOp::PegIn(op)) => self.peg_in(op),
-                Some(peg_queue::SbtcOp::PegOutRequest(op)) => self.peg_out(op),
+                Some(SbtcOp::PegIn(op)) => self.peg_in(op),
+                Some(SbtcOp::PegOutRequest(op)) => self.peg_out(op),
                 None => self.peg_queue().poll(self.stacks_node()).unwrap(),
             }
 
@@ -66,6 +65,20 @@ impl<T: Coordinator> CoordinatorHelpers for T {}
 
 pub enum Command {
     Stop,
+}
+
+pub struct CoordinatorFoo<
+    PQ: PegQueue,
+    SW: StacksWallet,
+    FC: FrostCoordinator,
+    SN: StacksNode,
+    BN: BitcoinNode,
+> {
+    peg_queue: PQ,
+    fee_wallet: SW,
+    frost_coordinator: FC,
+    stacks_node: SN,
+    bitcoin_node: BN,
 }
 
 #[cfg(test)]

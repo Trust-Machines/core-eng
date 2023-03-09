@@ -16,7 +16,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn from_file(path: impl AsRef<std::path::Path>) -> Result<Self> {
+    pub fn from_path(path: impl AsRef<std::path::Path>) -> Result<Self> {
         Ok(toml::from_str(&std::fs::read_to_string(path)?)?)
     }
 }

@@ -1,9 +1,9 @@
 use clap::Parser;
+use frost_coordinator::create_coordinator;
 use frost_signer::logging;
 use stacks_coordinator::cli::{Cli, Command};
 use stacks_coordinator::config::Config;
-
-use frost_signer::net::{HttpNet, HttpNetListen};
+use stacks_coordinator::frost_coordinator::FrostCoordinator;
 
 fn main() {
     let cli = Cli::parse();
@@ -16,22 +16,18 @@ fn main() {
     })
     .unwrap();
 
-    let config = Config::from_file("conf/coordinator.toml").unwrap();
-
-    // Create the relay to talk with the signers. This will need to be passed to the coordinator
-    let net: HttpNet = HttpNet::new(config.signer_relay_url);
-    let _net_listen: HttpNetListen = HttpNetListen::new(net, vec![]);
+    //TODO: get config from sBTC contract
+    let config = Config::from_path("../conf/coordinator.toml".to_string()).unwrap();
 
     // Determine what action the caller wishes to perform
     match cli.command {
         Command::Run => {
-            // get Ops from stacks node RPC
-            // Has to handle peg out signing
-            todo!();
+            println!("Running coordinator");
         }
         Command::Dkg => {
-            //Start a signing round
-            todo!()
+            println!("Running DKG");
+            let mut coordinator = create_coordinator();
+            coordinator.run_dkg_round();
         }
     };
 }

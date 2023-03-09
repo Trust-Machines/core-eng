@@ -59,7 +59,10 @@ where
 {
     pub fn run(&mut self, command: &Command) -> Result<(), Error> {
         match command {
-            Command::Dkg => self.run_distributed_key_generation(),
+            Command::Dkg => {
+                self.run_distributed_key_generation()?;
+                Ok(())
+            }
             Command::Sign { msg } => {
                 self.sign_message(msg)?;
                 Ok(())
@@ -78,7 +81,7 @@ where
         }
     }
 
-    pub fn run_distributed_key_generation(&mut self) -> Result<(), Error> {
+    pub fn run_distributed_key_generation(&mut self) -> Result<Point, Error> {
         self.current_dkg_id += 1;
         info!("Starting DKG round #{}", self.current_dkg_id);
         let dkg_begin_message = Message {
@@ -249,23 +252,30 @@ where
         }
     }
 
-    fn wait_for_dkg_end(&mut self) -> Result<(), Error> {
+    fn wait_for_dkg_end(&mut self) -> Result<Point, Error> {
         let mut ids_to_await: HashSet<usize> = (1..=self.total_signers).collect();
+
         info!(
             "DKG round #{} started. Waiting for DkgEnd from signers {:?}",
             self.current_dkg_id, ids_to_await
         );
+
         loop {
-            match (ids_to_await.len(), self.wait_for_next_message()?.msg) {
-                (0, _) => return Ok(()),
-                (_, MessageTypes::DkgEnd(dkg_end_msg)) => {
+            if ids_to_await.len() == 0 {
+                let key = self.calculate_aggregate_public_key()?;
+                info!("Aggregate public key {}", key);
+                return Ok(key);
+            }
+
+            match self.wait_for_next_message()?.msg {
+                MessageTypes::DkgEnd(dkg_end_msg) => {
                     ids_to_await.remove(&dkg_end_msg.signer_id);
                     info!(
                         "DKG_End round #{} from signer #{}. Waiting on {:?}",
                         dkg_end_msg.dkg_id, dkg_end_msg.signer_id, ids_to_await
                     );
                 }
-                (_, MessageTypes::DkgPublicShare(dkg_public_share)) => {
+                MessageTypes::DkgPublicShare(dkg_public_share) => {
                     self.dkg_public_shares
                         .insert(dkg_public_share.party_id, dkg_public_share.clone());
 
@@ -274,12 +284,7 @@ where
                         dkg_public_share.dkg_id, dkg_public_share.party_id
                     );
                 }
-                (_, _) => {}
-            }
-            if ids_to_await.is_empty() {
-                let key = self.calculate_aggregate_public_key()?;
-                info!("Aggregate public key {}", key);
-                return Ok(());
+                _ => {}
             }
         }
     }
