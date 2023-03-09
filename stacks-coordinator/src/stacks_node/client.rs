@@ -1,10 +1,11 @@
 use blockstack_lib::{
-    chainstate::stacks::address::StacksAddressExtensions, types::chainstate::StacksAddress,
+    chainstate::stacks::address::StacksAddressExtensions, chainstate::stacks::StacksTransaction,
+    codec::StacksMessageCodec, types::chainstate::StacksAddress,
 };
 use reqwest::blocking::Client;
 use serde_json::{from_value, Value};
 
-use crate::stacks_node::{PegInOp, PegOutRequestOp, StacksNode, StacksTransaction};
+use crate::stacks_node::{PegInOp, PegOutRequestOp, StacksNode};
 
 pub struct NodeClient {
     node_url: String,
@@ -73,9 +74,13 @@ impl StacksNode for NodeClient {
     fn broadcast_transaction(&self, tx: &StacksTransaction) {
         let url = self.build_url("/v2/transactions");
 
+        let mut buffer = vec![];
+        tx.consensus_serialize(&mut buffer);
+
         self.client
             .post(url)
-            .json(tx)
+            .body(buffer)
+            // .json(tx)
             .send()
             .and_then(|res| res.json::<Value>())
             .unwrap();
@@ -84,6 +89,15 @@ impl StacksNode for NodeClient {
 
 #[cfg(test)]
 mod tests {
+    use blockstack_lib::{
+        chainstate::stacks::{
+            CoinbasePayload, SinglesigHashMode, SinglesigSpendingCondition, TransactionAnchorMode,
+            TransactionAuth, TransactionPayload, TransactionPostConditionMode,
+            TransactionPublicKeyEncoding, TransactionSpendingCondition, TransactionVersion,
+        },
+        util::{hash::Hash160, secp256k1::MessageSignature},
+    };
+
     use super::*;
 
     // Temporary debugging
@@ -93,13 +107,22 @@ mod tests {
         let client = NodeClient::new("http://localhost:20443");
 
         client.broadcast_transaction(&StacksTransaction {
-            version: 1.into(),
-            chainId: 1.into(),
-            auth: Value::Null,
-            anchorMode: 1,
-            payload: Value::Null,
-            postConditionMode: Value::Null,
-            postConditions: Value::Null,
+            version: TransactionVersion::Testnet,
+            chain_id: 0,
+            auth: TransactionAuth::Standard(TransactionSpendingCondition::Singlesig(
+                SinglesigSpendingCondition {
+                    hash_mode: SinglesigHashMode::P2PKH,
+                    signer: Hash160([0; 20]),
+                    nonce: 0,
+                    tx_fee: 0,
+                    key_encoding: TransactionPublicKeyEncoding::Uncompressed,
+                    signature: MessageSignature([0; 65]),
+                },
+            )),
+            anchor_mode: TransactionAnchorMode::Any,
+            post_condition_mode: TransactionPostConditionMode::Allow,
+            post_conditions: vec![],
+            payload: TransactionPayload::Coinbase(CoinbasePayload([0; 32]), None),
         });
     }
 }

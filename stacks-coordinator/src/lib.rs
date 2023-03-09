@@ -4,7 +4,6 @@ pub mod config;
 pub mod coordinator;
 pub mod frost_coordinator;
 pub mod make_contract_call;
-pub mod node_client;
 pub mod peg_queue;
 pub mod peg_wallet;
 pub mod stacks_node;

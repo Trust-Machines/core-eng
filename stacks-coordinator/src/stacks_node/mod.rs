@@ -1,7 +1,9 @@
+pub mod client;
+
 use blockstack_lib::chainstate::burn::operations as burn_ops;
 use blockstack_lib::types::chainstate::StacksAddress;
 
-pub use crate::stacks_transaction::StacksTransaction;
+pub use blockstack_lib::chainstate::stacks::StacksTransaction;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait StacksNode {
