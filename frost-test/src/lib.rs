@@ -1,4 +1,4 @@
-mod bitcoind;
+pub mod bitcoind;
 mod sync_test;
 mod v1;
 

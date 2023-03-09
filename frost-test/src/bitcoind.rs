@@ -1,4 +1,4 @@
-use std::os::unix::raw::pid_t;
+use libc::pid_t;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
@@ -13,14 +13,13 @@ use ureq::serde_json::Value;
 
 const BITCOIND_URL: &str = "http://abcd:abcd@localhost:18443";
 
-fn bitcoind_rpc(method: &str, params: impl ureq::serde::Serialize) -> serde_json::Value {
+pub fn bitcoind_rpc(method: &str, params: impl ureq::serde::Serialize) -> serde_json::Value {
     let rpc = ureq::json!({"jsonrpc": "1.0", "id": "tst", "method": method, "params": params});
     match ureq::post(BITCOIND_URL).send_json(&rpc) {
         Ok(response) => {
-            let status = response.status();
             let json = response.into_json::<serde_json::Value>().unwrap();
             let result = json.as_object().unwrap().get("result").unwrap().clone();
-            println!("{} -> {}", rpc.to_string(), result.to_string());
+            println!("{} -> {}", rpc, result);
             result
         }
         Err(err) => {
@@ -30,13 +29,13 @@ fn bitcoind_rpc(method: &str, params: impl ureq::serde::Serialize) -> serde_json
                 .into_json::<serde_json::Value>()
                 .unwrap();
             let err = json.as_object().unwrap().get("error").unwrap();
-            println!("{} -> {}", rpc.to_string(), err.to_string());
+            println!("{} -> {}", rpc, err);
             json
         }
     }
 }
 
-fn bitcoind_setup() -> pid_t {
+pub fn bitcoind_setup() -> pid_t {
     let bitcoind_child = Command::new("bitcoind")
         .arg("-regtest")
         .arg("-rpcuser=abcd")
@@ -58,12 +57,12 @@ fn bitcoind_setup() -> pid_t {
     bitcoind_pid
 }
 
-fn bitcoind_mine(public_key_bytes: &[u8; 33]) -> Value {
+pub fn bitcoind_mine(public_key_bytes: &[u8; 33]) -> Value {
     let public_key = bitcoin::PublicKey::from_slice(public_key_bytes).unwrap();
     let address = bitcoin::Address::p2wpkh(&public_key, bitcoin::Network::Regtest).unwrap();
     bitcoind_rpc("generatetoaddress", (128, address.to_string()))
 }
 
-fn stop_pid(pid: pid_t) {
+pub fn stop_pid(pid: pid_t) {
     signal::kill(Pid::from_raw(pid), Signal::SIGTERM).unwrap();
 }
