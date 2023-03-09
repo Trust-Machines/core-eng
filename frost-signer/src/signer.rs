@@ -21,7 +21,7 @@ impl Signer {
 
     pub fn start_p2p_sync(&mut self) -> Result<(), Error> {
         //Create http relay
-        let net: HttpNet = HttpNet::new(self.config.stacks_node_url.clone());
+        let net: HttpNet = HttpNet::new(self.config.http_relay_url.clone());
         let net_queue = HttpNetListen::new(net.clone(), vec![]);
         // thread coordination
         let (tx, rx): (Sender<Message>, Receiver<Message>) = mpsc::channel();

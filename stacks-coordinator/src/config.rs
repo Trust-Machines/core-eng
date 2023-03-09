@@ -9,7 +9,6 @@ pub struct Config {
     pub sbtc_contract: ContractIdentifier,
     pub stacks_private_key: StacksPrivateKey,
     pub bitcoin_private_key: BitcoinPrivateKey,
-    pub signer_relay_url: String,
     pub stacks_node_rpc_url: Url,
     pub bitcoin_node_rpc_url: Url,
     pub frost_dkg_round_id: u64,

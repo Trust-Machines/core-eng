@@ -5,7 +5,7 @@ use toml;
 
 #[derive(Clone, Deserialize, Default, Debug)]
 pub struct Config {
-    pub stacks_node_url: String,
+    pub http_relay_url: String,
     pub total_signers: usize,
     pub total_parties: usize,
     pub minimum_parties: usize,
