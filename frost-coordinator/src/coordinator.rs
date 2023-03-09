@@ -261,7 +261,7 @@ where
         );
 
         loop {
-            if ids_to_await.len() == 0 {
+            if ids_to_await.is_empty() {
                 let key = self.calculate_aggregate_public_key()?;
                 info!("Aggregate public key {}", key);
                 return Ok(key);

@@ -126,9 +126,7 @@ impl SqlitePegQueue {
 }
 
 impl PegQueue for SqlitePegQueue {
-    type Error = Error;
-
-    fn sbtc_op(&self) -> Result<Option<SbtcOp>, Self::Error> {
+    fn sbtc_op(&self) -> crate::error::Result<Option<SbtcOp>> {
         let maybe_entry = self.get_single_entry_with_status(&Status::New)?;
 
         let Some(mut entry) = maybe_entry else {
@@ -141,7 +139,7 @@ impl PegQueue for SqlitePegQueue {
         Ok(Some(entry.op))
     }
 
-    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<(), Self::Error> {
+    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> crate::error::Result<()> {
         let target_block_height = stacks_node.burn_block_height();
 
         for block_height in (self.max_observed_block_height()? + 1)..=target_block_height {
@@ -177,7 +175,7 @@ impl PegQueue for SqlitePegQueue {
         &self,
         txid: &Txid,
         burn_header_hash: &BurnchainHeaderHash,
-    ) -> Result<(), Self::Error> {
+    ) -> crate::error::Result<()> {
         let mut entry = self.get_entry(txid, burn_header_hash)?;
 
         entry.status = Status::Acknowledged;

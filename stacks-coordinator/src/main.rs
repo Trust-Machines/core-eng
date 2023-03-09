@@ -1,10 +1,9 @@
 use clap::Parser;
-use frost_coordinator::create_coordinator;
 use frost_signer::logging;
 use stacks_coordinator::cli::{Cli, Command};
 use stacks_coordinator::config::Config;
 use stacks_coordinator::coordinator::StacksCoordinator;
-use stacks_coordinator::frost_coordinator::FrostCoordinator;
+use tracing::warn;
 
 fn main() {
     let cli = Cli::parse();
@@ -18,7 +17,7 @@ fn main() {
     .unwrap();
 
     //TODO: get configs from sBTC contract
-    let config = Config::from_path("conf/coordinator.toml".to_string()).unwrap();
+    let config = Config::from_path("conf/coordinator.toml").unwrap();
     let mut stacks_coordinator = StacksCoordinator::from(config);
     // Determine what action the caller wishes to perform
     match cli.command {
@@ -29,7 +28,9 @@ fn main() {
         }
         Command::Dkg => {
             println!("Running DKG Round");
-            stacks_coordinator.run_dkg_round();
+            if let Err(e) = stacks_coordinator.run_dkg_round() {
+                warn!("DKG found encountered an error: {}", e);
+            }
         }
     };
 }

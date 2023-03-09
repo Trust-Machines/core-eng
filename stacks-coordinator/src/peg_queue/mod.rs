@@ -1,23 +1,18 @@
 use blockstack_lib::burnchains::Txid;
 use blockstack_lib::types::chainstate::BurnchainHeaderHash;
 
+use crate::error::Result;
 use crate::stacks_node;
-
 mod sqlite_peg_queue;
 
+pub use sqlite_peg_queue::Error;
 pub use sqlite_peg_queue::SqlitePegQueue;
 
 pub trait PegQueue {
-    type Error: std::error::Error;
+    fn sbtc_op(&self) -> Result<Option<SbtcOp>>;
+    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<()>;
 
-    fn sbtc_op(&self) -> Result<Option<SbtcOp>, Self::Error>;
-    fn poll<N: stacks_node::StacksNode>(&self, stacks_node: &N) -> Result<(), Self::Error>;
-
-    fn acknowledge(
-        &self,
-        txid: &Txid,
-        burn_header_hash: &BurnchainHeaderHash,
-    ) -> Result<(), Self::Error>;
+    fn acknowledge(&self, txid: &Txid, burn_header_hash: &BurnchainHeaderHash) -> Result<()>;
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]

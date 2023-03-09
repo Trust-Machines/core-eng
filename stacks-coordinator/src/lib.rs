@@ -2,7 +2,7 @@ pub mod bitcoin_node;
 pub mod cli;
 pub mod config;
 pub mod coordinator;
-pub mod frost_coordinator;
+pub mod error;
 pub mod make_contract_call;
 pub mod peg_queue;
 pub mod peg_wallet;
