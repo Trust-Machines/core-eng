@@ -1,8 +1,9 @@
 use serde::Serialize;
 
+use blockstack_lib::chainstate::stacks::StacksTransaction;
+
 use crate::bitcoin_node;
 use crate::stacks_node;
-use crate::stacks_transaction::StacksTransaction;
 
 pub trait StacksWallet {
     fn mint(&mut self, op: &stacks_node::PegInOp) -> StacksTransaction;
