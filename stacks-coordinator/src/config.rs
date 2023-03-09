@@ -1,3 +1,4 @@
+use crate::error::Result;
 // TODO: Set appropriate types
 type ContractIdentifier = String;
 type StacksPrivateKey = String;
@@ -18,15 +19,4 @@ impl Config {
     pub fn from_path(path: impl AsRef<std::path::Path>) -> Result<Self> {
         Ok(toml::from_str(&std::fs::read_to_string(path)?)?)
     }
-}
-
-type Result<T> = std::result::Result<T, Error>;
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Failed to read file: {0}")]
-    FileReadingError(#[from] std::io::Error),
-
-    #[error("Failed to parse config file: {0}")]
-    ParseError(#[from] toml::de::Error),
 }
