@@ -3,7 +3,7 @@ use frost_signer::logging;
 use stacks_coordinator::cli::{Cli, Command};
 use stacks_coordinator::config::Config;
 use stacks_coordinator::coordinator::StacksCoordinator;
-use tracing::{warn, info};
+use tracing::{info, warn};
 
 fn main() {
     let cli = Cli::parse();
