@@ -1,6 +1,7 @@
 http_relay_url = "http://localhost:9776"
 total_signers = 3
 total_keys = 6
-threshold = 4
+keys_threshold = 4
 max_party_id = 3
+frost_state_file = "frost.state.bin"
 

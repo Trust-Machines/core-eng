@@ -46,7 +46,7 @@ impl<Network: NetListen> Coordinator<Network> {
             current_dkg_id: dkg_id,
             total_signers: config.total_signers,
             total_keys: config.total_keys,
-            threshold: config.threshold,
+            threshold: config.keys_threshold,
             network,
             dkg_public_shares: Default::default(),
             public_nonces: Default::default(),
