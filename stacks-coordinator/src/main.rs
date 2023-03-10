@@ -3,7 +3,7 @@ use frost_signer::logging;
 use stacks_coordinator::cli::{Cli, Command};
 use stacks_coordinator::config::Config;
 use stacks_coordinator::coordinator::StacksCoordinator;
-use tracing::warn;
+use tracing::{warn, info};
 
 fn main() {
     let cli = Cli::parse();
@@ -25,12 +25,12 @@ fn main() {
                     // Determine what action the caller wishes to perform
                     match cli.command {
                         Command::Run => {
-                            println!("Running coordinator");
+                            info!("Running coordinator");
                             //TODO: set up coordination with the stacks node
                             //stacks_coordinator.run();
                         }
                         Command::Dkg => {
-                            println!("Running DKG Round");
+                            info!("Running DKG Round");
                             if let Err(e) = coordinator.run_dkg_round() {
                                 warn!("An error occurred during DKG round: {}", e);
                             }

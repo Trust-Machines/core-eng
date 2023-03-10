@@ -30,7 +30,7 @@ fn main() {
                     }
                 }
                 Err(e) => {
-                    warn!("An error occrred reading config file {}: {}", config, e);
+                    warn!("An error occurred reading config file {}: {}", config, e);
                 }
             }
         }

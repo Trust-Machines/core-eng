@@ -22,9 +22,10 @@ fn main() {
     let cli = Cli::parse();
     match create_coordinator(cli.config) {
         Ok(mut coordinator) => {
-            coordinator
-                .run(&cli.command)
-                .expect("Failed to execute command");
+            let result = coordinator.run(&cli.command);
+            if let Err(e) = result {
+                warn!("Failed to execute command: {}", e);
+            }
         }
         Err(e) => {
             warn!("Failed to create coordinator: {}", e);
