@@ -8,7 +8,7 @@ pub struct Config {
     pub http_relay_url: String,
     pub total_signers: usize,
     pub total_parties: usize,
-    pub minimum_parties: usize,
+    pub threshold: usize,
     pub max_party_id: usize,
 }
 

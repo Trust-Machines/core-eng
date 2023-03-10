@@ -380,18 +380,18 @@ impl From<&FrostSigner> for SigningRound {
         assert!(signer_id > 0 && signer_id as usize <= signer.config.max_party_id);
         let party_ids = vec![(signer_id * 2 - 2) as usize, (signer_id * 2 - 1) as usize]; // make two party_ids based on signer_id
 
-        assert!(signer.config.minimum_parties <= signer.config.total_parties);
+        assert!(signer.config.threshold <= signer.config.total_parties);
         let mut rng = OsRng::default();
         let frost_signer = v1::Signer::new(
             &party_ids,
             signer.config.total_parties,
-            signer.config.minimum_parties,
+            signer.config.threshold,
             &mut rng,
         );
 
         SigningRound {
             dkg_id: 1,
-            threshold: signer.config.minimum_parties,
+            threshold: signer.config.threshold,
             total: signer.config.total_parties,
             signer: Signer {
                 frost_signer,
