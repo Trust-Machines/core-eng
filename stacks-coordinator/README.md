@@ -220,8 +220,8 @@ Time estimate: 1 day.
 In seperate terminals run the following commands:
 ```
 relay-server $ cargo run
-stacks-signer $ cargo run -- --id 3 --config conf/stacker.toml
-stacks-signer $ cargo run -- --id 2 --config conf/stacker.toml
-stacks-signer $ cargo run -- --id 1 --config conf/stacker.toml
-stacks-coordinator $ cargo run -- --config conf/coordinator.toml --signer-config conf/stacker.toml dkg
+stacks-signer $ cargo run -- --id 3 --config conf/signer.toml
+stacks-signer $ cargo run -- --id 2 --config conf/signer.toml
+stacks-signer $ cargo run -- --id 1 --config conf/signer.toml
+stacks-coordinator $ cargo run -- --config conf/coordinator.toml --signer-config conf/signer.toml dkg
 ```
