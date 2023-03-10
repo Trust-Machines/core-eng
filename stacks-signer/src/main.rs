@@ -21,11 +21,17 @@ fn main() {
     match cli.command {
         Command::Run { id, config } => {
             //TODO: getConf from sBTC contract instead
-            let config = Config::from_path(config).unwrap();
-            let mut signer = Signer::new(config, id);
-            info!("{} signer id #{}", stacks_signer::version(), id); // sign-on message
-            if let Err(e) = signer.start_p2p_sync() {
-                warn!("An error occurred in the P2P Network: {}", e);
+            match Config::from_path(&config) {
+                Ok(config) => {
+                    let mut signer = Signer::new(config, id);
+                    info!("{} signer id #{}", stacks_signer::version(), id); // sign-on message
+                    if let Err(e) = signer.start_p2p_sync() {
+                        warn!("An error occurred in the P2P Network: {}", e);
+                    }
+                }
+                Err(e) => {
+                    warn!("An error occrred reading config file {}: {}", config, e);
+                }
             }
         }
         Command::Secp256k1(secp256k1) => {
