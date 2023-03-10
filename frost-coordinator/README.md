@@ -7,6 +7,7 @@
 in separate terminals run:
 ```
 
+relay-server $ cargo run
 frost-signer $ cargo run -- --id 3 --config conf/stacker.toml
 frost-signer $ cargo run -- --id 2 --config conf/stacker.toml
 frost-signer $ cargo run -- --id 1 --config conf/stacker.toml
