@@ -9,8 +9,8 @@ use frost_signer::{
 pub const DEVNET_COORDINATOR_ID: usize = 0;
 pub const DEVNET_COORDINATOR_DKG_ID: u64 = 0; //TODO: Remove, this is a correlation id
 
-pub fn create_coordinator() -> Coordinator<HttpNetListen> {
-    let config = Config::from_path("conf/stacker.toml").unwrap();
+pub fn create_coordinator(path: impl AsRef<std::path::Path>) -> Coordinator<HttpNetListen> {
+    let config = Config::from_path(path).unwrap();
 
     let net: HttpNet = HttpNet::new(config.http_relay_url.clone());
     let net_listen: HttpNetListen = HttpNetListen::new(net, vec![]);

@@ -8,6 +8,16 @@ pub struct Cli {
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     pub debug: bool,
 
+    /// Config file path
+    /// TODO: pull this info from sBTC
+    #[arg(short, long)]
+    pub config: String,
+
+    /// Signer Config file path
+    /// TODO: this should not be a seperate option really
+    #[arg(short, long)]
+    pub signer_config: String,
+
     /// Subcommand to perform
     #[clap(subcommand)]
     pub command: Command,

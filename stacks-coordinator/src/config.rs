@@ -13,6 +13,7 @@ pub struct Config {
     pub stacks_node_rpc_url: Url,
     pub bitcoin_node_rpc_url: Url,
     pub frost_dkg_round_id: u64,
+    pub signer_config_path: String,
 }
 
 impl Config {

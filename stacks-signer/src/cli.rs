@@ -22,6 +22,9 @@ pub enum Command {
         /// Associated signer id
         #[arg(short, long)]
         id: u32,
+        /// Config file path
+        #[arg(short, long)]
+        config: String,
     },
     /// Generate Secp256k1 Private Key
     Secp256k1(Secp256k1),

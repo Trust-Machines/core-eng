@@ -17,7 +17,8 @@ fn main() {
     .unwrap();
 
     //TODO: get configs from sBTC contract
-    let config = Config::from_path("conf/coordinator.toml").unwrap();
+    let mut config = Config::from_path(cli.config).unwrap();
+    config.signer_config_path = cli.signer_config;
     let mut stacks_coordinator = StacksCoordinator::from(config);
     // Determine what action the caller wishes to perform
     match cli.command {

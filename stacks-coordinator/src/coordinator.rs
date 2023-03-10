@@ -97,10 +97,10 @@ impl StacksCoordinator {
 }
 
 impl From<Config> for StacksCoordinator {
-    fn from(_config: Config) -> Self {
+    fn from(config: Config) -> Self {
         Self {
-            _config,
-            frost_coordinator: create_coordinator(),
+            frost_coordinator: create_coordinator(config.signer_config_path.clone()),
+            _config: config,
         }
     }
 }

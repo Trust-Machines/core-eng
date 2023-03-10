@@ -19,10 +19,9 @@ fn main() {
 
     // Determine what action the caller wishes to perform
     match cli.command {
-        Command::Run { id } => {
+        Command::Run { id, config } => {
             //TODO: getConf from sBTC contract instead
-            let config = Config::from_path("conf/stacker.toml").unwrap();
-
+            let config = Config::from_path(config).unwrap();
             let mut signer = Signer::new(config, id);
             info!("{} signer id #{}", stacks_signer::version(), id); // sign-on message
             if let Err(e) = signer.start_p2p_sync() {
