@@ -287,3 +287,10 @@ $ cargo install digester --all-features
 $ echo be6f7f08c8c8d0ff9cb47483a7d24bc984e4381c0057b7b16c315f212c46f0a0  | xxd -r -p |  digester -a ripemd160
 e8b19d771ed4f3ab18dd5c8cc6fca3a2a1c31b61
 ```
+
+## How do I Participate in the Radon 2.1 Testnet?
+
+As announced in [Jude's tweet][TWEET_RADON], you can participate in the Radon 2.1 testnet by following these steps: mentioned in this [Gist][RADON_GISTS].
+
+[TWEET_RADON]: https://twitter.com/judecnelson/status/1623151711530504192 
+[RADON_GISTS]: https://gist.github.com/jcnelson/c5f43cbefba3727dcccf5a95209b60fc
