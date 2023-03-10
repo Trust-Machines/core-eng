@@ -215,3 +215,13 @@ Time estimate: 1 day.
 The CLI can start an event loop, but it would also be nice for the coordinator to allow one-off commands such as "process THIS peg-in request" etc.
 
 Time estimate: 1 day.
+
+### How to Run a DKG Signing Round
+In seperate terminals run the following commands:
+```
+relay-server $ cargo run
+stacks-signer $ cargo run -- --id 3 --config conf/stacker.toml
+stacks-signer $ cargo run -- --id 2 --config conf/stacker.toml
+stacks-signer $ cargo run -- --id 1 --config conf/stacker.toml
+stacks-coordinator $ cargo run -- --config conf/coordinator.toml --signer-config conf/stacker.toml dkg
+```
