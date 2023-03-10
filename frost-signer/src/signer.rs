@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::net::{HttpNet, HttpNetError, HttpNetListen, Message, Net, NetListen};
+use crate::net::{HttpNet, HttpNetError as Error, HttpNetListen, Message, Net, NetListen};
 use crate::signing_round::SigningRound;
 use serde::Deserialize;
 use std::sync::mpsc;
@@ -61,26 +61,5 @@ fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u32) -> Result<(),
             }
         };
         thread::sleep(time::Duration::from_millis(500));
-    }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Http Network Error: {0}")]
-    HttpNetError(#[from] HttpNetError),
-
-    #[error("Recv Error: {0}")]
-    RecvError(#[from] mpsc::RecvError),
-
-    #[error("Send Error")]
-    SendError,
-
-    #[error("DKG signing error")]
-    DKGSigningError(String),
-}
-
-impl From<mpsc::SendError<Message>> for Error {
-    fn from(_: mpsc::SendError<Message>) -> Error {
-        Error::SendError
     }
 }

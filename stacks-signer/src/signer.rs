@@ -1,7 +1,8 @@
+use frost_signer::net::HttpNetError;
 use serde::Deserialize;
 
 use frost_signer::config::Config;
-use frost_signer::signer::{Error as FrostSignerError, Signer as FrostSigner};
+use frost_signer::signer::Signer as FrostSigner;
 
 #[derive(Clone, Deserialize, Debug)]
 pub struct Signer {
@@ -16,14 +17,7 @@ impl Signer {
         }
     }
 
-    pub fn start_p2p_sync(&mut self) -> Result<(), Error> {
-        self.frost_signer.start_p2p_sync()?;
-        Ok(())
+    pub fn start_p2p_sync(&mut self) -> Result<(), HttpNetError> {
+        self.frost_signer.start_p2p_sync()
     }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Frost Signer Error: {0}")]
-    FrostSignerError(#[from] FrostSignerError),
 }

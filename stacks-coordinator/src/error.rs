@@ -6,7 +6,7 @@ use crate::peg_queue::Error as PegQueueError;
 /// Helper that uses this module's error type
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// Kinds of common errors used by the parsers
+/// Kinds of common errors used by stacks coordinator
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
 pub enum Error {
@@ -17,15 +17,15 @@ pub enum Error {
     #[error("sBTC Contract Error")]
     ContractError,
     /// Error occurred with the Frost Coordinator
-    #[error("Frost Cordinator encountered an error: {0}")]
+    #[error("Frost Coordinator encountered an error: {0}")]
     FrostCoordinatorError(#[from] FrostCoordinatorError),
-    /// Error occurred with Sqlite
+    /// Error occurred with peg queue
     #[error("Error occurred in the Peg Queue: {0}")]
     PegQueueError(#[from] PegQueueError),
     /// Error occurred reading a file
     #[error("Failed to read file: {0}")]
     FileReadingError(#[from] std::io::Error),
-    /// Toml parse error
-    #[error("Failed to parse toml file: {0}")]
-    ParseError(#[from] toml::de::Error),
+    /// Config parse error
+    #[error("Failed to parse config file: {0}")]
+    ConfigError(#[from] toml::de::Error),
 }
