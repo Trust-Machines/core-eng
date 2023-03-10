@@ -1,6 +1,6 @@
 http_relay_url = "http://localhost:9776"
 total_signers = 3
-total_parties = 6
+total_keys = 6
 threshold = 4
 max_party_id = 3
 

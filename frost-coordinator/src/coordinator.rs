@@ -30,7 +30,7 @@ pub struct Coordinator<Network: NetListen> {
     id: u32, // Used for relay coordination
     current_dkg_id: u64,
     total_signers: usize, // Assuming the signers cover all id:s in {1, 2, ..., total_signers}
-    total_parties: usize,
+    total_keys: usize,
     threshold: usize,
     network: Network,
     dkg_public_shares: BTreeMap<u32, DkgPublicShare>,
@@ -45,7 +45,7 @@ impl<Network: NetListen> Coordinator<Network> {
             id: id as u32,
             current_dkg_id: dkg_id,
             total_signers: config.total_signers,
-            total_parties: config.total_parties,
+            total_keys: config.total_keys,
             threshold: config.threshold,
             network,
             dkg_public_shares: Default::default(),
@@ -134,7 +134,7 @@ where
                 }
             }
 
-            if self.public_nonces.len() == self.total_parties {
+            if self.public_nonces.len() == self.total_keys {
                 info!("Nonce threshold of {} met.", self.threshold);
                 break;
             }
@@ -147,7 +147,7 @@ where
         // make an array of dkg public share polys for SignatureAggregator
         info!(
             "collecting commitments from 1..{} in {:?}",
-            self.total_parties,
+            self.total_keys,
             self.dkg_public_shares.keys().collect::<Vec<&u32>>()
         );
         let polys: Vec<PolyCommitment> = self
@@ -157,13 +157,13 @@ where
             .collect();
 
         info!(
-            "SignatureAggregator::new total_parties: {} threshold: {} commitments: {} ",
-            self.total_parties,
+            "SignatureAggregator::new total_keys: {} threshold: {} commitments: {} ",
+            self.total_keys,
             self.threshold,
             polys.len()
         );
         let mut aggregator =
-            match v1::SignatureAggregator::new(self.total_parties, self.threshold, polys) {
+            match v1::SignatureAggregator::new(self.total_keys, self.threshold, polys) {
                 Ok(aggregator) => aggregator,
                 Err(e) => return Err(Error::Aggregator(e)),
             };
