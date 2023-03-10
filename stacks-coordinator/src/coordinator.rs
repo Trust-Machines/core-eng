@@ -82,7 +82,7 @@ pub enum Command {
 }
 
 pub struct StacksCoordinator {
-    config: Config,
+    _config: Config,
     frost_coordinator: FrostCoordinator,
 }
 
@@ -97,20 +97,12 @@ impl StacksCoordinator {
 }
 
 impl From<Config> for StacksCoordinator {
-    fn from(config: Config) -> Self {
+    fn from(_config: Config) -> Self {
         Self {
-            config,
+            _config,
             frost_coordinator: create_coordinator(),
         }
     }
-}
-
-pub struct CoordinatorFoo<PQ: PegQueue, SW: StacksWallet, SN: StacksNode, BN: BitcoinNode> {
-    peg_queue: PQ,
-    fee_wallet: SW,
-    frost_coordinator: FrostCoordinator,
-    stacks_node: SN,
-    bitcoin_node: BN,
 }
 
 #[cfg(test)]
