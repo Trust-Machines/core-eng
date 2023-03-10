@@ -39,7 +39,7 @@ impl Signer {
 
         loop {
             let inbound = rx.recv()?; // blocking
-            let outbounds = round.process(inbound.msg).map_err(Error::DKGSigningError)?;
+            let outbounds = round.process(inbound.msg).map_err(Error::DKGError)?;
             for out in outbounds {
                 let msg = Message {
                     msg: out,

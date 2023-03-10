@@ -129,8 +129,8 @@ pub enum HttpNetError {
     #[error("Send Error")]
     SendError,
 
-    #[error("DKG signing error")]
-    DKGSigningError(String),
+    #[error("DKG Error: {0}")]
+    DKGError(String),
 }
 
 impl From<mpsc::SendError<Message>> for HttpNetError {
