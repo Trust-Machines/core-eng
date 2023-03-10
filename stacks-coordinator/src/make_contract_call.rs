@@ -1,11 +1,12 @@
 use std::path::Path;
 
+use blockstack_lib::vm::{database::ClaritySerializable, Value};
 use serde::Serialize;
 use yarpc::{dispatch_command::DispatchCommand, js::Js, rpc::Rpc};
 
 use crate::stacks_transaction::StacksTransaction;
 
-pub type ClarityValue = serde_json::Value;
+pub type ClarityValue = String;
 
 pub type PostCondition = serde_json::Value;
 
@@ -56,6 +57,41 @@ pub struct SignedContractCallOptions {
     pub sponsored: Option<bool>,
 
     pub senderKey: String,
+}
+
+impl SignedContractCallOptions {
+    pub fn new(
+        contract_address: impl Into<String>,
+        contract_name: impl Into<String>,
+        function_name: impl Into<String>,
+        function_args: &[Value],
+        anchor_mode: AnchorMode,
+        sender_key: impl Into<String>,
+    ) -> Self {
+        Self {
+            contractAddress: contract_address.into(),
+            contractName: contract_name.into(),
+            functionName: function_name.into(),
+            functionArgs: function_args
+                .iter()
+                .map(ClaritySerializable::serialize)
+                .collect(),
+            fee: None,
+            feeEstimateApiUrl: None,
+            nonce: None,
+            network: None,
+            anchorMode: anchor_mode,
+            postConditionMode: None,
+            postConditions: None,
+            validateWithAbi: None,
+            sponsored: None,
+            senderKey: sender_key.into(),
+        }
+    }
+    pub fn with_fee(mut self, fee: u128) -> Self {
+        self.fee = Some(fee.to_string());
+        self
+    }
 }
 
 pub type TransactionVersion = serde_json::Number;

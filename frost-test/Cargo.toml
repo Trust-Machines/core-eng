@@ -13,3 +13,9 @@ frost-signer = { path = "../frost-signer" }
 rand_core = { workspace = true }
 hashbrown = { workspace = true }
 wtfrost = { workspace = true }
+ureq = { workspace = true }
+bitcoin = { version = "0.29.2", features = ["rand"] }
+hex = "0.4.3"
+ctrlc = "3.2.5"
+nix = "0.26.2"
+libc = "0.2.139"
