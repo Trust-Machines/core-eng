@@ -20,21 +20,27 @@ fn main() {
     match Config::from_path(&cli.config) {
         Ok(mut config) => {
             config.signer_config_path = cli.signer_config;
-            let mut stacks_coordinator = StacksCoordinator::from(config);
-            // Determine what action the caller wishes to perform
-            match cli.command {
-                Command::Run => {
-                    println!("Running coordinator");
-                    //TODO: set up coordination with the stacks node
-                    //stacks_coordinator.run();
+            match StacksCoordinator::try_from(config) {
+                Ok(mut coordinator) => {
+                    // Determine what action the caller wishes to perform
+                    match cli.command {
+                        Command::Run => {
+                            println!("Running coordinator");
+                            //TODO: set up coordination with the stacks node
+                            //stacks_coordinator.run();
+                        }
+                        Command::Dkg => {
+                            println!("Running DKG Round");
+                            if let Err(e) = coordinator.run_dkg_round() {
+                                warn!("An error occurred during DKG round: {}", e);
+                            }
+                        }
+                    };
                 }
-                Command::Dkg => {
-                    println!("Running DKG Round");
-                    if let Err(e) = stacks_coordinator.run_dkg_round() {
-                        warn!("DKG found encountered an error: {}", e);
-                    }
+                Err(e) => {
+                    warn!("An error occurred creating coordinator: {}", e);
                 }
-            };
+            }
         }
         Err(e) => {
             warn!("An error occrred reading config file {}: {}", cli.config, e);

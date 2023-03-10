@@ -51,13 +51,13 @@ impl Signer {
     }
 }
 
-fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u32) {
+fn poll_loop(mut net: HttpNetListen, tx: Sender<Message>, id: u32) -> Result<(), Error> {
     loop {
         net.poll(id);
         match net.next_message() {
             None => {}
             Some(m) => {
-                tx.send(m).unwrap();
+                tx.send(m)?;
             }
         };
         thread::sleep(time::Duration::from_millis(500));

@@ -19,6 +19,10 @@ pub struct Cli {
     #[arg(short, long, action = clap::ArgAction::Count)]
     debug: u8,
 
+    /// Config file path
+    #[arg(short, long)]
+    pub config: String,
+
     /// Start a signing round
     #[arg(short, long)]
     pub start: bool,

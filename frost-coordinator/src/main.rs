@@ -3,6 +3,7 @@ use clap::Parser;
 use frost_coordinator::coordinator::Command;
 use frost_coordinator::create_coordinator;
 use frost_signer::logging;
+use tracing::warn;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -19,9 +20,14 @@ fn main() {
     logging::initiate_tracing_subscriber(tracing::Level::INFO).unwrap();
 
     let cli = Cli::parse();
-    let mut coordinator = create_coordinator(cli.config);
-
-    coordinator
-        .run(&cli.command)
-        .expect("Failed to execute command");
+    match create_coordinator(cli.config) {
+        Ok(mut coordinator) => {
+            coordinator
+                .run(&cli.command)
+                .expect("Failed to execute command");
+        }
+        Err(e) => {
+            warn!("Failed to create coordinator: {}", e);
+        }
+    }
 }

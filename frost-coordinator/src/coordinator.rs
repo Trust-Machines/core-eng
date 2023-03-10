@@ -14,6 +14,9 @@ use wtfrost::{common::PolyCommitment, common::Signature, errors::AggregatorError
 
 use serde::{Deserialize, Serialize};
 
+pub const DEVNET_COORDINATOR_ID: usize = 0;
+pub const DEVNET_COORDINATOR_DKG_ID: u64 = 0; //TODO: Remove, this is a correlation id
+
 #[derive(clap::Subcommand, Debug)]
 pub enum Command {
     Dkg,

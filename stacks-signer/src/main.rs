@@ -26,7 +26,7 @@ fn main() {
                     let mut signer = Signer::new(config, id);
                     info!("{} signer id #{}", stacks_signer::version(), id); // sign-on message
                     if let Err(e) = signer.start_p2p_sync() {
-                        warn!("An error occurred in the P2P Network: {}", e);
+                        warn!("An error occurred on the P2P Network: {}", e);
                     }
                 }
                 Err(e) => {

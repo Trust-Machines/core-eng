@@ -1,13 +1,14 @@
 use serde::Serialize;
 
 use crate::bitcoin_node;
+use crate::error::Result;
 use crate::stacks_node;
 use crate::stacks_transaction::StacksTransaction;
 
 pub trait StacksWallet {
-    fn mint(&mut self, op: &stacks_node::PegInOp) -> StacksTransaction;
-    fn burn(&mut self, op: &stacks_node::PegOutRequestOp) -> StacksTransaction;
-    fn set_wallet_address(&mut self, address: PegWalletAddress) -> StacksTransaction;
+    fn mint(&mut self, op: &stacks_node::PegInOp) -> Result<StacksTransaction>;
+    fn burn(&mut self, op: &stacks_node::PegOutRequestOp) -> Result<StacksTransaction>;
+    fn set_wallet_address(&mut self, address: PegWalletAddress) -> Result<StacksTransaction>;
 }
 
 pub trait BitcoinWallet {

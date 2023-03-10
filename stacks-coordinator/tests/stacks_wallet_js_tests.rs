@@ -23,6 +23,7 @@ fn stacks_wallet_js() -> StacksWalletJs {
         "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE".to_string(),
         "0001020304050607080910111213141516171819202122232425262728293031".to_string(),
     )
+    .unwrap()
 }
 
 #[test]

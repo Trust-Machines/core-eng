@@ -38,9 +38,9 @@ pub trait Coordinator: Sized {
     fn run(mut self, commands: mpsc::Receiver<Command>) -> Result<()> {
         loop {
             match self.peg_queue().sbtc_op()? {
-                Some(SbtcOp::PegIn(op)) => self.peg_in(op),
+                Some(SbtcOp::PegIn(op)) => self.peg_in(op)?,
                 Some(SbtcOp::PegOutRequest(op)) => self.peg_out(op)?,
-                None => self.peg_queue().poll(self.stacks_node()).unwrap(),
+                None => self.peg_queue().poll(self.stacks_node())?,
             }
 
             match commands.try_recv() {
@@ -55,14 +55,15 @@ pub trait Coordinator: Sized {
 
 // Private helper functions
 trait CoordinatorHelpers: Coordinator {
-    fn peg_in(&mut self, op: stacks_node::PegInOp) {
-        let tx = self.fee_wallet().stacks_mut().mint(&op);
+    fn peg_in(&mut self, op: stacks_node::PegInOp) -> Result<()> {
+        let tx = self.fee_wallet().stacks_mut().mint(&op)?;
         self.stacks_node().broadcast_transaction(&tx);
+        Ok(())
     }
 
     fn peg_out(&mut self, op: stacks_node::PegOutRequestOp) -> Result<()> {
         let _stacks = self.fee_wallet().stacks_mut();
-        let burn_tx = self.fee_wallet().stacks_mut().burn(&op);
+        let burn_tx = self.fee_wallet().stacks_mut().burn(&op)?;
         let fulfill_tx = self.fee_wallet().bitcoin_mut().fulfill_peg_out(&op);
 
         //TODO: what do we do with the returned signature?
@@ -96,12 +97,13 @@ impl StacksCoordinator {
     }
 }
 
-impl From<Config> for StacksCoordinator {
-    fn from(config: Config) -> Self {
-        Self {
-            frost_coordinator: create_coordinator(config.signer_config_path.clone()),
+impl TryFrom<Config> for StacksCoordinator {
+    type Error = String;
+    fn try_from(config: Config) -> std::result::Result<Self, String> {
+        Ok(Self {
+            frost_coordinator: create_coordinator(config.signer_config_path.clone())?,
             _config: config,
-        }
+        })
     }
 }
 

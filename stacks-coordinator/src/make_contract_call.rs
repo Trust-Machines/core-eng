@@ -16,6 +16,8 @@ pub type StacksNetworkNameOrStacksNetwork = serde_json::Value;
 
 pub type BooleanOrClarityAbi = serde_json::Value;
 
+use crate::error::{Error, Result};
+
 #[allow(non_snake_case)]
 #[derive(Serialize)]
 pub struct SignedContractCallOptions {
@@ -77,13 +79,17 @@ pub type LengthPrefixedList = serde_json::Value;
 pub struct MakeContractCall(Js);
 
 impl MakeContractCall {
-    pub fn call(&mut self, input: &SignedContractCallOptions) -> StacksTransaction {
-        self.0
+    pub fn call(&mut self, input: &SignedContractCallOptions) -> Result<StacksTransaction> {
+        let tx = self
+            .0
             .call(&DispatchCommand("makeContractCall".to_string(), input))
-            .unwrap()
+            .map_err(|_| Error::ContractError)?;
+        Ok(tx)
     }
-    pub fn new(path: &str) -> Self {
+    pub fn new(path: &str) -> Result<Self> {
         let file_name = Path::new(path).join("yarpc/js/stacks/transactions.ts");
-        Self(Js::new(file_name.to_str().unwrap()).unwrap())
+        Ok(Self(Js::new(
+            file_name.to_str().ok_or_else(|| Error::ContractError)?,
+        )?))
     }
 }

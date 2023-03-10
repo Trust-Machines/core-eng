@@ -1,4 +1,5 @@
 use crate::{
+    error::Result,
     make_contract_call::{MakeContractCall, SignedContractCallOptions, ANY},
     peg_wallet::{PegWalletAddress, StacksWallet},
     stacks_node::{PegInOp, PegOutRequestOp},
@@ -12,14 +13,14 @@ pub struct StacksWalletJs {
 }
 
 impl StacksWalletJs {
-    pub fn new(path: &str, contract_address: String, sender_key: String) -> Self {
-        Self {
-            make_contract_call: MakeContractCall::new(path),
+    pub fn new(path: &str, contract_address: String, sender_key: String) -> Result<Self> {
+        Ok(Self {
+            make_contract_call: MakeContractCall::new(path)?,
             contract_address,
             sender_key,
-        }
+        })
     }
-    fn call(&mut self, function_name: String) -> StacksTransaction {
+    fn call(&mut self, function_name: String) -> Result<StacksTransaction> {
         let input = SignedContractCallOptions {
             contractAddress: self.contract_address.clone(),
             contractName: "".to_string(),
@@ -41,13 +42,13 @@ impl StacksWalletJs {
 }
 
 impl StacksWallet for StacksWalletJs {
-    fn mint(&mut self, _op: &PegInOp) -> StacksTransaction {
+    fn mint(&mut self, _op: &PegInOp) -> Result<StacksTransaction> {
         self.call("mint".to_string())
     }
-    fn burn(&mut self, _op: &PegOutRequestOp) -> StacksTransaction {
+    fn burn(&mut self, _op: &PegOutRequestOp) -> Result<StacksTransaction> {
         self.call("burn".to_string())
     }
-    fn set_wallet_address(&mut self, _address: PegWalletAddress) -> StacksTransaction {
+    fn set_wallet_address(&mut self, _address: PegWalletAddress) -> Result<StacksTransaction> {
         self.call("set_wallet_address".to_string())
     }
 }
