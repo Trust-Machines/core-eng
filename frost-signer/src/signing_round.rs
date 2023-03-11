@@ -42,7 +42,9 @@ impl StateMachine for SigningRound {
         let accepted = match state {
             States::Idle => true,
             States::DkgDistribute => {
-                self.state == States::Idle || self.state == States::DkgDistribute
+                self.state == States::Idle
+                    || self.state == States::DkgDistribute
+                    || self.state == States::DkgGather
             }
             States::DkgGather => self.state == States::DkgDistribute,
             States::SignGather => self.state == States::Idle,
@@ -312,11 +314,14 @@ impl SigningRound {
     }
 
     pub fn dkg_begin(&mut self, dkg_begin: DkgBegin) -> Result<Vec<MessageTypes>, String> {
+        let mut rng = OsRng::default();
+
         self.reset(dkg_begin.dkg_id);
         self.move_to(States::DkgDistribute)?;
+        self.signer.frost_signer.reset_polys(&mut rng);
+
         let _party_state = self.signer.frost_signer.save();
 
-        let mut rng = OsRng::default();
         let mut msgs = vec![];
         for (_idx, party) in self.signer.frost_signer.parties.iter().enumerate() {
             info!("sending dkg private share for party #{}", party.id);
