@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "bitcoin-utxo"
+version = "0.1.0"
+description = ""
+authors = ["Igor <igor@trustmachines.co>"]
+
+[tool.poetry.dependencies]
+python = "3.10.10"
+bitcoinlib = "^0.6.7"
+trezor = "^0.13.5"
+click = "^8.1.3"
+requests = "^2.28.1"
+alive-progress = "^3.0.1"
+tqdm = "^4.64.1"
+nuitka = "^1.4.8"
+ordered-set = "^4.1.0"
+pandas = "^1.5.3"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

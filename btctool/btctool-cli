@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+poetry run python btctool/btctool.py $@

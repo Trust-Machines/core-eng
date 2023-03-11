@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+.pytest_cache/
+__pycache__/
+btctool.build/
+btctool.dist/
+btctool.onefile-build/
+btctool.bin
+*.py[cod]
+
+*.json
+*.txt
+*.bin
