@@ -2,7 +2,7 @@ use bitcoin::psbt::serialize::Serialize;
 use frost_coordinator::create_coordinator;
 use frost_signer::net::HttpNetListen;
 use std::sync::mpsc;
-use wtfrost::{common::Signature, Point};
+use wtfrost::{bip340::SchnorrProof, common::Signature, Point};
 
 use crate::config::Config;
 use crate::peg_wallet::{BitcoinWallet, PegWallet};
@@ -93,7 +93,7 @@ impl StacksCoordinator {
         Ok(self.frost_coordinator.run_distributed_key_generation()?)
     }
 
-    pub fn sign_message(&mut self, message: &str) -> Result<Signature> {
+    pub fn sign_message(&mut self, message: &str) -> Result<(Signature, SchnorrProof)> {
         Ok(self.frost_coordinator.sign_message(message.as_bytes())?)
     }
 }

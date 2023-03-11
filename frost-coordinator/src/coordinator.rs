@@ -9,8 +9,13 @@ use frost_signer::signing_round::{
 };
 use hashbrown::HashSet;
 use tracing::{debug, info};
-use wtfrost::common::PublicNonce;
-use wtfrost::{common::PolyCommitment, common::Signature, errors::AggregatorError, v1, Point};
+use wtfrost::{
+    bip340::{Error as Bip340Error, SchnorrProof},
+    common::{PolyCommitment, PublicNonce, Signature},
+    compute,
+    errors::AggregatorError,
+    v1, Point,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -145,7 +150,7 @@ where
         Ok(())
     }
 
-    pub fn sign_message(&mut self, msg: &[u8]) -> Result<Signature, Error> {
+    pub fn sign_message(&mut self, msg: &[u8]) -> Result<(Signature, SchnorrProof), Error> {
         if self.aggregate_public_key == Point::default() {
             return Err(Error::NoAggregatePublicKey);
         }
@@ -164,7 +169,7 @@ where
                 .iter()
                 .map(|(_i, n)| n.nonce.clone())
                 .collect();
-            let (_, R) = wtfrost::compute::intermediate(msg, &ids, &nonces);
+            let (_, R) = compute::intermediate(msg, &ids, &nonces);
             if R.has_even_y() {
                 info!("R has even y coord: {}", &R);
                 break;
@@ -269,7 +274,7 @@ where
 
         info!("Signature ({}, {})", sig.R, sig.z);
 
-        let proof = match wtfrost::bip340::SchnorrProof::new(&sig) {
+        let proof = match SchnorrProof::new(&sig) {
             Ok(proof) => proof,
             Err(e) => {
                 return Err(Error::Bip340(e));
@@ -280,9 +285,10 @@ where
 
         if !proof.verify(&self.aggregate_public_key.x(), msg) {
             info!("SchnorrProof failed to verify!");
+            return Err(Error::SchnorrProofFailed);
         }
 
-        Ok(sig)
+        Ok((sig, proof))
     }
 
     pub fn calculate_aggregate_public_key(&mut self) -> Result<Point, Error> {
@@ -374,8 +380,10 @@ pub enum Error {
     NoAggregatePublicKey,
     #[error("Aggregate failed to sign")]
     Aggregator(AggregatorError),
-    #[error("Aggregate failed to sign")]
-    Bip340(wtfrost::bip340::Error),
+    #[error("BIP-340 error")]
+    Bip340(Bip340Error),
+    #[error("SchnorrProof failed to verify")]
+    SchnorrProofFailed,
     #[error("Operation timed out")]
     Timeout,
 }
