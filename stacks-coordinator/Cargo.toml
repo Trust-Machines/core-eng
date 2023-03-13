@@ -23,6 +23,7 @@ thiserror = { workspace = true }
 toml = { workspace = true }
 wtfrost = { workspace = true }
 yarpc = { path = "../yarpc" }
+bitcoin = { version = "0.29.2", features = ["rand"] }
 
 [dev-dependencies]
 mockall = { workspace = true }

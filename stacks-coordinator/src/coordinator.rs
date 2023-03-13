@@ -1,17 +1,18 @@
+use bitcoin::psbt::serialize::Serialize;
 use frost_coordinator::create_coordinator;
 use frost_signer::net::HttpNetListen;
 use std::sync::mpsc;
-use wtfrost::{common::Signature, Point};
+use wtfrost::{bip340::SchnorrProof, common::Signature, Point};
 
 use crate::config::Config;
-use crate::peg_wallet::StacksWallet;
 use crate::peg_wallet::{BitcoinWallet, PegWallet};
+use crate::peg_wallet::{StacksWallet, WrapPegWallet};
 use crate::stacks_node;
 
 // Traits in scope
-use crate::bitcoin_node::BitcoinNode;
-use crate::peg_queue::{PegQueue, SbtcOp};
-use crate::stacks_node::StacksNode;
+use crate::bitcoin_node::{BitcoinNode, LocalhostBitcoinNode};
+use crate::peg_queue::{PegQueue, SbtcOp, SqlitePegQueue};
+use crate::stacks_node::{LocalhostStacksNode, StacksNode};
 
 use crate::error::Result;
 
@@ -64,11 +65,11 @@ trait CoordinatorHelpers: Coordinator {
     fn peg_out(&mut self, op: stacks_node::PegOutRequestOp) -> Result<()> {
         let _stacks = self.fee_wallet().stacks_mut();
         let burn_tx = self.fee_wallet().stacks_mut().burn(&op)?;
-        let fulfill_tx = self.fee_wallet().bitcoin_mut().fulfill_peg_out(&op);
+        let fulfill_tx = self.fee_wallet().bitcoin_mut().fulfill_peg_out(&op)?;
 
         //TODO: what do we do with the returned signature?
         self.frost_coordinator_mut()
-            .sign_message(fulfill_tx.as_bytes())?;
+            .sign_message(&fulfill_tx.serialize())?;
 
         self.stacks_node().broadcast_transaction(&burn_tx);
         self.bitcoin_node().broadcast_transaction(&fulfill_tx);
@@ -92,7 +93,7 @@ impl StacksCoordinator {
         Ok(self.frost_coordinator.run_distributed_key_generation()?)
     }
 
-    pub fn sign_message(&mut self, message: &str) -> Result<Signature> {
+    pub fn sign_message(&mut self, message: &str) -> Result<(Signature, SchnorrProof)> {
         Ok(self.frost_coordinator.sign_message(message.as_bytes())?)
     }
 }
@@ -104,6 +105,37 @@ impl TryFrom<Config> for StacksCoordinator {
             frost_coordinator: create_coordinator(config.signer_config_path.clone())?,
             _config: config,
         })
+    }
+}
+
+impl Coordinator for StacksCoordinator {
+    type PegQueue = SqlitePegQueue;
+    type FeeWallet = WrapPegWallet;
+    type StacksNode = LocalhostStacksNode;
+    type BitcoinNode = LocalhostBitcoinNode;
+
+    fn peg_queue(&self) -> &Self::PegQueue {
+        todo!()
+    }
+
+    fn fee_wallet(&mut self) -> &mut Self::FeeWallet {
+        todo!()
+    }
+
+    fn frost_coordinator(&self) -> &FrostCoordinator {
+        todo!()
+    }
+
+    fn frost_coordinator_mut(&mut self) -> &mut FrostCoordinator {
+        todo!()
+    }
+
+    fn stacks_node(&self) -> &Self::StacksNode {
+        todo!()
+    }
+
+    fn bitcoin_node(&self) -> &Self::BitcoinNode {
+        todo!()
     }
 }
 

@@ -9,8 +9,13 @@ use frost_signer::signing_round::{
 };
 use hashbrown::HashSet;
 use tracing::{debug, info};
-use wtfrost::common::PublicNonce;
-use wtfrost::{common::PolyCommitment, common::Signature, errors::AggregatorError, v1, Point};
+use wtfrost::{
+    bip340::{Error as Bip340Error, SchnorrProof},
+    common::{PolyCommitment, PublicNonce, Signature},
+    compute,
+    errors::AggregatorError,
+    v1, Point,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -85,6 +90,14 @@ where
     }
 
     pub fn run_distributed_key_generation(&mut self) -> Result<Point, Error> {
+        self.start_dkg()?;
+        let result = self.wait_for_dkg_end();
+        info!("DKG round #{} finished", self.current_dkg_id);
+        result
+    }
+
+    fn start_dkg(&mut self) -> Result<(), Error> {
+        self.dkg_public_shares.clear();
         self.current_dkg_id += 1;
         info!("Starting DKG round #{}", self.current_dkg_id);
         let dkg_begin_message = Message {
@@ -95,16 +108,11 @@ where
         };
 
         self.network.send_message(dkg_begin_message)?;
-
-        let result = self.wait_for_dkg_end();
-        info!("DKG round #{} finished", self.current_dkg_id);
-        result
+        Ok(())
     }
 
-    pub fn sign_message(&mut self, msg: &[u8]) -> Result<Signature, Error> {
-        if self.aggregate_public_key == Point::default() {
-            return Err(Error::NoAggregatePublicKey);
-        }
+    fn collect_nonces(&mut self) -> Result<(), Error> {
+        self.public_nonces.clear();
 
         let nonce_request_message = Message {
             msg: MessageTypes::NonceRequest(NonceRequest {
@@ -137,6 +145,36 @@ where
             if self.public_nonces.len() == self.total_keys {
                 info!("Nonce threshold of {} met.", self.threshold);
                 break;
+            }
+        }
+        Ok(())
+    }
+
+    pub fn sign_message(&mut self, msg: &[u8]) -> Result<(Signature, SchnorrProof), Error> {
+        if self.aggregate_public_key == Point::default() {
+            return Err(Error::NoAggregatePublicKey);
+        }
+
+        loop {
+            self.collect_nonces()?;
+
+            // check to see if the aggregate nonce R has even y
+            let ids: Vec<usize> = self
+                .public_nonces
+                .iter()
+                .map(|(i, _n)| *i as usize)
+                .collect();
+            let nonces: Vec<PublicNonce> = self
+                .public_nonces
+                .iter()
+                .map(|(_i, n)| n.nonce.clone())
+                .collect();
+            let (_, R) = compute::intermediate(msg, &ids, &nonces);
+            if R.has_even_y() {
+                info!("R has even y coord: {}", &R);
+                break;
+            } else {
+                info!("R does not have even y coord: {}", &R);
             }
         }
 
@@ -236,7 +274,21 @@ where
 
         info!("Signature ({}, {})", sig.R, sig.z);
 
-        Ok(sig)
+        let proof = match SchnorrProof::new(&sig) {
+            Ok(proof) => proof,
+            Err(e) => {
+                return Err(Error::Bip340(e));
+            }
+        };
+
+        info!("SchnorrProof ({}, {})", proof.r, proof.s);
+
+        if !proof.verify(&self.aggregate_public_key.x(), msg) {
+            info!("SchnorrProof failed to verify!");
+            return Err(Error::SchnorrProofFailed);
+        }
+
+        Ok((sig, proof))
     }
 
     pub fn calculate_aggregate_public_key(&mut self) -> Result<Point, Error> {
@@ -266,8 +318,16 @@ where
         loop {
             if ids_to_await.is_empty() {
                 let key = self.calculate_aggregate_public_key()?;
-                info!("Aggregate public key {}", key);
-                return Ok(key);
+                // check to see if aggregate public key has even y
+                if key.has_even_y() {
+                    info!("Aggregate public key has even y coord!");
+                    info!("Aggregate public key: {}", key);
+                    return Ok(key);
+                } else {
+                    info!("Aggregate public key does not have even y coord, re-run dkg!");
+                    ids_to_await = (1..=self.total_signers).collect();
+                    self.start_dkg()?;
+                }
             }
 
             match self.wait_for_next_message()?.msg {
@@ -318,8 +378,12 @@ pub enum Error {
     NetworkError(#[from] HttpNetError),
     #[error("No aggregate public key")]
     NoAggregatePublicKey,
-    #[error("Aggregate failed to sign")]
+    #[error("Aggregator failed to sign: {0}")]
     Aggregator(AggregatorError),
+    #[error("BIP-340 error")]
+    Bip340(Bip340Error),
+    #[error("SchnorrProof failed to verify")]
+    SchnorrProofFailed,
     #[error("Operation timed out")]
     Timeout,
 }
