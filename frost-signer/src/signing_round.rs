@@ -16,6 +16,9 @@ type KeyShares = HashMap<usize, Scalar>;
 
 pub struct SigningRound {
     pub dkg_id: u64,
+    pub dkg_public_id: u64,
+    pub sign_id: u64,
+    pub sign_nonce_id: u64,
     pub threshold: usize,
     pub total: usize,
     pub signer: Signer,
@@ -38,23 +41,25 @@ impl StateMachine for SigningRound {
     }
 
     fn can_move_to(&self, state: &States) -> Result<(), String> {
-        let previous_state = &self.state;
+        let prev_state = &self.state;
         let accepted = match state {
             States::Idle => true,
-            States::DkgDistribute => {
-                self.state == States::Idle
-                    || self.state == States::DkgDistribute
-                    || self.state == States::DkgGather
+            States::DkgPublicDistribute => {
+                prev_state == &States::Idle
+                    || prev_state == &States::DkgPublicDistribute
+                    || prev_state == &States::DkgPublicGather
             }
-            States::DkgGather => self.state == States::DkgDistribute,
-            States::SignGather => self.state == States::Idle,
-            States::Signed => self.state == States::SignGather,
+            States::DkgPublicGather => prev_state == &States::DkgPublicDistribute,
+            States::DkgPrivateDistribute => prev_state == &States::DkgPublicGather,
+            States::DkgPrivateGather => prev_state == &States::DkgPrivateDistribute,
+            States::SignGather => prev_state == &States::Idle,
+            States::Signed => prev_state == &States::SignGather,
         };
         if accepted {
-            info!("state change from {:?} to {:?}", previous_state, state);
+            info!("state change from {:?} to {:?}", prev_state, state);
             Ok(())
         } else {
-            Err(format!("bad state change: {:?} to {:?}", self.state, state))
+            Err(format!("bad state change: {:?} to {:?}", prev_state, state))
         }
     }
 }
@@ -76,6 +81,7 @@ pub enum MessageTypes {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct DkgPublicShare {
     pub dkg_id: u64,
+    pub dkg_public_id: u64,
     pub party_id: u32,
     pub public_share: PolyCommitment,
 }
@@ -107,11 +113,15 @@ pub struct DkgQueryResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NonceRequest {
     pub dkg_id: u64,
+    pub sign_id: u64,
+    pub sign_nonce_id: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NonceResponse {
     pub dkg_id: u64,
+    pub sign_id: u64,
+    pub sign_nonce_id: u64,
     pub party_id: u32,
     pub nonce: PublicNonce,
 }
@@ -119,6 +129,7 @@ pub struct NonceResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SignatureShareRequest {
     pub dkg_id: u64,
+    pub sign_id: u64,
     pub correlation_id: u64,
     pub party_id: u32,
     pub nonces: Vec<(u32, PublicNonce)>,
@@ -128,6 +139,7 @@ pub struct SignatureShareRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SignatureShareResponse {
     pub dkg_id: u64,
+    pub sign_id: u64,
     pub correlation_id: u64,
     pub party_id: u32,
     pub signature_share: wtfrost::v1::SignatureShare,
@@ -150,6 +162,9 @@ impl SigningRound {
 
         SigningRound {
             dkg_id: 1,
+            dkg_public_id: 1,
+            sign_id: 1,
+            sign_nonce_id: 1,
             threshold,
             total,
             signer,
@@ -162,6 +177,7 @@ impl SigningRound {
 
     pub fn reset<T: RngCore + CryptoRng>(&mut self, dkg_id: u64, rng: &mut T) {
         self.dkg_id = dkg_id;
+        self.dkg_public_id = 1;
         self.commitments.clear();
         self.shares.clear();
         self.public_nonces.clear();
@@ -246,7 +262,7 @@ impl SigningRound {
             self.commitments.len(),
             self.shares.len()
         );
-        self.state == States::DkgGather
+        self.state == States::DkgPrivateGather
             && self.commitments.len() == self.total
             && self.shares.len() == self.total
     }
@@ -264,6 +280,8 @@ impl SigningRound {
         for party in &mut self.signer.frost_signer.parties {
             let response = MessageTypes::NonceResponse(NonceResponse {
                 dkg_id: nonce_request.dkg_id,
+                sign_id: nonce_request.sign_id,
+                sign_nonce_id: nonce_request.sign_nonce_id,
                 party_id: party.id as u32,
                 nonce: party.gen_nonce(&mut rng),
             });
@@ -304,6 +322,7 @@ impl SigningRound {
 
             let response = MessageTypes::SignShareResponse(SignatureShareResponse {
                 dkg_id: sign_request.dkg_id,
+                sign_id: sign_request.sign_id,
                 correlation_id: sign_request.correlation_id,
                 party_id: sign_request.party_id,
                 signature_share: share,
@@ -319,10 +338,32 @@ impl SigningRound {
         let mut rng = OsRng::default();
 
         self.reset(dkg_begin.dkg_id, &mut rng);
-        self.move_to(States::DkgDistribute)?;
+        self.move_to(States::DkgPublicDistribute)?;
         
         let _party_state = self.signer.frost_signer.save();
 
+        self.dkg_public_begin()
+    }
+        
+    pub fn dkg_public_begin(&mut self) -> Result<Vec<MessageTypes>, String> {
+        let mut rng = OsRng::default();
+        let mut msgs = vec![];
+        for (_idx, party) in self.signer.frost_signer.parties.iter().enumerate() {
+            info!("sending dkg public commitment for party #{}", party.id);
+            let public_share = MessageTypes::DkgPublicShare(DkgPublicShare {
+                dkg_id: self.dkg_id,
+                dkg_public_id: self.dkg_public_id,
+                party_id: party.id as u32,
+                public_share: party.get_poly_commitment(&mut rng),
+            });
+            msgs.push(public_share);
+        }
+
+        self.move_to(States::DkgPublicGather)?;
+        Ok(msgs)
+    }
+
+    pub fn dkg_private_begin(&mut self) -> Result<Vec<MessageTypes>, String> {
         let mut msgs = vec![];
         for (_idx, party) in self.signer.frost_signer.parties.iter().enumerate() {
             info!("sending dkg private share for party #{}", party.id);
@@ -332,16 +373,9 @@ impl SigningRound {
                 private_shares: party.get_shares(),
             });
             msgs.push(private_shares);
-            info!("sending dkg public commitment for party #{}", party.id);
-            let public_share = MessageTypes::DkgPublicShare(DkgPublicShare {
-                dkg_id: self.dkg_id,
-                party_id: party.id as u32,
-                public_share: party.get_poly_commitment(&mut rng),
-            });
-            msgs.push(public_share);
         }
 
-        self.move_to(States::DkgGather)?;
+        self.move_to(States::DkgPrivateGather)?;
         Ok(msgs)
     }
 
@@ -397,6 +431,9 @@ impl From<&FrostSigner> for SigningRound {
 
         SigningRound {
             dkg_id: 1,
+            dkg_public_id: 1,
+            sign_id: 1,
+            sign_nonce_id: 1,
             threshold: signer.config.keys_threshold,
             total: signer.config.total_keys,
             signer: Signer {

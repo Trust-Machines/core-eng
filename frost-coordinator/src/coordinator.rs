@@ -34,6 +34,9 @@ pub enum Command {
 pub struct Coordinator<Network: NetListen> {
     id: u32, // Used for relay coordination
     current_dkg_id: u64,
+    current_dkg_public_id: u64,
+    current_sign_id: u64,
+    current_sign_nonce_id: u64,
     total_signers: usize, // Assuming the signers cover all id:s in {1, 2, ..., total_signers}
     total_keys: usize,
     threshold: usize,
@@ -49,6 +52,9 @@ impl<Network: NetListen> Coordinator<Network> {
         Self {
             id: id as u32,
             current_dkg_id: dkg_id,
+            current_dkg_public_id: 1,
+            current_sign_id: 1,
+            current_sign_nonce_id: 1,
             total_signers: config.total_signers,
             total_keys: config.total_keys,
             threshold: config.keys_threshold,
@@ -117,6 +123,8 @@ where
         let nonce_request_message = Message {
             msg: MessageTypes::NonceRequest(NonceRequest {
                 dkg_id: self.current_dkg_id,
+                sign_id: self.current_sign_id,
+                sign_nonce_id: self.current_sign_nonce_id,
             }),
             sig: [0; 32],
         };
@@ -217,6 +225,7 @@ where
             let signature_share_request_message = Message {
                 msg: MessageTypes::SignShareRequest(SignatureShareRequest {
                     dkg_id: self.current_dkg_id,
+                    sign_id: self.current_sign_id,
                     correlation_id: 0,
                     party_id: *party_id,
                     nonces: id_nonces.clone(),
