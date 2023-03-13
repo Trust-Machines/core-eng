@@ -1,6 +1,6 @@
 use crate::signer::Signer as FrostSigner;
 use hashbrown::HashMap;
-use rand_core::OsRng;
+use rand_core::{CryptoRng, OsRng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use tracing::{debug, info, warn};
@@ -160,10 +160,12 @@ impl SigningRound {
         }
     }
 
-    pub fn reset(&mut self, dkg_id: u64) {
+    pub fn reset<T: RngCore + CryptoRng>(&mut self, dkg_id: u64, rng: &mut T) {
         self.dkg_id = dkg_id;
         self.commitments.clear();
         self.shares.clear();
+        self.public_nonces.clear();
+        self.signer.frost_signer.reset_polys(rng);
     }
 
     pub fn process(&mut self, message: MessageTypes) -> Result<Vec<MessageTypes>, String> {
@@ -316,10 +318,9 @@ impl SigningRound {
     pub fn dkg_begin(&mut self, dkg_begin: DkgBegin) -> Result<Vec<MessageTypes>, String> {
         let mut rng = OsRng::default();
 
-        self.reset(dkg_begin.dkg_id);
+        self.reset(dkg_begin.dkg_id, &mut rng);
         self.move_to(States::DkgDistribute)?;
-        self.signer.frost_signer.reset_polys(&mut rng);
-
+        
         let _party_state = self.signer.frost_signer.save();
 
         let mut msgs = vec![];
