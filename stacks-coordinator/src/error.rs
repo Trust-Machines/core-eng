@@ -28,4 +28,8 @@ pub enum Error {
     /// Config parse error
     #[error("Failed to parse config file: {0}")]
     ConfigError(#[from] toml::de::Error),
+    #[error("type conversion error from blockstack::bitcoin to bitcoin:: {0}")]
+    ConversionError(#[from] bitcoin::hashes::Error),
+    #[error("type conversion error blockstack::bitcoin::hashes:hex {0}")]
+    ConversionErrorHex(#[from] bitcoin::hashes::hex::Error),
 }
